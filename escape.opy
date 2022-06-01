@@ -1,12 +1,13 @@
 settings {
     "lobby": {
-        "team1Slots": 0
+        "team2Slots": 0
     },
     "gamemodes": {
         "escort": {
             "enabledMaps": [
                 "junkertown"
             ],
+            "enableHeroSwitching": false,
             "gamemodeStartTrigger": "manual",
             "roleLimit": "2OfEachRolePerTeam",
             "spawnHealthPacks": "disabled"
@@ -52,7 +53,6 @@ settings {
 #!extension kineticExplosionEffects
 
 #!define RACE_CONDITION_DELAY 0.1
-#!define EP eventPlayer
 
 
 
@@ -316,10 +316,10 @@ def checkBarnCode():
         barnHintPlayers.remove(eventPlayer)
 
         # Zen drop
-        createDummy(Hero.ZENYATTA, Team.1, 1, vect(54.41, 9.5, -64.48), vect(1, 0, 0))
-        getPlayersInSlot(1, Team.1).setInvisibility(Invis.ALL)
+        createDummy(Hero.ZENYATTA, Team.2, 1, vect(54.41, 9.5, -64.48), vect(1, 0, 0))
+        getPlayersInSlot(1, Team.2).setInvisibility(Invis.ALL)
         wait(0.5)
-        destroyDummy(Team.1, 1)
+        destroyDummy(Team.2, 1)
 
 # Makes a noise for when a switch is pressed
 def makeSwitchNoise():
@@ -461,10 +461,6 @@ def playerInitialState():
     # top area start
     eventPlayer.hogPos = vect(68.39, 13.91, -86.84)
     eventPlayer.hogFacing = vect(0.86, -0.51, 0)
-    
-    # pachimari start
-    # eventPlayer.hogPos = vect(67.84, 9, -79.95)
-    # eventPlayer.hogFacing = vect(1, 0, 0)
 
     eventPlayer.isJunk = false
     eventPlayer.isHog = false
@@ -743,6 +739,7 @@ def playerInitialState():
     radioSmokePlayers.append(eventPlayer)
 
     barnHintPlayers.remove(eventPlayer)
+    barnHintPlayers.append(eventPlayer)
 
     eventPlayer.startForcingHero(Hero.JUNKRAT)
     eventPlayer.teleport(eventPlayer.junkPos)
@@ -752,7 +749,7 @@ def playerInitialState():
 
 rule "On player join":
     @Event playerJoined
-    @Team 2
+    @Team 1
 
     playerInitialState()
 
@@ -788,13 +785,13 @@ rule "Update hog position and direction":
 
 rule "Walk through spawn protections enable":
     @Event eachPlayer
-    @Condition NEXT_TO(EP, vect(-76.72, 7.75, -104.16)) or NEXT_TO(EP, vect(-109.19, 7.75, -107.33)) or NEXT_TO(EP, vect(-97.16, 8.75, -166.15)) or NEXT_TO(EP, vect(-80.40, 8.75, -174.14))
+    @Condition NEXT_TO(eventPlayer, vect(-55.57, 9, -82.41)) or NEXT_TO(eventPlayer, vect(-66.38, 11, -80.21))
 
     eventPlayer.disableEnvironmentCollision(false)
 
 rule "Walk through spawn protections disable":
     @Event eachPlayer
-    @Condition not NEXT_TO(EP, vect(-76.72, 7.75, -104.16)) and not NEXT_TO(EP, vect(-109.19, 7.75, -107.33)) and not NEXT_TO(EP, vect(-97.16, 8.75, -166.15)) and not NEXT_TO(EP, vect(-80.40, 8.75, -174.14))
+    @Condition not NEXT_TO(eventPlayer, vect(-55.57, 9, -82.41)) and not NEXT_TO(eventPlayer, vect(-66.38, 11, -80.21))
 
     eventPlayer.enableEnvironmentCollision()
 
@@ -1161,7 +1158,7 @@ rule "Create sparks for generator wires":
     @Condition eventPlayer.isJunk
     @Condition not eventPlayer.wiresConnected
     do:
-        playEffect(eventPlayer, DynamicEffect.DOOMFIST_RISING_UPPERCUT_IMPACT, Color.TEAM_2, vect(-106.91, 12, -135.82), 1)
+        playEffect(eventPlayer, DynamicEffect.DOOMFIST_RISING_UPPERCUT_IMPACT, Color.TEAM_1, vect(-106.91, 12, -135.82), 1)
         wait(random.randint(100, 400) / 100)
     while RULE_CONDITION
 
