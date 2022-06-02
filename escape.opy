@@ -8,8 +8,10 @@ settings {
                 "junkertown"
             ],
             "enableHeroSwitching": false,
-            "gamemodeStartTrigger": "manual",
+            "gamemodeStartTrigger": "immediately",
             "roleLimit": "2OfEachRolePerTeam",
+            "payloadSpeed%": 500,
+            "respawnTime%": 0,
             "spawnHealthPacks": "disabled"
         },
     },
@@ -331,15 +333,43 @@ def makeSwitchNoise():
 
 
 # SETUP
+
+rule "Disable hero assemble":
+    @Event global
+    @Condition isAssemblingHeroes()
+
+    setMatchTime(0)
+
+rule "Disable setup":
+    @Event global
+    @Condition isInSetup()
+
+    setMatchTime(0)
+
+rule "Move payload to the end":
+    @Event global
+    @Condition isGameInProgress()
+
+    createDummy(Hero.MERCY, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    getPlayersOnHero(Hero.MERCY, Team.2).disablePlayerCollision()
+    getPlayersOnHero(Hero.MERCY, Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
+    getPlayersOnHero(Hero.MERCY, Team.2).setInvisibility(Invis.ENEMIES)
+
+rule "Keep match time at 0 to prevent time based voice lines":
+    @Event global
+    @Condition getMatchTime() > 0
+
+    setMatchTime(0)
+
 rule "Global setup":
     @Event global
 
     disableMusic()
     disableAnnouncer()
-    setMatchTime(3600)
-    pauseMatchTime()
+    disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
     startForcingSpawn(Team.ALL, 2)
+    getAllPlayers().disableNameplatesFor(getAllPlayers())
 
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
@@ -757,6 +787,8 @@ rule "On player join":
     eventPlayer.disableGamemodeHud()
     # eventPlayer.disableHeroHUD()
     eventPlayer.disableScoreboard()
+    eventPlayer.disableGamemodeInWorldUi()
+    eventPlayer.disableMessages()
 
 
 
