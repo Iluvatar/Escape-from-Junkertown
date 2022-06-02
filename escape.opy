@@ -518,44 +518,51 @@ def showIntro():
     wait(4.5)
 
     # Stage 1, view of plan
-    eventPlayer.tValue = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
-    eventPlayer.startCamera(eventPlayer.tValue, vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
-    chase(eventPlayer.tValue, vect(45.98, 11.12, -71.48) - vect(-1, -0.01, 0.10) * 1.3, duration=12, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
+    eventPlayer.startCamera(eventPlayer.tPos, vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
+    chase(eventPlayer.tPos, vect(45.98, 11.12, -71.48) - vect(-1, -0.01, 0.10) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
 
     wait(3.3)
 
-    # Stage 2, following cart path
-    stopChasingVariable(eventPlayer.tValue)
+    stopChasingVariable(eventPlayer.tPos)
 
+    # Stage 2, following cart path
     smallMessage(eventPlayer, "But something went wrong")
 
     eventPlayer.tStart = vect(7.12, 8.28, -69.01)
     eventPlayer.tEnd = vect(13.34, 8.38, -56.17)
-    eventPlayer.tValue = 0
+    eventPlayer.tIndex = 0
 
     chase(eventPlayer.tStart, vect(13.34, 8.38, -56.17), duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
     chase(eventPlayer.tEnd, vect(-4.86, 7.87, -44.03), duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-    chase(eventPlayer.tValue, 1, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-    eventPlayer.startCamera(eventPlayer.tStart + (eventPlayer.tEnd - eventPlayer.tStart) * eventPlayer.tValue, eventPlayer.tEnd, 0)
+    chase(eventPlayer.tIndex, 1, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startCamera(eventPlayer.tStart + (eventPlayer.tEnd - eventPlayer.tStart) * eventPlayer.tIndex, eventPlayer.tEnd, 0)
 
     wait(3.3)
+
+    stopChasingVariable(eventPlayer.tStart)
+    stopChasingVariable(eventPlayer.tEnd)
+    stopChasingVariable(eventPlayer.tIndex)
 
     # Stage 3, view of posters
-    eventPlayer.tValue = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
-    eventPlayer.startCamera(eventPlayer.tValue, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
-    chase(eventPlayer.tValue, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 1.3, duration=12, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.tPos = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
+    eventPlayer.startCamera(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
+    chase(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
 
     wait(3.3)
 
+    stopChasingVariable(eventPlayer.tPos)
+
     # Stage 4
-    stopChasingVariable(eventPlayer.tValue)
     introStage1Players.remove(eventPlayer)
 
-    eventPlayer.tValue = vect(26.97, 21.97, 47.25)
-    eventPlayer.startCamera(eventPlayer.tValue, vect(-35.24, 11.71, -55.88), 0)
-    chase(eventPlayer.tValue, vect(-33.71, 11.70, -53.29), duration=2.80, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.tPos = vect(26.97, 21.97, 47.25)
+    eventPlayer.startCamera(eventPlayer.tPos, vect(-35.24, 11.71, -55.88), 0)
+    chase(eventPlayer.tPos, vect(-33.71, 11.70, -53.29), duration=2.80, ChaseReeval.DESTINATION_AND_DURATION)
 
     wait(4.6)
+
+    stopChasingVariable(eventPlayer.tPos)
 
     # Title view
     introStage2Players.append(eventPlayer)
@@ -873,7 +880,6 @@ rule "On player join":
 
     eventPlayer.setStatusEffect(null, Status.INVINCIBLE, 9999)
     eventPlayer.disableGamemodeHud()
-    # eventPlayer.disableHeroHUD()
     eventPlayer.disableScoreboard()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
