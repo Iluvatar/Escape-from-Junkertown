@@ -84,6 +84,8 @@ enum Item:
 
 # GLOBAL VARIABLES
 
+globalvar introStage1Players = []
+globalvar introStage2Players = []
 globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
@@ -208,7 +210,6 @@ playervar barnCodePanel
 
 # larger outside area
 playervar outsideJunkWorkbench
-playervar outsideCart
 playervar outsideSafe
 playervar outsideFridge1
 playervar outsideFridge2
@@ -289,6 +290,11 @@ def popEffectDeleteQueue():
     destroyEffect(eventPlayer.effectDeleteQueue[0])
     del eventPlayer.effectDeleteQueue[0]
 
+# Used to turn the whole screen black (doesn't actually fade)
+#!define BLACK_SCREEN_POS vect(34, 6, -88)
+#!define BLACK_SCREEN_FACING vect(0, -1, 0)
+#!define FADE_TO_BLACK() eventPlayer.startCamera(BLACK_SCREEN_POS, BLACK_SCREEN_POS + BLACK_SCREEN_FACING, 0)
+
 # Increments the state of the item with the given id
 #!define INCREMENT_STATE(eventPlayer, id) eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, id) \
 eventPlayer.tIndex = eventPlayer.itemIds.index(eventPlayer.tValue[Item.ID]) \
@@ -350,21 +356,35 @@ rule "Move payload to the end":
     @Event global
     @Condition isGameInProgress()
 
-    createDummy(Hero.MERCY, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    # wait for starting player to get through intro so the sound doesn't interfere
+    wait(15)
+
+    createDummy(Hero.MERCY, Team.2, 1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
     getPlayersOnHero(Hero.MERCY, Team.2).disablePlayerCollision()
     getPlayersOnHero(Hero.MERCY, Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
     getPlayersOnHero(Hero.MERCY, Team.2).setInvisibility(Invis.ENEMIES)
 
-rule "Keep match time at 0 to prevent time based voice lines":
-    @Event global
-    @Condition getMatchTime() > 0
+    # match time restarts every checkpoint for some reason
+    wait(15)
+    pauseMatchTime()
 
-    setMatchTime(0)
+rule "Stop payload after first point":
+    @Event global
+    @Condition teamScore(Team.2) == 1
+
+    wait(15)
+    destroyDummy(Team.2, 1)
+
+rule "Keep match time high to prevent time based voice lines":
+    @Event global
+    @Condition isGameInProgress()
+    @Condition getMatchTime() < 3000
+
+    setMatchTime(3600)
 
 rule "Global setup":
     @Event global
 
-    disableMusic()
     disableAnnouncer()
     disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
@@ -482,6 +502,71 @@ rule "Global setup":
     # barn paper clues
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
+    
+    createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(introStage1Players, "And now you're stuck", vect(-36.85, 6.07, -72.38) + vect(0.55, 0.12, 0.83), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(introStage2Players, "Escape", vect(-35.24, 13.01, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+
+def showIntro():
+    eventPlayer.disableHeroHUD()
+    eventPlayer.setStatusEffect(null, Status.FROZEN, 9999)
+    introStage1Players.append(eventPlayer)
+
+    FADE_TO_BLACK()
+
+    wait(4.5)
+
+    # Stage 1, view of plan
+    eventPlayer.tValue = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
+    eventPlayer.startCamera(eventPlayer.tValue, vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
+    chase(eventPlayer.tValue, vect(45.98, 11.12, -71.48) - vect(-1, -0.01, 0.10) * 1.3, duration=12, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(3.3)
+
+    # Stage 2, following cart path
+    stopChasingVariable(eventPlayer.tValue)
+
+    smallMessage(eventPlayer, "But something went wrong")
+
+    eventPlayer.tStart = vect(7.12, 8.28, -69.01)
+    eventPlayer.tEnd = vect(13.34, 8.38, -56.17)
+    eventPlayer.tValue = 0
+
+    chase(eventPlayer.tStart, vect(13.34, 8.38, -56.17), duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.tEnd, vect(-4.86, 7.87, -44.03), duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.tValue, 1, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startCamera(eventPlayer.tStart + (eventPlayer.tEnd - eventPlayer.tStart) * eventPlayer.tValue, eventPlayer.tEnd, 0)
+
+    wait(3.3)
+
+    # Stage 3, view of posters
+    eventPlayer.tValue = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
+    eventPlayer.startCamera(eventPlayer.tValue, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
+    chase(eventPlayer.tValue, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 1.3, duration=12, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(3.3)
+
+    # Stage 4
+    stopChasingVariable(eventPlayer.tValue)
+    introStage1Players.remove(eventPlayer)
+
+    eventPlayer.tValue = vect(26.97, 21.97, 47.25)
+    eventPlayer.startCamera(eventPlayer.tValue, vect(-35.24, 11.71, -55.88), 0)
+    chase(eventPlayer.tValue, vect(-33.71, 11.70, -53.29), duration=2.80, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(4.6)
+
+    # Title view
+    introStage2Players.append(eventPlayer)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, vect(-35.24, 12.71, -55.88), 10)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, vect(-35.24, 12.71, -55.88), 80)
+
+    wait(4)
+
+    eventPlayer.stopCamera()
+    eventPlayer.enableHeroHud()
+    eventPlayer.clearStatusEffect(Status.FROZEN)
 
 def playerInitialState():
     # Player state
@@ -618,7 +703,6 @@ def playerInitialState():
 
     # larger outside area
     eventPlayer.outsideJunkWorkbench = ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["outsideJunkWorkbench"]]
-    eventPlayer.outsideCart = ["outsideCart", 0, vect(30.07, 10.16, -81.47), 3, ["outsideCart"]]
     eventPlayer.outsideSafe = ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["outsideSafe"], null, true]
     eventPlayer.outsideIceBox = ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["outsideIceBox"], null, true, true]
     eventPlayer.outsideFridge1 = ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["outsideFridge1"], null, true]
@@ -726,7 +810,6 @@ def playerInitialState():
 
         # larger outside area
         eventPlayer.outsideJunkWorkbench,
-        eventPlayer.outsideCart,
         eventPlayer.outsideSafe,
         eventPlayer.outsideFridge1,
         eventPlayer.outsideFridge2,
@@ -748,6 +831,9 @@ def playerInitialState():
 
 
     # Other state setup
+    introStage1Players.remove(eventPlayer)
+    introStage2Players.remove(eventPlayer)
+
     playersInDark.remove(eventPlayer)
     playersInDark.append(eventPlayer)
 
@@ -780,6 +866,8 @@ def playerInitialState():
 rule "On player join":
     @Event playerJoined
     @Team 1
+
+    async(showIntro, AsyncBehavior.NOOP)
 
     playerInitialState()
 
@@ -1268,44 +1356,6 @@ playervar pointHelperEffect
 playervar pointHelperHud
 playervar pointHelperState = 0
 
-def printText():
-    hudHeader(eventPlayer, A, HudPosition.TOP, 0, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    for I in range(strLen("test 123")):
-
-#!define BLACK_SCREEN_POS vect(34, 6, -88)
-#!define BLACK_SCREEN_FACING vect(0, -1, 0)
-#!define FADE_TO_BLACK() eventPlayer.startCamera(BLACK_SCREEN_POS, BLACK_SCREEN_POS + BLACK_SCREEN_FACING, 0)
-
-rule "cam test":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and eventPlayer.isHoldingButton(Button.ABILITY_1)
-
-    eventPlayer.disableHeroHUD()
-
-    FADE_TO_BLACK()
-    wait(2)
-
-    bigMessage(eventPlayer, "You had a plan")
-    wait(4)
-    
-    eventPlayer.startCamera(vect(45.98, 11.12, -71.48), vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
-    wait(2)
-
-    FADE_TO_BLACK()
-    wait(1)
-
-    bigMessage(eventPlayer, "The plan did a thing")
-    wait(4)
-
-    # createInWorldText(eventPlayer, )
-    # eventPlayer.effectDeleteQueue.append(getLastCreatedText())
-
-    # wait(10)
-
-    # destroyHudText(eventPlayer.effectDeleteQueue[0])
-    # del eventPlayer.effectDeleteQueue[0]
-    eventPlayer.stopCamera()
-    eventPlayer.enableHeroHud()
 
 rule "Debug on":
     @Event eachPlayer
@@ -1316,11 +1366,30 @@ rule "Debug on":
     else:
         debugPlayers.append(eventPlayer)
 
+playervar isMercyUlting = false
+
 rule "Be mercy":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer.isHoldingButton(Button.CROUCH)
 
+    eventPlayer.isMercyUlting = false
     eventPlayer.startForcingHero(Hero.MERCY)
+
+rule "Toggle infinite mercy ult":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
+    @Condition eventPlayer.getCurrentHero() == Hero.MERCY
+
+    eventPlayer.isMercyUlting = not eventPlayer.isMercyUlting
+
+rule "Mercy infinite ult":
+    @Event eachPlayer
+    @Condition eventPlayer.getCurrentHero() == Hero.MERCY
+    @Condition eventPlayer.isMercyUlting
+    @Condition not eventPlayer.isUsingUltimate()
+
+    eventPlayer.setUltCharge(100)
+    eventPlayer.forceButtonPress(Button.ULTIMATE)
 
 rule "Easy restart":
     @Event eachPlayer
