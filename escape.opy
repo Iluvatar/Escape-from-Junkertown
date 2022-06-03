@@ -91,7 +91,9 @@ globalvar introStage2Players = []
 globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
+globalvar innerMinigamePlayers = []
 globalvar radioSmokePlayers = []
+globalvar mapMarkerPlayers = []
 globalvar barnHintPlayers = []
 
 
@@ -111,6 +113,7 @@ playervar tPos
 playervar tText
 
 # Player state
+playervar pauseInteraction
 playervar junkPos
 playervar junkFacing
 playervar hogPos
@@ -134,6 +137,7 @@ playervar isHoldingInnerMinigameControl1
 playervar isHoldingInnerMinigameControl2
 playervar innerMinigameValue1
 playervar innerMinigameValue2
+playervar hasFinishedInnerMinigame
 
 playervar canBeTheOtherGuy
 
@@ -194,9 +198,11 @@ playervar innerBrokenMech2
 playervar innerMech1
 playervar innerMech2
 
-playervar innerWorkbench # interact
 playervar innerMinigameControl1
 playervar innerMinigameControl2
+playervar innerWorkbench # interact
+
+playervar innerSunHat
 
 # courtyard area
 
@@ -308,6 +314,11 @@ def popEffectDeleteQueue():
 # Increments the state of the item with the given id
 #!define INCREMENT_STATE(eventPlayer, id) eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, id) \
 eventPlayer.tValue[Item.STATE]++ \
+SAVE_STATE(eventPlayer, eventPlayer.tValue)
+
+# Sets the state of the item with the given id
+#!define SET_STATE(eventPlayer, id, value) eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, id) \
+eventPlayer.tValue[Item.STATE] = value \
 SAVE_STATE(eventPlayer, eventPlayer.tValue)
 
 # Toggles visiblity of the given power panel switch
@@ -519,11 +530,16 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.94, -169.05), 3, EffectReeval.VISIBILITY)
 
     # workbench puzzle
-    createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.55, 9.51, -184.89), vect(-103.60, 9.19, -185.16), Color.BLACK, EffectReeval.VISIBILITY)
-    createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.60, 9.19, -185.16), vect(-103.55, 8.89, -184.90), Color.BLACK, EffectReeval.VISIBILITY)
+    # createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.55, 9.51, -184.89), vect(-103.60, 9.19, -185.16), Color.BLACK, EffectReeval.VISIBILITY)
+    # createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.60, 9.19, -185.16), vect(-103.55, 8.89, -184.90), Color.BLACK, EffectReeval.VISIBILITY)
+    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.RED, INNER_MINIGAME_2D_TO_3D(vect(0.67 + sin(2) * 0.18, 0.16 + cos(2) * 0.18, 0)), 0.03, EffectReeval.VISIBILITY)
+    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.RED, INNER_MINIGAME_2D_TO_3D(vect(0.95 + sin(3) * 0.18, 0.16 + cos(3) * 0.18, 0)), 0.03, EffectReeval.VISIBILITY)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
+
+    # map marker
+    createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
 
     # barn paper clues
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
@@ -594,6 +610,8 @@ def showIntro():
 
     wait(4)
 
+    introStage2Players.remove(eventPlayer)
+
     eventPlayer.stopCamera()
     eventPlayer.enableHeroHud()
     eventPlayer.clearStatusEffect(Status.FROZEN)
@@ -608,10 +626,11 @@ def innerMinigameInitialState():
 
 def playerInitialState():
     # Player state
+    eventPlayer.pauseInteraction = false
+
     eventPlayer.junkPos = vect(-95.58, 12.17, -86.79)
     eventPlayer.junkFacing = vect(1, 0, 0)
 
-    # top area start
     eventPlayer.hogPos = vect(68.39, 13.91, -86.84)
     eventPlayer.hogFacing = vect(0.86, -0.51, 0)
 
@@ -632,6 +651,7 @@ def playerInitialState():
     eventPlayer.lightsOn = false
 
     innerMinigameInitialState()
+    eventPlayer.hasFinishedInnerMinigame = false
 
     eventPlayer.canBeTheOtherGuy = false
 
@@ -699,7 +719,6 @@ def playerInitialState():
 
     # larger inner section
     eventPlayer.innerThrone = ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]]
-    eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["The radio to the outside. It seems to be broken though"]]
 
     eventPlayer.innerChest2 = ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["A chest 2"], null, true]
     eventPlayer.innerToolbox1 = ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["A toolbox 1"], null, true]
@@ -714,6 +733,8 @@ def playerInitialState():
 
     eventPlayer.innerMinigameControl1 = ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null]
     eventPlayer.innerMinigameControl2 = ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null]
+
+    eventPlayer.innerSunHat = ["innerSunHat", 0, vect(-88.04, 13.37, -158.22), 0.5, "Tattered sun hat", true]
 
     # courtyard area
 
@@ -771,7 +792,8 @@ def playerInitialState():
     eventPlayer.innerBarrel2 = ["innerBarrel2", 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
     eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator hums with a dim energy"], null, null, null, null, ["Filled petrol can"], ["You pour the petrol into the generator"]]
 
-    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it"], null, null, null, 1, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
+    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
+    eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
 
 
 
@@ -824,9 +846,9 @@ def playerInitialState():
         eventPlayer.innerMech1,
         eventPlayer.innerMech2,
 
-        eventPlayer.innerWorkbench,
         eventPlayer.innerMinigameControl1,
         eventPlayer.innerMinigameControl2,
+        eventPlayer.innerWorkbench,
 
         # courtyard area
 
@@ -899,9 +921,8 @@ def playerInitialState():
     powerPanelPlayers[4].remove(eventPlayer)
     powerPanelPlayers[4].append(eventPlayer)
 
+    innerMinigamePlayers.remove(eventPlayer)
     radioSmokePlayers.remove(eventPlayer)
-    # TODO REMOVE
-    radioSmokePlayers.append(eventPlayer)
 
     barnHintPlayers.remove(eventPlayer)
     barnHintPlayers.append(eventPlayer)
@@ -997,14 +1018,15 @@ rule "Workbench minigame start":
     @Event eachPlayer
     @Condition eventPlayer.isDoingInnerMinigame
 
-    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.45, 8.89, -184.36), INNER_MINIGAME_2D_TO_3D(vect(0.67 + sin(eventPlayer.innerMinigameValue1) * 0.1, 0.16 + cos(eventPlayer.innerMinigameValue1) * 0.1, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.45, 8.89, -184.36), INNER_MINIGAME_2D_TO_3D(vect(0.67 + sin(eventPlayer.innerMinigameValue1) * 0.15, 0.16 + cos(eventPlayer.innerMinigameValue1) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.50, 8.89, -184.63), INNER_MINIGAME_2D_TO_3D(vect(0.95 + sin(eventPlayer.innerMinigameValue2) * 0.1, 0.16 + cos(eventPlayer.innerMinigameValue2) * 0.1, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.50, 8.89, -184.63), INNER_MINIGAME_2D_TO_3D(vect(0.95 + sin(eventPlayer.innerMinigameValue2) * 0.15, 0.16 + cos(eventPlayer.innerMinigameValue2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
+    innerMinigamePlayers.append(eventPlayer)
 
-rule "Stop minigame controls":
+rule "Stop workbench minigame controls":
     @Event eachPlayer
-    @Condition not eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition eventPlayer.isDoingInnerMinigame and not eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
 
     eventPlayer.isHoldingInnerMinigameControl1 = false
     eventPlayer.isHoldingInnerMinigameControl2 = false
@@ -1012,13 +1034,44 @@ rule "Stop minigame controls":
     stopChasingVariable(eventPlayer.innerMinigameValue1)
     stopChasingVariable(eventPlayer.innerMinigameValue2)
 
+rule "Workbench minigame success":
+    @Event eachPlayer
+    @Condition abs(eventPlayer.innerMinigameValue1 % (2 * PI) - 2) < 0.1 and abs(eventPlayer.innerMinigameValue2 % (2 * PI) - 3) < 0.1
+
+    eventPlayer.hasFinishedInnerMinigame = true
+    stopChasingVariable(eventPlayer.innerMinigameValue1)
+    stopChasingVariable(eventPlayer.innerMinigameValue2)
+    eventPlayer.innerMinigameValue1 = 2
+    eventPlayer.innerMinigameValue2 = 3
+    SET_STATE(eventPlayer, "innerWorkbench", 1)
+    eventPlayer.inventory.remove("Fiddly part")
+    eventPlayer.inventory = "Reverse polarity fiddly part".concat(eventPlayer.inventory)
+    smallMessage(eventPlayer, "You manager to reverse the polarity of the fiddly part")
+
 rule "Workbench minigame stop":
     @Event eachPlayer
-    @Condition distance(eventPlayer, eventPlayer.innerWorkbench[Item.POINT]) > 5
+    @Condition eventPlayer.isDoingInnerMinigame and distance(eventPlayer, eventPlayer.innerWorkbench[Item.POINT]) > 3
 
-    eventPlayer.isDoingInnerMinigame = false
+    innerMinigameInitialState()
     popEffectDeleteQueue()
     popEffectDeleteQueue()
+    innerMinigamePlayers.remove(eventPlayer)
+
+# Radio conversation
+def doInnerRadioConversation():
+    eventPlayer.pauseInteraction = true
+    smallMessage(eventPlayer, "You say something")
+    wait(4)
+    smallMessage(eventPlayer, "Thing go boom")
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, eventPlayer.innerRadio[Item.POINT], 100)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
+    radioSmokePlayers.append(eventPlayer)
+    wait(3)
+    smallMessage(eventPlayer, "Press F to be the other guy")
+
+    eventPlayer.canBeTheOtherGuy = true
+
+    eventPlayer.pauseInteraction = false
 
 
 
@@ -1071,6 +1124,7 @@ rule "Scroll inventory backwards":
 # Interact
 def playGetItem():
     playEffect(eventPlayer, DynamicEffect.SOLDIER_SPRINT_START_SOUND, null, eventPlayer, 100)
+    playEffect(eventPlayer, DynamicEffect.SOLDIER_SPRINT_START_SOUND, null, eventPlayer, 100)
 
 def playNoItem():
     playEffect(eventPlayer, DynamicEffect.DVA_MICRO_MISSILES_EXPLOSION_SOUND, null, eventPlayer.getPosition() + eventPlayer.getFacingDirection(), 40)
@@ -1083,7 +1137,7 @@ distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingD
 
 rule "Interact":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction
 
     eventPlayer.tValue = [elem for elem in eventPlayer.itemPoints if SHOULD_INTERACT(eventPlayer, elem)]
 
@@ -1098,13 +1152,12 @@ rule "Interact":
     eventPlayer.tIndex = eventPlayer.itemIds.index(eventPlayer.tValue[Item.ID])
 
     if eventPlayer.tValue[Item.STATE] < len(eventPlayer.tValue[Item.MESSAGE]):
-        smallMessage(eventPlayer, eventPlayer.tValue[Item.MESSAGE][eventPlayer.tValue[Item.STATE]])
+        eventPlayer.tText = eventPlayer.tValue[Item.MESSAGE][eventPlayer.tValue[Item.STATE]]
+        smallMessage(eventPlayer, eventPlayer.tText)
         if eventPlayer.tValue[Item.ITEM_NAME]:
             if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
                 playGetItem()
             eventPlayer.inventory = eventPlayer.tValue[Item.ITEM_NAME].concat(eventPlayer.inventory)
-            # wait needed to allow time for message to show before incrementing state (dumb)
-            wait(1)
             eventPlayer.tValue[Item.STATE]++
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
         else:
@@ -1192,11 +1245,11 @@ rule "Interact":
         smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
     elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
         smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
-    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1":
+    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and not eventPlayer.hasFinishedInnerMinigame:
         if eventPlayer.isDoingInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl1 = true
             chase(eventPlayer.innerMinigameValue1, 9999, rate=PI/2, ChaseReeval.NONE)
-    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2":
+    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2" and not eventPlayer.hasFinishedInnerMinigame:
         if eventPlayer.isDoingInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl2 = true
             chase(eventPlayer.innerMinigameValue2, 9999, rate=PI/2, ChaseReeval.NONE)
@@ -1211,7 +1264,8 @@ rule "Interact":
 
 #!define SHOULD_APPLY_ITEM(eventPlayer, key) (eventPlayer.key[Item.STATE] < len(eventPlayer.key[Item.REQUIRED_ITEM]) and eventPlayer.inventory[0] == eventPlayer.key[Item.REQUIRED_ITEM][eventPlayer.key[Item.STATE]])
 
-#!define APPLY_ITEM_SUCCESS(eventPlayer, item) smallMessage(eventPlayer, item[Item.SUCCESS_MESSAGE][item[Item.STATE] - 1])
+#!define APPLY_ITEM_SUCCESS(eventPlayer, item) eventPlayer.tText = item[Item.SUCCESS_MESSAGE][item[Item.STATE]] \
+smallMessage(eventPlayer, eventPlayer.tText)
 def APPLY_ITEM_FAIL():
     if len(eventPlayer.inventory) == 0:
         smallMessage(eventPlayer, NO_ITEM_MESSAGE)
@@ -1220,20 +1274,17 @@ def APPLY_ITEM_FAIL():
 
 rule "Apply":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE)
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction
 
     if SHOULD_INTERACT(eventPlayer, eventPlayer.tutGate1) or SHOULD_INTERACT(eventPlayer, eventPlayer.tutGate2):
         eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "tutGate1")
         if eventPlayer.tValue[Item.STATE] == 0:
             if SHOULD_APPLY_ITEM(eventPlayer, tutGate1):
-                # weird ordering because changing a value right after using it in a message
-                # makes the message use the new value
-                INCREMENT_STATE(eventPlayer, "tutGate2")
-                eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "tutGate1")
+                APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
                 eventPlayer.tValue[Item.STATE]++
                 SAVE_STATE(eventPlayer, eventPlayer.tValue)
+                INCREMENT_STATE(eventPlayer, "tutGate2")
 
-                APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
                 del eventPlayer.inventory[0]
                 playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 100)
                 eventPlayer.tutorialFinished = true
@@ -1241,8 +1292,11 @@ rule "Apply":
                 APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerWires):
         if SHOULD_APPLY_ITEM(eventPlayer, innerWires):
-            INCREMENT_STATE(eventPlayer, "innerWires")
+            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerWires")
             APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+
             innerWirePlayers.append(eventPlayer)
             eventPlayer.wiresConnected = true
             del eventPlayer.inventory[0]
@@ -1250,8 +1304,11 @@ rule "Apply":
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerBarrel2):
         if SHOULD_APPLY_ITEM(eventPlayer, innerBarrel2):
-            INCREMENT_STATE(eventPlayer, "innerBarrel2")
+            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerBarrel2")
             APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+
             del eventPlayer.inventory[0]
             eventPlayer.inventory = "Filled petrol can".concat(eventPlayer.inventory)
             createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -1262,8 +1319,11 @@ rule "Apply":
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerGenerator):
         if SHOULD_APPLY_ITEM(eventPlayer, innerGenerator):
-            INCREMENT_STATE(eventPlayer, "innerGenerator")
+            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerGenerator")
             APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+
             del eventPlayer.inventory[0]
             createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
             pushEffectDeleteQueue()
@@ -1273,10 +1333,18 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerWorkbench):
-        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerWorkbench")
-        if SHOULD_APPLY_ITEM(eventPlayer, innerWorkbench) and eventPlayer.tValue[Item.STATE] == 0:
+        if SHOULD_APPLY_ITEM(eventPlayer, innerWorkbench):
+            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerWorkbench")
             APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
             eventPlayer.isDoingInnerMinigame = true
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerRadio):
+        if eventPlayer.inventory[0] == "Fiddly part":
+            smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios.\n                        Maybe you can switch this one at a workbench")
+        elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
+            doInnerRadioConversation()
+            INCREMENT_STATE(eventPlayer, "innerRadio")
         else:
             APPLY_ITEM_FAIL()
     else:
@@ -1542,11 +1610,13 @@ rule "Display stats":
     hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "inv: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 5, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 5, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     hudHeader(eventPlayer, "mv1: {0}".format(eventPlayer.innerMinigameValue1), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "mv2: {0}".format(eventPlayer.innerMinigameValue2), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "is doing minigame: {0}".format(eventPlayer.isDoingInnerMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingInnerMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedInnerMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.innerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
