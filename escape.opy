@@ -53,7 +53,9 @@ settings {
 #!extension buffAndDebuffSounds
 #!extension explosionSounds
 #!extension kineticExplosionEffects
+#!extension playMoreEffects
 
+#!define PI 3.1415926535
 #!define RACE_CONDITION_DELAY 0.1
 
 
@@ -127,6 +129,12 @@ playervar generatorOn
 playervar powerSwitched
 playervar lightsOn
 
+playervar isDoingInnerMinigame
+playervar isHoldingInnerMinigameControl1
+playervar isHoldingInnerMinigameControl2
+playervar innerMinigameValue1
+playervar innerMinigameValue2
+
 playervar canBeTheOtherGuy
 
 playervar canGoOutside
@@ -142,6 +150,9 @@ playervar itemPoints
 playervar itemIds
 
 # tutorial room
+playervar tutGate1 # interact
+playervar tutGate2 # interact
+
 playervar tutSafe1
 playervar tutSafe2
 playervar tutSafe3
@@ -166,6 +177,10 @@ playervar innerSwitch4
 playervar innerSwitch5
 playervar innerPowerBox
 
+playervar innerWires # interact
+playervar innerBarrel2 # interact
+playervar innerGenerator # interact
+
 # larger inner section
 playervar innerThrone
 playervar innerRadio
@@ -178,6 +193,10 @@ playervar innerBrokenMech1
 playervar innerBrokenMech2
 playervar innerMech1
 playervar innerMech2
+
+playervar innerWorkbench # interact
+playervar innerMinigameControl1
+playervar innerMinigameControl2
 
 # courtyard area
 
@@ -224,15 +243,6 @@ playervar outsideChest2
 playervar outsideChest3
 playervar outsideChest4
 playervar outsideChest5
-
-# Interaction points
-
-playervar tutGate1
-playervar tutGate2
-
-playervar innerWires
-playervar innerBarrel2
-playervar innerGenerator
 
 
 
@@ -297,9 +307,8 @@ def popEffectDeleteQueue():
 
 # Increments the state of the item with the given id
 #!define INCREMENT_STATE(eventPlayer, id) eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, id) \
-eventPlayer.tIndex = eventPlayer.itemIds.index(eventPlayer.tValue[Item.ID]) \
 eventPlayer.tValue[Item.STATE]++ \
-eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+SAVE_STATE(eventPlayer, eventPlayer.tValue)
 
 # Toggles visiblity of the given power panel switch
 #!define TOGGLE_POWER_SWITCH(eventPlayer, index) if eventPlayer in powerPanelPlayers[index]: \
@@ -311,6 +320,13 @@ else: \
 def checkPowerPanel():
     if all([eventPlayer not in elem for elem in powerPanelPlayers]):
         eventPlayer.powerSwitched = true
+
+# Converts between 2D and 3D coordinate locations for the workbench minigame
+#!define INNER_MINIGAME_X_0 vect(-103.33, 0, -183.70)
+#!define INNER_MINIGAME_X_MAX vect(-103.65, 0, -185.43)
+#!define INNER_MINIGAME_Y_0 8.73
+#!define INNER_MINIGAME_2D_TO_3D(vect2d) INNER_MINIGAME_X_0 + (INNER_MINIGAME_X_MAX - INNER_MINIGAME_X_0) * vect2d.x / distance(INNER_MINIGAME_X_0, INNER_MINIGAME_X_MAX) + vect(0, vect2d.y + INNER_MINIGAME_Y_0, 0)
+#!define INNER_MINIGAME_3D_TO_2D(vect3d) vect(distance(INNER_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - INNER_MINIGAME_Y_0, 0)
 
 # Enters a digit to the barn code
 #!define ENTER_BARN_DIGIT(digit) eventPlayer.barnCodeInputted.append(digit) \
@@ -390,6 +406,12 @@ rule "Global setup":
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
     startForcingSpawn(Team.ALL, 2)
     getAllPlayers().disableNameplatesFor(getAllPlayers())
+
+    # intro text
+    createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(introStage1Players, "And now you're stuck", vect(-36.85, 6.07, -72.38) + vect(0.55, 0.12, 0.83), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(introStage2Players, "Escape", vect(-35.24, 13.01, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
@@ -478,23 +500,27 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -140), 3, EffectReeval.VISIBILITY)
 
     # # window 6
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 13.5, -153.41), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.54, 13.5, -152.50), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.95, 13.5, -150.25), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.52, 13.5, -149.31), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 13.5, -153.41), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.54, 13.5, -152.50), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.95, 13.5, -150.25), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.52, 13.5, -149.31), 3, EffectReeval.VISIBILITY)
     
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 13.5, -153.41), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.54, 13.5, -152.50), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.95, 13.5, -150.25), 3, EffectReeval.VISIBILITY)
-    # createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.52, 13.5, -149.31), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 13.5, -153.41), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.54, 13.5, -152.50), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.95, 13.5, -150.25), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.52, 13.5, -149.31), 3, EffectReeval.VISIBILITY)
 
     # window 7
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 11.44, -169.05), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 11.94, -169.05), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.44, -169.05), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.94, -169.05), 3, EffectReeval.VISIBILITY)
+
+    # workbench puzzle
+    createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.55, 9.51, -184.89), vect(-103.60, 9.19, -185.16), Color.BLACK, EffectReeval.VISIBILITY)
+    createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.60, 9.19, -185.16), vect(-103.55, 8.89, -184.90), Color.BLACK, EffectReeval.VISIBILITY)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
@@ -503,14 +529,11 @@ rule "Global setup":
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
     
-    createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(introStage1Players, "And now you're stuck", vect(-36.85, 6.07, -72.38) + vect(0.55, 0.12, 0.83), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(introStage2Players, "Escape", vect(-35.24, 13.01, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
 def showIntro():
     eventPlayer.disableHeroHUD()
     eventPlayer.setStatusEffect(null, Status.FROZEN, 9999)
+    eventPlayer.setInvisibility(Invis.ALL)
     introStage1Players.append(eventPlayer)
 
     FADE_TO_BLACK()
@@ -574,6 +597,14 @@ def showIntro():
     eventPlayer.stopCamera()
     eventPlayer.enableHeroHud()
     eventPlayer.clearStatusEffect(Status.FROZEN)
+    eventPlayer.setInvisibility(Invis.NONE)
+
+def innerMinigameInitialState():
+    eventPlayer.isDoingInnerMinigame = false
+    eventPlayer.isHoldingInnerMinigameControl1 = false
+    eventPlayer.isHoldingInnerMinigameControl2 = false
+    eventPlayer.innerMinigameValue1 = 0
+    eventPlayer.innerMinigameValue2 = 0
 
 def playerInitialState():
     # Player state
@@ -599,6 +630,8 @@ def playerInitialState():
     eventPlayer.generatorOn = false
     eventPlayer.powerSwitched = false
     eventPlayer.lightsOn = false
+
+    innerMinigameInitialState()
 
     eventPlayer.canBeTheOtherGuy = false
 
@@ -666,18 +699,21 @@ def playerInitialState():
 
     # larger inner section
     eventPlayer.innerThrone = ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]]
-    eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["The radio the queen uses. It seems to be broken though"]]
+    eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["The radio to the outside. It seems to be broken though"]]
 
     eventPlayer.innerChest2 = ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["A chest 2"], null, true]
     eventPlayer.innerToolbox1 = ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["A toolbox 1"], null, true]
     eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["A toolbox 2"], null, true]
-    eventPlayer.innerSmallToolbox1 = ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["A small toolbox 1"], null, true]
+    eventPlayer.innerSmallToolbox1 = ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true]
     eventPlayer.innerTireRack = ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]]
 
     eventPlayer.innerBrokenMech1 = ["innerBrokenMech1", 0, vect(-88.35, 8.26, -142.03), 2, ["This mech seems to be missing a limb. You sympathize with it"]]
     eventPlayer.innerBrokenMech2 = ["innerBrokenMech2", 0, vect(-75.42, 8.52, -146.11), 2, ["A broken mech 2"]]
     eventPlayer.innerMech1 = ["innerMech1", 0, vect(-90.47, 10.09, -177.75), 2, ["A fully working mech 1"]]
     eventPlayer.innerMech2 = ["innerMech2", 0, vect(-94.87, 10.11, -178.01), 2, ["A fully working mech 2"]]
+
+    eventPlayer.innerMinigameControl1 = ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null]
+    eventPlayer.innerMinigameControl2 = ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null]
 
     # courtyard area
 
@@ -735,6 +771,8 @@ def playerInitialState():
     eventPlayer.innerBarrel2 = ["innerBarrel2", 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
     eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator hums with a dim energy"], null, null, null, null, ["Filled petrol can"], ["You pour the petrol into the generator"]]
 
+    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it"], null, null, null, 1, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
+
 
 
     eventPlayer.itemPoints = [
@@ -785,6 +823,10 @@ def playerInitialState():
         eventPlayer.innerBrokenMech2,
         eventPlayer.innerMech1,
         eventPlayer.innerMech2,
+
+        eventPlayer.innerWorkbench,
+        eventPlayer.innerMinigameControl1,
+        eventPlayer.innerMinigameControl2,
 
         # courtyard area
 
@@ -874,7 +916,7 @@ rule "On player join":
     @Event playerJoined
     @Team 1
 
-    async(showIntro, AsyncBehavior.NOOP)
+    # async(showIntro, AsyncBehavior.NOOP)
 
     playerInitialState()
 
@@ -950,6 +992,35 @@ rule "Lights on check":
     INCREMENT_STATE(eventPlayer, "innerSwitch3")
     INCREMENT_STATE(eventPlayer, "innerSwitch4")
     INCREMENT_STATE(eventPlayer, "innerSwitch5")
+
+rule "Workbench minigame start":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingInnerMinigame
+
+    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.45, 8.89, -184.36), INNER_MINIGAME_2D_TO_3D(vect(0.67 + sin(eventPlayer.innerMinigameValue1) * 0.1, 0.16 + cos(eventPlayer.innerMinigameValue1) * 0.1, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.50, 8.89, -184.63), INNER_MINIGAME_2D_TO_3D(vect(0.95 + sin(eventPlayer.innerMinigameValue2) * 0.1, 0.16 + cos(eventPlayer.innerMinigameValue2) * 0.1, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+rule "Stop minigame controls":
+    @Event eachPlayer
+    @Condition not eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+
+    eventPlayer.isHoldingInnerMinigameControl1 = false
+    eventPlayer.isHoldingInnerMinigameControl2 = false
+
+    stopChasingVariable(eventPlayer.innerMinigameValue1)
+    stopChasingVariable(eventPlayer.innerMinigameValue2)
+
+rule "Workbench minigame stop":
+    @Event eachPlayer
+    @Condition distance(eventPlayer, eventPlayer.innerWorkbench[Item.POINT]) > 5
+
+    eventPlayer.isDoingInnerMinigame = false
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+
+
 
 # CONTROLS
 
@@ -1121,6 +1192,14 @@ rule "Interact":
         smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
     elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
         smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
+    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1":
+        if eventPlayer.isDoingInnerMinigame:
+            eventPlayer.isHoldingInnerMinigameControl1 = true
+            chase(eventPlayer.innerMinigameValue1, 9999, rate=PI/2, ChaseReeval.NONE)
+    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2":
+        if eventPlayer.isDoingInnerMinigame:
+            eventPlayer.isHoldingInnerMinigameControl2 = true
+            chase(eventPlayer.innerMinigameValue2, 9999, rate=PI/2, ChaseReeval.NONE)
 
 # Apply
 #!define CANT_APPLY_MESSAGE random.choice(["You can't use that thing with this thing", "You can't use that thing with this thing", "You can't use that thing with this thing", \
@@ -1147,6 +1226,8 @@ rule "Apply":
         eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "tutGate1")
         if eventPlayer.tValue[Item.STATE] == 0:
             if SHOULD_APPLY_ITEM(eventPlayer, tutGate1):
+                # weird ordering because changing a value right after using it in a message
+                # makes the message use the new value
                 INCREMENT_STATE(eventPlayer, "tutGate2")
                 eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "tutGate1")
                 eventPlayer.tValue[Item.STATE]++
@@ -1189,6 +1270,13 @@ rule "Apply":
             wait(2)
             popEffectDeleteQueue()
             eventPlayer.generatorOn = true
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerWorkbench):
+        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerWorkbench")
+        if SHOULD_APPLY_ITEM(eventPlayer, innerWorkbench) and eventPlayer.tValue[Item.STATE] == 0:
+            APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+            eventPlayer.isDoingInnerMinigame = true
         else:
             APPLY_ITEM_FAIL()
     else:
@@ -1433,7 +1521,7 @@ rule "Item visualization":
     @Event eachPlayer
 
     for eventPlayer.I in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.I][Item.ID], "barn"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.I][Item.ID], "inner"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.I][Item.POINT], eventPlayer.itemPoints[eventPlayer.I][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -1456,6 +1544,11 @@ rule "Display stats":
     hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "inv: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 5, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 0, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "mv1: {0}".format(eventPlayer.innerMinigameValue1), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "mv2: {0}".format(eventPlayer.innerMinigameValue2), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "is doing minigame: {0}".format(eventPlayer.isDoingInnerMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+
+    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 3, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 4, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
