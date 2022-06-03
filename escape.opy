@@ -153,104 +153,16 @@ playervar canAccessBarnSecret
 playervar itemPoints
 playervar itemIds
 
-# tutorial room
-playervar tutGate1 # interact
-playervar tutGate2 # interact
+# Item apply points
 
-playervar tutSafe1
-playervar tutSafe2
-playervar tutSafe3
-playervar tutSafe4
-playervar tutSafe5
-playervar tutGold
+playervar tutGate1
+playervar tutGate2
 
-# lights on section
-playervar innerFridge
-playervar innerChest1
-playervar innerLocker1
-playervar innerLocker2
-playervar innerLocker3
-playervar innerLocker4
-playervar innerLocker5
-playervar innerBarrel1
-playervar innerBarrel3
-playervar innerSwitch1
-playervar innerSwitch2
-playervar innerSwitch3
-playervar innerSwitch4
-playervar innerSwitch5
-playervar innerPowerBox
-
-playervar innerWires # interact
-playervar innerBarrel2 # interact
-playervar innerGenerator # interact
-
-# larger inner section
-playervar innerThrone
+playervar innerWires
+playervar innerBarrel2
+playervar innerGenerator
 playervar innerRadio
-playervar innerChest2
-playervar innerToolbox1
-playervar innerToolbox2
-playervar innerSmallToolbox1
-playervar innerTireRack
-playervar innerBrokenMech1
-playervar innerBrokenMech2
-playervar innerMech1
-playervar innerMech2
-
-playervar innerMinigameControl1
-playervar innerMinigameControl2
-playervar innerWorkbench # interact
-
-playervar innerSunHat
-
-# courtyard area
-
-# barn area
-playervar barnRadio
-playervar barnTvPanel
-playervar barnPachimari
-playervar barnBike
-playervar barnFuelMachine
-playervar barnFridge
-playervar barnTireRack
-playervar barnPlan
-
-playervar barnToolbox1
-playervar barnToolbox2
-playervar barnSmallToolbox1
-playervar barnSafe1
-playervar barnSafe2
-playervar barnSafe3
-playervar barnEmptyShelf
-
-playervar barnPaperClue1
-playervar barnPaperClue2
-
-playervar barnSwitch1
-playervar barnSwitch2
-playervar barnSwitch3
-playervar barnSwitch4
-playervar barnSwitch5
-playervar barnCodePanel
-
-# larger outside area
-playervar outsideJunkWorkbench
-playervar outsideSafe
-playervar outsideFridge1
-playervar outsideFridge2
-playervar outsideFridge3
-playervar outsideFridge4
-playervar outsideIceBox
-playervar outsideToolbox1
-playervar outsideToolbox2
-playervar outsideSmallToolbox
-playervar outsideChest1
-playervar outsideChest2
-playervar outsideChest3
-playervar outsideChest4
-playervar outsideChest5
-playervar outsideChest6
+playervar innerWorkbench
 
 
 
@@ -692,103 +604,6 @@ def playerInitialState():
     #     REQUIRED_ITEM,   # item required to use with this point based on state (string array, matches with ITEM_NAME)
     #     SUCCESS_MESSAGE  # message to play on successful item use based on state (string array)
 
-    # tutorial room
-    eventPlayer.tutSafe1 = ["tutSafe1", 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true]
-    eventPlayer.tutSafe2 = ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["This safe is rusted shut, despite having gold hinges"], null, true]
-    eventPlayer.tutSafe3 = ["tutSafe3", 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of gold and can't be opened"], null, true]
-    eventPlayer.tutSafe4 = ["tutSafe4", 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true]
-    eventPlayer.tutSafe5 = ["tutSafe5", 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], "Rusty key", true]
-    eventPlayer.tutGold = ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["A giant safe filled with gold, perfect for sleeping in"]]
-
-    # lights on section
-    eventPlayer.innerFridge = ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["The fridge is full of fish heads and half eaten Chinese food"], null, true]
-    eventPlayer.innerChest1 = ["innerChest1", 0, vect(-114.91, 7.07, -124.08), 1.2, ["Who kept an empty petrol can in here?"], "Empty petrol can", true]
-    eventPlayer.innerLocker1 = ["innerLocker1", 0, vect(-112.76, 7.55, -134.80), 1.2, ["locker 1"], null, true]
-    eventPlayer.innerLocker2 = ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["locker 2"], null, true]
-    eventPlayer.innerLocker3 = ["innerLocker3", 0, vect(-112.58, 7.55, -141.24), 1.2, ["locker 3"], null, true]
-    eventPlayer.innerLocker4 = ["innerLocker4", 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true]
-    eventPlayer.innerLocker5 = ["innerLocker5", 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true]
-
-    eventPlayer.innerBarrel1 = ["innerBarrel1", 0, vect(-113.43, 7.02, -116.14), 0.5, ["Barrel 1"], null, true]
-    eventPlayer.innerBarrel3 = ["innerBarrel3", 0, vect(-105.32, 12.79, -132.71), 0.5, ["Barrel 3"], null, true]
-
-    eventPlayer.innerSwitch1 = ["innerSwitch1", 0, vect(-111.46, 14.145, -137.47), 0.05, null]
-    eventPlayer.innerSwitch2 = ["innerSwitch2", 0, vect(-111.46, 14.071, -137.47), 0.05, null]
-    eventPlayer.innerSwitch3 = ["innerSwitch3", 0, vect(-111.46, 13.994, -137.47), 0.05, null]
-    eventPlayer.innerSwitch4 = ["innerSwitch4", 0, vect(-111.46, 13.914, -137.47), 0.05, null]
-    eventPlayer.innerSwitch5 = ["innerSwitch5", 0, vect(-111.46, 13.835, -137.47), 0.05, null]
-    eventPlayer.innerPowerBox = ["innerPowerBox", 0, vect(-111.73, 14.04, -137.34), 0.5, null]
-
-    # larger inner section
-    eventPlayer.innerThrone = ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]]
-
-    eventPlayer.innerChest2 = ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["A chest 2"], null, true]
-    eventPlayer.innerToolbox1 = ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["A toolbox 1"], null, true]
-    eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["A toolbox 2"], null, true]
-    eventPlayer.innerSmallToolbox1 = ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true]
-    eventPlayer.innerTireRack = ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]]
-
-    eventPlayer.innerBrokenMech1 = ["innerBrokenMech1", 0, vect(-88.35, 8.26, -142.03), 2, ["This mech seems to be missing a limb. You sympathize with it"]]
-    eventPlayer.innerBrokenMech2 = ["innerBrokenMech2", 0, vect(-75.42, 8.52, -146.11), 2, ["A broken mech 2"]]
-    eventPlayer.innerMech1 = ["innerMech1", 0, vect(-90.47, 10.09, -177.75), 2, ["A fully working mech 1"]]
-    eventPlayer.innerMech2 = ["innerMech2", 0, vect(-94.87, 10.11, -178.01), 2, ["A fully working mech 2"]]
-
-    eventPlayer.innerMinigameControl1 = ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null]
-    eventPlayer.innerMinigameControl2 = ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null]
-
-    eventPlayer.innerSunHat = ["innerSunHat", 0, vect(-88.04, 13.37, -158.22), 1, ["You find a tatted sun hat hidden in the corner"], "Tattered sun hat", true]
-
-    # courtyard area
-
-
-    # barn area
-    eventPlayer.barnRadio = ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]]
-    eventPlayer.barnTvPanel = ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.5, ["You don't need to change the TV channel right now"]]
-    eventPlayer.barnPachimari = ["barnPachimari", 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]]
-    eventPlayer.barnBike = ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, ["bike"]]
-    eventPlayer.barnFuelMachine = ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["fuel machine"], null, true]
-    eventPlayer.barnFridge = ["barnFridge", 0, vect(66.91, 10.37, -67.64), 1, ["fridge"], null, true]
-    eventPlayer.barnTireRack = ["barnTireRack", 0, vect(44.07, 10.12, -88.71), 1.5, ["This rack of hover pads is entirely unremarkable"], null, null, true]
-    eventPlayer.barnPlan = ["barnPlan", 0, vect(44.03, 11.11, -71.35), 1.5, ["Things didn't to according to plan"], null, null, true]
-
-    eventPlayer.barnToolbox1 = ["barnToolbox1", 0, vect(49.62, 10.55, -75.25), 0.75, ["toolbox 1"], null, true]
-    eventPlayer.barnToolbox2 = ["barnToolbox2", 0, vect(50.55, 9.42, -75.90), 0.75, ["toolbox 2"], null, true]
-    eventPlayer.barnSmallToolbox1 = ["barnSmallToolbox1", 0, vect(49.20, 10.27, -79.17), 0.5, ["small toolbox 1"], null, true]
-    eventPlayer.barnSafe1 = ["barnSafe1", 0, vect(60.60, 10.01, -65.34), 1, ["safe 1"], null, true, true]
-    eventPlayer.barnSafe2 = ["barnSafe2", 0, vect(60.52, 9.50, -63.60), 0.8, ["You pick up your little buddy and place him carefully in your bag"], "Little buddy", true]
-    eventPlayer.barnSafe3 = ["barnSafe3", 0, vect(56.13, 9.74, -62.70), 0.7, ["safe 3"], null, true, true]
-    eventPlayer.barnEmptyShelf = ["barnEmptyShelf", 0, vect(50.05, 10.56, -63.46), 2, ["Times have been rough lately"], null, true, true]
-
-    eventPlayer.barnPaperClue1 = ["barnPaperClue1", 0, vect(58.30, 9, -93.83), 0.3, null]
-    eventPlayer.barnPaperClue2 = ["barnPaperClue2", 0, vect(42.25, 16, -71.88), 0.3, null]
-
-    eventPlayer.barnSwitch1 = ["barnSwitch1", 0, vect(56.48, 10.655, -66.584), 0.05, null]
-    eventPlayer.barnSwitch2 = ["barnSwitch2", 0, vect(56.48, 10.581, -66.584), 0.05, null]
-    eventPlayer.barnSwitch3 = ["barnSwitch3", 0, vect(56.48, 10.504, -66.584), 0.05, null]
-    eventPlayer.barnSwitch4 = ["barnSwitch4", 0, vect(56.48, 10.424, -66.584), 0.05, null]
-    eventPlayer.barnSwitch5 = ["barnSwitch5", 0, vect(56.48, 10.345, -66.584), 0.05, null]
-    eventPlayer.barnCodePanel = ["barnCodePanel", 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]]
-
-    # larger outside area
-    eventPlayer.outsideJunkWorkbench = ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["outsideJunkWorkbench"]]
-    eventPlayer.outsideSafe = ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["outsideSafe"], null, true]
-    eventPlayer.outsideIceBox = ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["outsideIceBox"], null, true, true]
-    eventPlayer.outsideFridge1 = ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]]
-    eventPlayer.outsideFridge2 = ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["outsideFridge2"], null, true]
-    eventPlayer.outsideFridge3 = ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["outsideFridge3"], null, true, true]
-    eventPlayer.outsideFridge4 = ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["outsideFridge4"], null, true, true]
-    eventPlayer.outsideToolbox1 = ["outsideToolbox1", 0, vect(-6.67, 8.55, -77.17), 0.7, ["outsideToolbox1"], null, true]
-    eventPlayer.outsideToolbox2 = ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["outsideToolbox2"], null, true]
-    eventPlayer.outsideSmallToolbox = ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["outsideSmallToolbox"], null, true]
-    eventPlayer.outsideChest1 = ["outsideChest1", 0, vect(19.26, 8.73, -55.36), 1.2, ["outsideChest1"], null, true]
-    eventPlayer.outsideChest2 = ["outsideChest2", 0, vect(-7.98, 8.35, -47.93), 1.2, ["outsideChest2"], null, true]
-    eventPlayer.outsideChest3 = ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["outsideChest3"], null, true]
-    eventPlayer.outsideChest4 = ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["outsideChest4"], null, true]
-    eventPlayer.outsideChest5 = ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["outsideChest5"], null, true]
-    eventPlayer.outsideChest6 = ["outsideChest6", 0, vect(-50.56, 5.21, -4.09), 1.2, ["outsideChest6"], null, true]
-
-
-
     # Interaction points
     eventPlayer.tutGate1 = ["tutGate1", 0, vect(-100.32, 11.44, -90.75), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], ["How does a key open a laser gate? You aren't one to think about it too hard"]]
     eventPlayer.tutGate2 = ["tutGate2", 0, vect(-92.97, 11.44, -92.29), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], null]
@@ -800,116 +615,113 @@ def playerInitialState():
     eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
     eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
 
-
-
     eventPlayer.itemPoints = [
         # tutorial room
-        eventPlayer.tutSafe1,
-        eventPlayer.tutSafe2,
-        eventPlayer.tutSafe3,
-        eventPlayer.tutSafe4,
-        eventPlayer.tutSafe5,
-        eventPlayer.tutGold,
-        eventPlayer.tutGate1, # interact
-        eventPlayer.tutGate2, # interact
+        ["tutSafe1", 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
+        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["This safe is rusted shut, despite having gold hinges"], null, true],
+        ["tutSafe3", 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of gold and can't be opened"], null, true],
+        ["tutSafe4", 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true],
+        ["tutSafe5", 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], "Rusty key", true],
+        ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["A giant safe filled with gold, perfect for sleeping in"]],
 
         # lights on section
-        eventPlayer.innerFridge,
-        eventPlayer.innerChest1,
-        eventPlayer.innerLocker1,
-        eventPlayer.innerLocker2,
-        eventPlayer.innerLocker3,
-        eventPlayer.innerLocker4,
-        eventPlayer.innerLocker5,
+        ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["The fridge is full of fish heads and half eaten Chinese food"], null, true],
+        ["innerChest1", 0, vect(-114.91, 7.07, -124.08), 1.2, ["Who kept an empty petrol can in here?"], "Empty petrol can", true],
+        ["innerLocker1", 0, vect(-112.76, 7.55, -134.80), 1.2, ["locker 1"], null, true],
+        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["locker 2"], null, true],
+        ["innerLocker3", 0, vect(-112.58, 7.55, -141.24), 1.2, ["locker 3"], null, true],
+        ["innerLocker4", 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true],
+        ["innerLocker5", 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true],
 
-        eventPlayer.innerBarrel1,
-        eventPlayer.innerBarrel3,
+        ["innerBarrel1", 0, vect(-113.43, 7.02, -116.14), 0.5, ["Barrel 1"], null, true],
+        ["innerBarrel3", 0, vect(-105.32, 12.79, -132.71), 0.5, ["Barrel 3"], null, true],
 
-        eventPlayer.innerSwitch1,
-        eventPlayer.innerSwitch2,
-        eventPlayer.innerSwitch3,
-        eventPlayer.innerSwitch4,
-        eventPlayer.innerSwitch5,
-        eventPlayer.innerPowerBox,
-
-        eventPlayer.innerWires, # interact
-        eventPlayer.innerBarrel2, # interact
-        eventPlayer.innerGenerator, # interact
+        ["innerSwitch1", 0, vect(-111.46, 14.145, -137.47), 0.05, null],
+        ["innerSwitch2", 0, vect(-111.46, 14.071, -137.47), 0.05, null],
+        ["innerSwitch3", 0, vect(-111.46, 13.994, -137.47), 0.05, null],
+        ["innerSwitch4", 0, vect(-111.46, 13.914, -137.47), 0.05, null],
+        ["innerSwitch5", 0, vect(-111.46, 13.835, -137.47), 0.05, null],
+        ["innerPowerBox", 0, vect(-111.73, 14.04, -137.34), 0.5, null],
 
         # larger inner section
-        eventPlayer.innerThrone,
-        eventPlayer.innerRadio,
+        ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
-        eventPlayer.innerChest2,
-        eventPlayer.innerToolbox1,
-        eventPlayer.innerToolbox2,
-        eventPlayer.innerSmallToolbox1,
-        eventPlayer.innerTireRack,
+        ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["A chest 2"], null, true],
+        ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["A toolbox 1"], null, true],
+        ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["A toolbox 2"], null, true],
+        ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
+        ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
-        eventPlayer.innerBrokenMech1,
-        eventPlayer.innerBrokenMech2,
-        eventPlayer.innerMech1,
-        eventPlayer.innerMech2,
+        ["innerBrokenMech1", 0, vect(-88.35, 8.26, -142.03), 2, ["This mech seems to be missing a limb. You sympathize with it"]],
+        ["innerBrokenMech2", 0, vect(-75.42, 8.52, -146.11), 2, ["A broken mech 2"]],
+        ["innerMech1", 0, vect(-90.47, 10.09, -177.75), 2, ["A fully working mech 1"]],
+        ["innerMech2", 0, vect(-94.87, 10.11, -178.01), 2, ["A fully working mech 2"]],
 
-        eventPlayer.innerMinigameControl1,
-        eventPlayer.innerMinigameControl2,
-        eventPlayer.innerWorkbench,
+        ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null],
+        ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null],
 
-        eventPlayer.innerSunHat,
+        ["innerSunHat", 0, vect(-88.04, 13.37, -158.22), 1, ["You find a tatted sun hat hidden in the corner"], "Tattered sun hat", true],
 
         # courtyard area
 
 
         # barn area
-        eventPlayer.barnRadio,
-        eventPlayer.barnTvPanel,
-        eventPlayer.barnPachimari,
-        eventPlayer.barnBike,
-        eventPlayer.barnFuelMachine,
-        eventPlayer.barnFridge,
-        eventPlayer.barnTireRack,
-        eventPlayer.barnPlan,
+        ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
+        ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.5, ["You don't need to change the TV channel right now"]],
+        ["barnPachimari", 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]],
+        ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, ["bike"]],
+        ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["fuel machine"], null, true],
+        ["barnFridge", 0, vect(66.91, 10.37, -67.64), 1, ["fridge"], null, true],
+        ["barnTireRack", 0, vect(44.07, 10.12, -88.71), 1.5, ["This rack of hover pads is entirely unremarkable"], null, null, true],
+        ["barnPlan", 0, vect(44.03, 11.11, -71.35), 1.5, ["Things didn't to according to plan"], null, null, true],
 
-        eventPlayer.barnToolbox1,
-        eventPlayer.barnToolbox2,
-        eventPlayer.barnSmallToolbox1,
-        eventPlayer.barnSafe1,
-        eventPlayer.barnSafe2,
-        eventPlayer.barnSafe3,
-        eventPlayer.barnEmptyShelf,
+        ["barnToolbox1", 0, vect(49.62, 10.55, -75.25), 0.75, ["toolbox 1"], null, true],
+        ["barnToolbox2", 0, vect(50.55, 9.42, -75.90), 0.75, ["toolbox 2"], null, true],
+        ["barnSmallToolbox1", 0, vect(49.20, 10.27, -79.17), 0.5, ["small toolbox 1"], null, true],
+        ["barnSafe1", 0, vect(60.60, 10.01, -65.34), 1, ["safe 1"], null, true, true],
+        ["barnSafe2", 0, vect(60.52, 9.50, -63.60), 0.8, ["You pick up your little buddy and place him carefully in your bag"], "Little buddy", true],
+        ["barnSafe3", 0, vect(56.13, 9.74, -62.70), 0.7, ["safe 3"], null, true, true],
+        ["barnEmptyShelf", 0, vect(50.05, 10.56, -63.46), 2, ["Times have been rough lately"], null, true, true],
 
-        eventPlayer.barnPaperClue1,
-        eventPlayer.barnPaperClue2,
+        ["barnPaperClue1", 0, vect(58.30, 9, -93.83), 0.3, null],
+        ["barnPaperClue2", 0, vect(42.25, 16, -71.88), 0.3, null],
 
-        eventPlayer.barnSwitch1,
-        eventPlayer.barnSwitch2,
-        eventPlayer.barnSwitch3,
-        eventPlayer.barnSwitch4,
-        eventPlayer.barnSwitch5,
-        eventPlayer.barnCodePanel,
+        ["barnSwitch1", 0, vect(56.48, 10.655, -66.584), 0.05, null],
+        ["barnSwitch2", 0, vect(56.48, 10.581, -66.584), 0.05, null],
+        ["barnSwitch3", 0, vect(56.48, 10.504, -66.584), 0.05, null],
+        ["barnSwitch4", 0, vect(56.48, 10.424, -66.584), 0.05, null],
+        ["barnSwitch5", 0, vect(56.48, 10.345, -66.584), 0.05, null],
+        ["barnCodePanel", 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]],
 
         # larger outside area
-        eventPlayer.outsideJunkWorkbench,
-        eventPlayer.outsideSafe,
-        eventPlayer.outsideFridge1,
-        eventPlayer.outsideFridge2,
-        eventPlayer.outsideFridge3,
-        eventPlayer.outsideFridge4,
-        eventPlayer.outsideIceBox,
-        eventPlayer.outsideToolbox1,
-        eventPlayer.outsideToolbox2,
-        eventPlayer.outsideSmallToolbox,
-        eventPlayer.outsideChest1,
-        eventPlayer.outsideChest2,
-        eventPlayer.outsideChest3,
-        eventPlayer.outsideChest4,
-        eventPlayer.outsideChest5,
-        eventPlayer.outsideChest6,
+        ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["outsideJunkWorkbench"]],
+        ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["outsideSafe"], null, true],
+        ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["outsideIceBox"], null, true, true],
+        ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]],
+        ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["outsideFridge2"], null, true],
+        ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["outsideFridge3"], null, true, true],
+        ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["outsideFridge4"], null, true, true],
+        ["outsideToolbox1", 0, vect(-6.67, 8.55, -77.17), 0.7, ["outsideToolbox1"], null, true],
+        ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["outsideToolbox2"], null, true],
+        ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["outsideSmallToolbox"], null, true],
+        ["outsideChest1", 0, vect(19.26, 8.73, -55.36), 1.2, ["outsideChest1"], null, true],
+        ["outsideChest2", 0, vect(-7.98, 8.35, -47.93), 1.2, ["outsideChest2"], null, true],
+        ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["outsideChest3"], null, true],
+        ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["outsideChest4"], null, true],
+        ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["outsideChest5"], null, true],
+        ["outsideChest6", 0, vect(-50.56, 5.21, -4.09), 1.2, ["outsideChest6"], null, true],
+
+        eventPlayer.tutGate1,
+        eventPlayer.tutGate2,
+
+        eventPlayer.innerWires,
+        eventPlayer.innerBarrel2,
+        eventPlayer.innerGenerator,
+        eventPlayer.innerRadio,
+        eventPlayer.innerWorkbench,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
-
-
 
     # Other state setup
     introStage1Players.remove(eventPlayer)
