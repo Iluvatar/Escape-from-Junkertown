@@ -208,6 +208,7 @@ playervar innerSunHat
 
 # barn area
 playervar barnRadio
+playervar barnTvPanel
 playervar barnPachimari
 playervar barnBike
 playervar barnFuelMachine
@@ -249,6 +250,7 @@ playervar outsideChest2
 playervar outsideChest3
 playervar outsideChest4
 playervar outsideChest5
+playervar outsideChest6
 
 
 
@@ -734,13 +736,14 @@ def playerInitialState():
     eventPlayer.innerMinigameControl1 = ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null]
     eventPlayer.innerMinigameControl2 = ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null]
 
-    eventPlayer.innerSunHat = ["innerSunHat", 0, vect(-88.04, 13.37, -158.22), 0.5, "Tattered sun hat", true]
+    eventPlayer.innerSunHat = ["innerSunHat", 0, vect(-88.04, 13.37, -158.22), 1, ["You find a tatted sun hat hidden in the corner"], "Tattered sun hat", true]
 
     # courtyard area
 
 
     # barn area
     eventPlayer.barnRadio = ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]]
+    eventPlayer.barnTvPanel = ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.5, ["You don't need to change the TV channel right now"]]
     eventPlayer.barnPachimari = ["barnPachimari", 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]]
     eventPlayer.barnBike = ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, ["bike"]]
     eventPlayer.barnFuelMachine = ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["fuel machine"], null, true]
@@ -764,12 +767,13 @@ def playerInitialState():
     eventPlayer.barnSwitch3 = ["barnSwitch3", 0, vect(56.48, 10.504, -66.584), 0.05, null]
     eventPlayer.barnSwitch4 = ["barnSwitch4", 0, vect(56.48, 10.424, -66.584), 0.05, null]
     eventPlayer.barnSwitch5 = ["barnSwitch5", 0, vect(56.48, 10.345, -66.584), 0.05, null]
+    eventPlayer.barnCodePanel = ["barnCodePanel", 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]]
 
     # larger outside area
     eventPlayer.outsideJunkWorkbench = ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["outsideJunkWorkbench"]]
     eventPlayer.outsideSafe = ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["outsideSafe"], null, true]
     eventPlayer.outsideIceBox = ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["outsideIceBox"], null, true, true]
-    eventPlayer.outsideFridge1 = ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["outsideFridge1"], null, true]
+    eventPlayer.outsideFridge1 = ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]]
     eventPlayer.outsideFridge2 = ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["outsideFridge2"], null, true]
     eventPlayer.outsideFridge3 = ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["outsideFridge3"], null, true, true]
     eventPlayer.outsideFridge4 = ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["outsideFridge4"], null, true, true]
@@ -781,6 +785,7 @@ def playerInitialState():
     eventPlayer.outsideChest3 = ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["outsideChest3"], null, true]
     eventPlayer.outsideChest4 = ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["outsideChest4"], null, true]
     eventPlayer.outsideChest5 = ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["outsideChest5"], null, true]
+    eventPlayer.outsideChest6 = ["outsideChest6", 0, vect(-50.56, 5.21, -4.09), 1.2, ["outsideChest6"], null, true]
 
 
 
@@ -850,11 +855,14 @@ def playerInitialState():
         eventPlayer.innerMinigameControl2,
         eventPlayer.innerWorkbench,
 
+        eventPlayer.innerSunHat,
+
         # courtyard area
 
 
         # barn area
         eventPlayer.barnRadio,
+        eventPlayer.barnTvPanel,
         eventPlayer.barnPachimari,
         eventPlayer.barnBike,
         eventPlayer.barnFuelMachine,
@@ -878,6 +886,7 @@ def playerInitialState():
         eventPlayer.barnSwitch3,
         eventPlayer.barnSwitch4,
         eventPlayer.barnSwitch5,
+        eventPlayer.barnCodePanel,
 
         # larger outside area
         eventPlayer.outsideJunkWorkbench,
@@ -895,6 +904,7 @@ def playerInitialState():
         eventPlayer.outsideChest3,
         eventPlayer.outsideChest4,
         eventPlayer.outsideChest5,
+        eventPlayer.outsideChest6,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -923,6 +933,8 @@ def playerInitialState():
 
     innerMinigamePlayers.remove(eventPlayer)
     radioSmokePlayers.remove(eventPlayer)
+
+    mapMarkerPlayers.remove(eventPlayer)
 
     barnHintPlayers.remove(eventPlayer)
     barnHintPlayers.append(eventPlayer)
@@ -1253,6 +1265,28 @@ rule "Interact":
         if eventPlayer.isDoingInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl2 = true
             chase(eventPlayer.innerMinigameValue2, 9999, rate=PI/2, ChaseReeval.NONE)
+    elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
+        eventPlayer.pauseInteraction = true
+        eventPlayer.setStatusEffect(null, Status.ROOTED, 9999)
+        eventPlayer.disableHeroHUD()
+        mapMarkerPlayers.append(eventPlayer)
+        eventPlayer.startCamera(vect(-81.29, 50.24, -143.14), vect(-81.29, 50.24, -143.14) + vect(-0.00682, -0.9994, -0.03402), 0)
+        wait(1)
+        mapMarkerPlayers.remove(eventPlayer)
+        wait(1)
+        mapMarkerPlayers.append(eventPlayer)
+        wait(1)
+        mapMarkerPlayers.remove(eventPlayer)
+        wait(1)
+        mapMarkerPlayers.append(eventPlayer)
+        wait(1)
+        eventPlayer.enableHeroHud()
+        mapMarkerPlayers.remove(eventPlayer)
+        eventPlayer.stopCamera()
+        eventPlayer.clearStatusEffect(Status.ROOTED)
+        eventPlayer.pauseInteraction = false
+
+
 
 # Apply
 #!define CANT_APPLY_MESSAGE random.choice(["You can't use that thing with this thing", "You can't use that thing with this thing", "You can't use that thing with this thing", \
@@ -1588,9 +1622,9 @@ rule "Point helper":
 rule "Item visualization":
     @Event eachPlayer
 
-    for eventPlayer.I in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.I][Item.ID], "inner"):
-            createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.I][Item.POINT], eventPlayer.itemPoints[eventPlayer.I][Item.RADIUS], EffectReeval.VISIBILITY)
+    for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "barn"):
+            createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
     @Event eachPlayer
@@ -1608,15 +1642,15 @@ rule "Display stats":
     @Event eachPlayer
 
     hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 5, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    hudHeader(eventPlayer, "mv1: {0}".format(eventPlayer.innerMinigameValue1), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "mv2: {0}".format(eventPlayer.innerMinigameValue2), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingInnerMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedInnerMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.innerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "mv1: {0}".format(eventPlayer.innerMinigameValue1), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "mv2: {0}".format(eventPlayer.innerMinigameValue2), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingInnerMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedInnerMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.innerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
