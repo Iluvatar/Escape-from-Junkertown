@@ -338,6 +338,11 @@ rule "Global setup":
     createInWorldText(introStage2Players, "Escape", vect(-35.24, 13.01, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
+    # equipped hud text
+    hudHeader(getAllPlayers(), "{0} Dial".format(abilityIconString(Hero.TORBJORN, Button.ABILITY_2)), HudPosition.LEFT, 200, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(getAllPlayers(), "{0} Headphones".format(abilityIconString(Hero.LUCIO, Button.ULTIMATE)), HudPosition.LEFT, 201, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(getAllPlayers(), "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 202, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
 
@@ -662,6 +667,17 @@ def playerInitialState():
 
         ["innerSunHat", 0, vect(-88.04, 13.37, -158.22), 1, ["You find a tatted sun hat hidden in the corner"], "Tattered sun hat", true],
 
+        ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, ["valve 1"]],
+        ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, ["valve 2"]],
+        ["innerValve3", 0, vect(-53.58, 9.91, -122.34), 0.5, ["valve 3"]],
+
+        ["innerVent1", 0, vect(-108.61, 10.46, -108.17), 1, ["vent 1"]],
+        ["innerVent2", 0, vect(-84.87, 11.34, -186.75), 1, ["vent 2"]],
+        ["innerVent3", 0, vect(-54.90, 10.74, -125.39), 1, ["vent 3"]],
+        ["innerVent4", 0, vect(-75.87, 14.17, -123.53), 2, ["vent 4"]],
+        ["innerVent5", 0, vect(-69.87, 15.81, -107.26), 1, ["vent 5"]],
+
+
         # courtyard area
 
 
@@ -904,7 +920,7 @@ def doInnerRadioConversation():
 rule "Switch between heroes":
     @Event eachPlayer
     @Condition eventPlayer.canBeTheOtherGuy
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction
 
     if eventPlayer.isJunk:
         eventPlayer.isJunk = false
@@ -932,7 +948,7 @@ rule "Switch between heroes":
 
 rule "Scroll inventory forwards":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_2) and not eventPlayer.pauseInteraction
 
     if len(eventPlayer.inventory) > 1:
         eventPlayer.inventory.append(eventPlayer.inventory[0])
@@ -940,7 +956,7 @@ rule "Scroll inventory forwards":
 
 rule "Scroll inventory backwards":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
+    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and not eventPlayer.pauseInteraction
 
     if len(eventPlayer.inventory) > 1:
         eventPlayer.inventory = eventPlayer.inventory.last().concat(eventPlayer.inventory.slice(0, len(eventPlayer.inventory) - 1))
@@ -955,7 +971,7 @@ def playNoItem():
 
 #!define NOTHING_LEFT_MESSAGE "There's nothing left in there"
 
-#!define SHOULD_INTERACT(eventPlayer, item) (distance(eventPlayer, item[Item.POINT]) < INTERACT_DISTANCE and \
+#!define SHOULD_INTERACT(eventPlayer, item) (distance(eventPlayer.getEyePosition(), item[Item.POINT]) < INTERACT_DISTANCE and \
 distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * distance(eventPlayer.getEyePosition(), item[Item.POINT])) < (item[Item.RADIUS]) and \
 (not item[Item.NEEDS_LOS] or isInLoS(item[Item.POINT], eventPlayer.getEyePosition(), BarrierLos.PASS_THROUGH_BARRIERS)))
 
@@ -1097,6 +1113,8 @@ rule "Interact":
         eventPlayer.stopCamera()
         eventPlayer.clearStatusEffect(Status.ROOTED)
         eventPlayer.pauseInteraction = false
+    elif eventPlayer.tValue[Item.ID] == "innerSunHat":
+        eventPlayer.canGoOutside = true
 
 
 
@@ -1191,6 +1209,7 @@ rule "Apply":
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
             doInnerRadioConversation()
             INCREMENT_STATE(eventPlayer, "innerRadio")
+            eventPlayer.inventory.remove("Reverse polarity fiddly part")
         else:
             APPLY_ITEM_FAIL()
     else:
@@ -1292,7 +1311,7 @@ rule "Create sparks for generator wires":
 
 # Sunlight barrier
 
-#!define SCRAPYARD_OUTSIDE_MESSAGE "The sun is too bright for your sensitive skin"
+#!define SCRAPYARD_OUTSIDE_MESSAGE "The sun is too bright for your sensitive complexion"
 
 rule "Create sunlight barriers":
     @Event eachPlayer
@@ -1435,7 +1454,7 @@ rule "Item visualization":
     @Event eachPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "barn"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "inner"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
