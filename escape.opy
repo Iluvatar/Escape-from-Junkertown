@@ -96,6 +96,15 @@ globalvar radioSmokePlayers = []
 globalvar mapMarkerPlayers = []
 globalvar barnHintPlayers = []
 
+# equippables
+enum Equip:
+    HAS_ANY = 0,
+    LITTLE_BUDDY,
+    SUNSCREEN,
+    SUNGLASES
+
+globalvar equipPlayers = [[], [], [], []]
+
 
 
 # PLAYER VARIABLES
@@ -123,6 +132,9 @@ playervar isHog
 playervar junkInventory
 playervar hogInventory
 playervar inventory
+playervar junkEquipped
+playervar hogEquipped
+playervar equipped
 playervar inSunlight
 
 # Game state
@@ -339,9 +351,10 @@ rule "Global setup":
     createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # equipped hud text
-    hudHeader(getAllPlayers(), "{0} Dial".format(abilityIconString(Hero.TORBJORN, Button.ABILITY_2)), HudPosition.LEFT, 200, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(getAllPlayers(), "{0} Headphones".format(abilityIconString(Hero.LUCIO, Button.ULTIMATE)), HudPosition.LEFT, 201, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(getAllPlayers(), "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 202, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.HAS_ANY], "Equipped", HudPosition.LEFT, 9, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 10, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.ABILITY_2)), HudPosition.LEFT, 11, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.SUNGLASES], "{0} Sunglasses".format(abilityIconString(Hero.WINSTON, Button.ULTIMATE)), HudPosition.LEFT, 12, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
@@ -543,6 +556,21 @@ def innerMinigameInitialState():
     eventPlayer.innerMinigameValue1 = 0
     eventPlayer.innerMinigameValue2 = 0
 
+def manageEquips():
+    equipPlayers[Equip.HAS_ANY].remove(eventPlayer)
+    equipPlayers[Equip.LITTLE_BUDDY].remove(eventPlayer)
+    equipPlayers[Equip.SUNSCREEN].remove(eventPlayer)
+    equipPlayers[Equip.SUNGLASES].remove(eventPlayer)
+
+    if len(eventPlayer.equipped) > 0:
+        equipPlayers[Equip.HAS_ANY].append(eventPlayer)
+    if "Little buddy" in eventPlayer.equipped:
+        equipPlayers[Equip.LITTLE_BUDDY].append(eventPlayer)
+    if "Sunscreen" in eventPlayer.equipped:
+        equipPlayers[Equip.SUNSCREEN].append(eventPlayer)
+    if "Sunglasses" in eventPlayer.equipped:
+        equipPlayers[Equip.SUNGLASES].append(eventPlayer)
+
 def playerInitialState():
     # Player state
     eventPlayer.pauseInteraction = false
@@ -559,6 +587,10 @@ def playerInitialState():
     eventPlayer.junkInventory = []
     eventPlayer.hogInventory = []
     eventPlayer.inventory = []
+
+    eventPlayer.junkEquipped = []
+    eventPlayer.hogEquipped = []
+    eventPlayer.equipped = []
 
     eventPlayer.inSunlight = false
 
@@ -665,7 +697,7 @@ def playerInitialState():
         ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null],
         ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null],
 
-        ["innerSunHat", 0, vect(-88.04, 13.37, -158.22), 1, ["You find a tatted sun hat hidden in the corner"], "Tattered sun hat", true],
+        ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tatted sunglasses hidden in the corner"], null, true],
 
         ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, ["valve 1"]],
         ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, ["valve 2"]],
@@ -695,7 +727,7 @@ def playerInitialState():
         ["barnToolbox2", 0, vect(50.55, 9.42, -75.90), 0.75, ["toolbox 2"], null, true],
         ["barnSmallToolbox1", 0, vect(49.20, 10.27, -79.17), 0.5, ["small toolbox 1"], null, true],
         ["barnSafe1", 0, vect(60.60, 10.01, -65.34), 1, ["safe 1"], null, true, true],
-        ["barnSafe2", 0, vect(60.52, 9.50, -63.60), 0.8, ["You pick up your little buddy and place him carefully in your bag"], "Little buddy", true],
+        ["barnSafe2", 0, vect(60.52, 9.50, -63.60), 0.8, ["You pick up your little buddy and place him carefully in your bag"], null, true],
         ["barnSafe3", 0, vect(56.13, 9.74, -62.70), 0.7, ["safe 3"], null, true, true],
         ["barnEmptyShelf", 0, vect(50.05, 10.56, -63.46), 2, ["Times have been rough lately"], null, true, true],
 
@@ -742,6 +774,8 @@ def playerInitialState():
     # Other state setup
     introStage1Players.remove(eventPlayer)
     introStage2Players.remove(eventPlayer)
+
+    manageEquips()
 
     playersInDark.remove(eventPlayer)
     playersInDark.append(eventPlayer)
@@ -927,6 +961,8 @@ rule "Switch between heroes":
         wait(RACE_CONDITION_DELAY)
         eventPlayer.junkInventory = eventPlayer.inventory
         eventPlayer.inventory = eventPlayer.hogInventory
+        eventPlayer.junkEquipped = eventPlayer.equipped
+        eventPlayer.equipped = eventPlayer.hogEquipped
         eventPlayer.startForcingHero(Hero.ROADHOG)
         eventPlayer.teleport(eventPlayer.hogPos)
         eventPlayer.setFacing(eventPlayer.hogFacing, Relativity.TO_WORLD)
@@ -937,11 +973,15 @@ rule "Switch between heroes":
         wait(RACE_CONDITION_DELAY)
         eventPlayer.hogInventory = eventPlayer.inventory
         eventPlayer.inventory = eventPlayer.junkInventory
+        eventPlayer.hogEquipped = eventPlayer.equipped
+        eventPlayer.equipped = eventPlayer.junkEquipped
         eventPlayer.startForcingHero(Hero.JUNKRAT)
         eventPlayer.teleport(eventPlayer.junkPos)
         eventPlayer.setFacing(eventPlayer.junkFacing, Relativity.TO_WORLD)
         eventPlayer.isJunk = true
         eventPlayer.preloadHero(Hero.JUNKRAT)
+
+    manageEquips()
 
     smallMessage(eventPlayer, "You are now the other guy")
 
@@ -1080,6 +1120,9 @@ rule "Interact":
         else:
             smallMessage(eventPlayer, "The pretty green lights make you giddy")
     elif eventPlayer.tValue[Item.ID] == "barnSafe2":
+        if "Little buddy" not in eventPlayer.equipped:
+            eventPlayer.equipped.append("Little buddy")
+            manageEquips()
         eventPlayer.canLeaveBarn = true
     elif eventPlayer.tValue[Item.ID] == "barnPaperClue1":
         smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
@@ -1113,7 +1156,10 @@ rule "Interact":
         eventPlayer.stopCamera()
         eventPlayer.clearStatusEffect(Status.ROOTED)
         eventPlayer.pauseInteraction = false
-    elif eventPlayer.tValue[Item.ID] == "innerSunHat":
+    elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
+        if "Sunglasses" not in eventPlayer.equipped:
+            eventPlayer.equipped.append("Sunglasses")
+            manageEquips()
         eventPlayer.canGoOutside = true
 
 
@@ -1475,7 +1521,7 @@ rule "Display stats":
     hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 5, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     # hudHeader(eventPlayer, "mv1: {0}".format(eventPlayer.innerMinigameValue1), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0}".format(eventPlayer.innerMinigameValue2), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
