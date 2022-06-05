@@ -160,6 +160,9 @@ playervar barnCodeInputted
 playervar canLeaveBarn
 playervar canAccessBarnSecret
 
+# achievements
+playervar postersFound
+
 # Item points
 
 playervar itemPoints
@@ -624,6 +627,8 @@ def playerInitialState():
     eventPlayer.canAccessBarnSecret = false
     eventPlayer.canLeaveBarn = false
 
+    eventPlayer.postersFound = []
+
     # Item points
 
     # enum Item:
@@ -718,18 +723,19 @@ def playerInitialState():
         ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["toolbox 3"], null, true],
         ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["cart"]],
 
-        ["outerPoster1", 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"]],
-        ["outerPoster2", 0, vect(-48.70, 8.39, -95.52), 0.8, ["poster2"]],
-        ["outerPoster3", 0, vect(-45.22, 8.42, -112.92), 0.5, ["poster3"]],
-        ["outerPoster4", 0, vect(-42.93, 8.67, -116.01), 0.5, ["poster4"]],
-        ["outerPoster5", 0, vect(-26.17, 14.43, -112.75), 0.5, ["poster5"]],
-        ["outerPoster6", 0, vect(-20.13, 8.15, -95.48), 0.7, ["poster6"]],
-        ["outerPoster7", 0, vect(-32.28, 7.78, -94.74), 0.5, ["poster7"]],
-        ["outerPoster8", 0, vect(-44.65, 6.38, -76.55), 0.7, ["poster8"]],
-        ["outerPoster9", 0, vect(-35.80, 5.70, -70.76), 1, ["poster9"]],
-        ["outerPoster10", 0, vect(-44.66, 6.73, -60.23), 1.1, ["poster10"]],
-        ["outerPoster11", 0, vect(-33.01, 5.96, -63.99), 0.7, ["poster11"]],
-        ["outerPoster12", 0, vect(-54.26, 5.98, -47.88), 0.7, ["poster12"]],
+        ["outerPoster1", 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"], null, null, true],
+        ["outerPoster2", 0, vect(-60.39, 14.28, -88.06), 0.5, ["poster2"], null, null, true],
+        ["outerPoster3", 0, vect(-48.70, 8.39, -95.52), 0.8, ["poster3"], null, null, true],
+        ["outerPoster4", 0, vect(-45.22, 8.42, -112.92), 0.5, ["poster4"], null, null, true],
+        ["outerPoster5", 0, vect(-42.93, 8.67, -116.01), 0.5, ["poster5"], null, null, true],
+        ["outerPoster6", 0, vect(-26.17, 14.43, -112.75), 0.5, ["poster6"], null, null, true],
+        ["outerPoster7", 0, vect(-20.13, 8.15, -95.48), 0.7, ["poster7"], null, null, true],
+        ["outerPoster8", 0, vect(-32.28, 7.78, -94.74), 0.5, ["poster8"], null, null, true],
+        ["outerPoster9", 0, vect(-44.65, 6.38, -76.55), 0.7, ["poster9"], null, null, true],
+        ["outerPoster10", 0, vect(-35.80, 5.70, -70.76), 1, ["poster10"], null, null, true],
+        ["outerPoster11", 0, vect(-44.66, 6.73, -60.23), 1.1, ["poster11"], null, null, true],
+        ["outerPoster12", 0, vect(-33.01, 5.96, -63.99), 0.7, ["poster12"], null, null, true],
+        ["outerPoster13", 0, vect(-54.26, 5.98, -47.88), 0.7, ["poster13"], null, null, true],
 
         ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
 
@@ -780,8 +786,8 @@ def playerInitialState():
         ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["outsideChest5"], null, true],
         ["outsideChest6", 0, vect(-50.56, 5.21, -4.09), 1.2, ["outsideChest6"], null, true],
 
-        ["outsidePoster1", 0, vect(-30.90, 6.14, -60.22), 0.8, ["poster 1"]],
-        ["outsidePoster1", 0, vect(-23.46, 6.70, -66.49), 0.8, ["poster 1"]],
+        ["outsidePoster1", 0, vect(-30.90, 6.14, -60.22), 0.8, ["poster 1"], null, null, true],
+        ["outsidePoster2", 0, vect(-23.46, 6.70, -66.49), 0.8, ["poster 2"], null, null, true],
 
 
         eventPlayer.tutGate1,
@@ -899,6 +905,12 @@ rule "Update is in sunlight":
 
 
 # STATE CHANGES
+
+rule "Poster achievement":
+    @Event eachPlayer
+    @Condition len(eventPlayer.postersFound) == 15
+
+    bigMessage(eventPlayer, "Achievement get: public menace")
 
 rule "Lights on check":
     @Event eachPlayer
@@ -1059,52 +1071,81 @@ rule "Interact":
     if eventPlayer.tValue[Item.STATE] < len(eventPlayer.tValue[Item.MESSAGE]):
         eventPlayer.tText = eventPlayer.tValue[Item.MESSAGE][eventPlayer.tValue[Item.STATE]]
         smallMessage(eventPlayer, eventPlayer.tText)
+        if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
+            playGetItem()
+
         if eventPlayer.tValue[Item.ITEM_NAME]:
-            if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
-                playGetItem()
             eventPlayer.inventory = eventPlayer.tValue[Item.ITEM_NAME].concat(eventPlayer.inventory)
             eventPlayer.tValue[Item.STATE]++
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-        else:
-            if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
-                playNoItem()
     elif eventPlayer.tValue[Item.MESSAGE]:
         playNoItem()
         smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
 
     # special interactions
 
-    if eventPlayer.wiresConnected and eventPlayer.generatorOn and not eventPlayer.lightsOn:
-        if eventPlayer.tValue[Item.ID] == "innerSwitch1":
-            TOGGLE_POWER_SWITCH(eventPlayer, 4)
-            TOGGLE_POWER_SWITCH(eventPlayer, 0)
-            TOGGLE_POWER_SWITCH(eventPlayer, 1)
-            makeSwitchNoise()
-            checkPowerPanel()
-        elif eventPlayer.tValue[Item.ID] == "innerSwitch2":
-            TOGGLE_POWER_SWITCH(eventPlayer, 0)
-            TOGGLE_POWER_SWITCH(eventPlayer, 1)
-            TOGGLE_POWER_SWITCH(eventPlayer, 2)
-            makeSwitchNoise()
-            checkPowerPanel()
-        elif eventPlayer.tValue[Item.ID] == "innerSwitch3":
-            TOGGLE_POWER_SWITCH(eventPlayer, 1)
-            TOGGLE_POWER_SWITCH(eventPlayer, 2)
-            TOGGLE_POWER_SWITCH(eventPlayer, 3)
-            makeSwitchNoise()
-            checkPowerPanel()
-        elif eventPlayer.tValue[Item.ID] == "innerSwitch4":
-            TOGGLE_POWER_SWITCH(eventPlayer, 2)
-            TOGGLE_POWER_SWITCH(eventPlayer, 3)
-            TOGGLE_POWER_SWITCH(eventPlayer, 4)
-            makeSwitchNoise()
-            checkPowerPanel()
-        elif eventPlayer.tValue[Item.ID] == "innerSwitch5":
-            TOGGLE_POWER_SWITCH(eventPlayer, 3)
-            TOGGLE_POWER_SWITCH(eventPlayer, 4)
-            TOGGLE_POWER_SWITCH(eventPlayer, 0)
-            makeSwitchNoise()
-            checkPowerPanel()
+    if eventPlayer.isJunk:
+        if eventPlayer.wiresConnected and eventPlayer.generatorOn and not eventPlayer.lightsOn:
+            if eventPlayer.tValue[Item.ID] == "innerSwitch1":
+                TOGGLE_POWER_SWITCH(eventPlayer, 4)
+                TOGGLE_POWER_SWITCH(eventPlayer, 0)
+                TOGGLE_POWER_SWITCH(eventPlayer, 1)
+                makeSwitchNoise()
+                checkPowerPanel()
+            elif eventPlayer.tValue[Item.ID] == "innerSwitch2":
+                TOGGLE_POWER_SWITCH(eventPlayer, 0)
+                TOGGLE_POWER_SWITCH(eventPlayer, 1)
+                TOGGLE_POWER_SWITCH(eventPlayer, 2)
+                makeSwitchNoise()
+                checkPowerPanel()
+            elif eventPlayer.tValue[Item.ID] == "innerSwitch3":
+                TOGGLE_POWER_SWITCH(eventPlayer, 1)
+                TOGGLE_POWER_SWITCH(eventPlayer, 2)
+                TOGGLE_POWER_SWITCH(eventPlayer, 3)
+                makeSwitchNoise()
+                checkPowerPanel()
+            elif eventPlayer.tValue[Item.ID] == "innerSwitch4":
+                TOGGLE_POWER_SWITCH(eventPlayer, 2)
+                TOGGLE_POWER_SWITCH(eventPlayer, 3)
+                TOGGLE_POWER_SWITCH(eventPlayer, 4)
+                makeSwitchNoise()
+                checkPowerPanel()
+            elif eventPlayer.tValue[Item.ID] == "innerSwitch5":
+                TOGGLE_POWER_SWITCH(eventPlayer, 3)
+                TOGGLE_POWER_SWITCH(eventPlayer, 4)
+                TOGGLE_POWER_SWITCH(eventPlayer, 0)
+                makeSwitchNoise()
+                checkPowerPanel()
+
+        if eventPlayer.tValue[Item.ID] == "innerPowerBox":
+            if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
+                if eventPlayer.tValue[Item.STATE] == 0:
+                    smallMessage(eventPlayer, "This is the power switching box for the whole area")
+                    eventPlayer.tValue[Item.STATE]++
+                    eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+                elif eventPlayer.tValue[Item.STATE] == 1:
+                    smallMessage(eventPlayer, "Maybe if you get the generator running you can turn the lights on")
+                    eventPlayer.tValue[Item.STATE]++
+                    eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+                else:
+                    smallMessage(eventPlayer, "There's no power going to the box")
+            elif not eventPlayer.powerSwitched:
+                smallMessage(eventPlayer, "One of the panels is broken, just like everything else in this place")
+            else:
+                smallMessage(eventPlayer, "The pretty green lights make you giddy")
+        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and not eventPlayer.hasFinishedInnerMinigame:
+            if eventPlayer.isDoingInnerMinigame:
+                eventPlayer.isHoldingInnerMinigameControl1 = true
+                chase(eventPlayer.innerMinigameValue1, 9999, rate=PI/2, ChaseReeval.NONE)
+        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2" and not eventPlayer.hasFinishedInnerMinigame:
+            if eventPlayer.isDoingInnerMinigame:
+                eventPlayer.isHoldingInnerMinigameControl2 = true
+                chase(eventPlayer.innerMinigameValue2, 9999, rate=PI/2, ChaseReeval.NONE)
+        elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
+            if "Sunglasses" not in eventPlayer.equipped:
+                eventPlayer.equipped.append("Sunglasses")
+                manageEquips()
+            eventPlayer.canGoOutside = true
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1127,66 +1168,39 @@ rule "Interact":
             makeSwitchNoise()
             ENTER_BARN_DIGIT(5)
             checkBarnCode()
+        elif eventPlayer.tValue[Item.ID] == "barnPaperClue1":
+            smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
+        elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
+            smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
+        elif eventPlayer.tValue[Item.ID] == "barnSafe2":
+            if "Little buddy" not in eventPlayer.equipped:
+                eventPlayer.equipped.append("Little buddy")
+                manageEquips()
+            eventPlayer.canLeaveBarn = true
+        elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
+            eventPlayer.pauseInteraction = true
+            eventPlayer.setStatusEffect(null, Status.ROOTED, 9999)
+            eventPlayer.disableHeroHUD()
+            mapMarkerPlayers.append(eventPlayer)
+            eventPlayer.startCamera(vect(-81.29, 50.24, -143.14), vect(-81.29, 50.24, -143.14) + vect(-0.00682, -0.9994, -0.03402), 0)
+            wait(1)
+            mapMarkerPlayers.remove(eventPlayer)
+            wait(1)
+            mapMarkerPlayers.append(eventPlayer)
+            wait(1)
+            mapMarkerPlayers.remove(eventPlayer)
+            wait(1)
+            mapMarkerPlayers.append(eventPlayer)
+            wait(1)
+            eventPlayer.enableHeroHud()
+            mapMarkerPlayers.remove(eventPlayer)
+            eventPlayer.stopCamera()
+            eventPlayer.clearStatusEffect(Status.ROOTED)
+            eventPlayer.pauseInteraction = false
 
-    if eventPlayer.tValue[Item.ID] == "innerPowerBox":
-        if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
-            if eventPlayer.tValue[Item.STATE] == 0:
-                smallMessage(eventPlayer, "This is the power switching box for the whole area")
-                eventPlayer.tValue[Item.STATE]++
-                eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-            elif eventPlayer.tValue[Item.STATE] == 1:
-                smallMessage(eventPlayer, "Maybe if you get the generator running you can turn the lights on")
-                eventPlayer.tValue[Item.STATE]++
-                eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-            else:
-                smallMessage(eventPlayer, "There's no power going to the box")
-        elif not eventPlayer.powerSwitched:
-            smallMessage(eventPlayer, "One of the panels is broken, just like everything else in this place")
-        else:
-            smallMessage(eventPlayer, "The pretty green lights make you giddy")
-    elif eventPlayer.tValue[Item.ID] == "barnSafe2":
-        if "Little buddy" not in eventPlayer.equipped:
-            eventPlayer.equipped.append("Little buddy")
-            manageEquips()
-        eventPlayer.canLeaveBarn = true
-    elif eventPlayer.tValue[Item.ID] == "barnPaperClue1":
-        smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
-    elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
-        smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
-    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and not eventPlayer.hasFinishedInnerMinigame:
-        if eventPlayer.isDoingInnerMinigame:
-            eventPlayer.isHoldingInnerMinigameControl1 = true
-            chase(eventPlayer.innerMinigameValue1, 9999, rate=PI/2, ChaseReeval.NONE)
-    elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2" and not eventPlayer.hasFinishedInnerMinigame:
-        if eventPlayer.isDoingInnerMinigame:
-            eventPlayer.isHoldingInnerMinigameControl2 = true
-            chase(eventPlayer.innerMinigameValue2, 9999, rate=PI/2, ChaseReeval.NONE)
-    elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
-        eventPlayer.pauseInteraction = true
-        eventPlayer.setStatusEffect(null, Status.ROOTED, 9999)
-        eventPlayer.disableHeroHUD()
-        mapMarkerPlayers.append(eventPlayer)
-        eventPlayer.startCamera(vect(-81.29, 50.24, -143.14), vect(-81.29, 50.24, -143.14) + vect(-0.00682, -0.9994, -0.03402), 0)
-        wait(1)
-        mapMarkerPlayers.remove(eventPlayer)
-        wait(1)
-        mapMarkerPlayers.append(eventPlayer)
-        wait(1)
-        mapMarkerPlayers.remove(eventPlayer)
-        wait(1)
-        mapMarkerPlayers.append(eventPlayer)
-        wait(1)
-        eventPlayer.enableHeroHud()
-        mapMarkerPlayers.remove(eventPlayer)
-        eventPlayer.stopCamera()
-        eventPlayer.clearStatusEffect(Status.ROOTED)
-        eventPlayer.pauseInteraction = false
-    elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
-        if "Sunglasses" not in eventPlayer.equipped:
-            eventPlayer.equipped.append("Sunglasses")
-            manageEquips()
-        eventPlayer.canGoOutside = true
-
+    if strContains(eventPlayer.tValue[Item.ID], "Poster"):
+        if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
+            eventPlayer.postersFound.append(eventPlayer.tValue[Item.ID])
 
 
 # Apply
