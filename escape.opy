@@ -711,11 +711,32 @@ def playerInitialState():
 
 
         # courtyard area
+        ["outerIceBox", 0, vect(-50.77, 2.49, -126.77), 1, ["ice box"], null, true],
+        ["outerSmallToolbox1", 0, vect(-11.03, 8.29, -103.06), 0.5, ["small toolbox 1"], null, true],
+        ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["toolbox 1"], null, true],
+        ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["toolbox 2"], null, true],
+        ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["toolbox 3"], null, true],
+        ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["cart"]],
+
+        ["outerPoster1", 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"]],
+        ["outerPoster2", 0, vect(-48.70, 8.39, -95.52), 0.8, ["poster2"]],
+        ["outerPoster3", 0, vect(-45.22, 8.42, -112.92), 0.5, ["poster3"]],
+        ["outerPoster4", 0, vect(-42.93, 8.67, -116.01), 0.5, ["poster4"]],
+        ["outerPoster5", 0, vect(-26.17, 14.43, -112.75), 0.5, ["poster5"]],
+        ["outerPoster6", 0, vect(-20.13, 8.15, -95.48), 0.7, ["poster6"]],
+        ["outerPoster7", 0, vect(-32.28, 7.78, -94.74), 0.5, ["poster7"]],
+        ["outerPoster8", 0, vect(-44.65, 6.38, -76.55), 0.7, ["poster8"]],
+        ["outerPoster9", 0, vect(-35.80, 5.70, -70.76), 1, ["poster9"]],
+        ["outerPoster10", 0, vect(-44.66, 6.73, -60.23), 1.1, ["poster10"]],
+        ["outerPoster11", 0, vect(-33.01, 5.96, -63.99), 0.7, ["poster11"]],
+        ["outerPoster12", 0, vect(-54.26, 5.98, -47.88), 0.7, ["poster12"]],
+
+        ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
 
 
         # barn area
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
-        ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.5, ["You don't need to change the TV channel right now"]],
+        ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to change the TV channel right now"]],
         ["barnPachimari", 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]],
         ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, ["bike"]],
         ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["fuel machine"], null, true],
@@ -758,6 +779,10 @@ def playerInitialState():
         ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["outsideChest4"], null, true],
         ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["outsideChest5"], null, true],
         ["outsideChest6", 0, vect(-50.56, 5.21, -4.09), 1.2, ["outsideChest6"], null, true],
+
+        ["outsidePoster1", 0, vect(-30.90, 6.14, -60.22), 0.8, ["poster 1"]],
+        ["outsidePoster1", 0, vect(-23.46, 6.70, -66.49), 0.8, ["poster 1"]],
+
 
         eventPlayer.tutGate1,
         eventPlayer.tutGate2,
@@ -1500,7 +1525,7 @@ rule "Item visualization":
     @Event eachPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "inner"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer") or strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
