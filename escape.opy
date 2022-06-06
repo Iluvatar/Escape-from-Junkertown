@@ -555,6 +555,8 @@ def showIntro():
     eventPlayer.clearStatusEffect(Status.FROZEN)
     eventPlayer.setInvisibility(Invis.NONE)
 
+    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+
 def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
     eventPlayer.isHoldingInnerMinigameControl1 = false
@@ -850,7 +852,7 @@ rule "On player join":
     @Event playerJoined
     @Team 1
 
-    # async(showIntro, AsyncBehavior.NOOP)
+    async(showIntro, AsyncBehavior.NOOP)
 
     playerInitialState()
 
@@ -1607,10 +1609,9 @@ rule "Noclip off":
 rule "Display stats":
     @Event eachPlayer
 
-    hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     # hudHeader(eventPlayer, "mv1: {0}".format(eventPlayer.innerMinigameValue1), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0}".format(eventPlayer.innerMinigameValue2), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
@@ -1618,7 +1619,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedInnerMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.innerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 3, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 4, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 3, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 4, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
