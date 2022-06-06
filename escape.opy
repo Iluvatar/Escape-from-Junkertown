@@ -153,6 +153,9 @@ playervar hasFinishedInnerMinigame
 
 playervar canBeTheOtherGuy
 
+playervar numVentsClosed
+playervar hasSunglasses
+playervar hasSunscreen
 playervar canGoOutside
 
 playervar barnCode
@@ -178,6 +181,7 @@ playervar innerBarrel2
 playervar innerGenerator
 playervar innerRadio
 playervar innerWorkbench
+playervar innerToolbox2
 
 
 
@@ -326,9 +330,8 @@ rule "Move payload to the end":
 
 rule "Stop payload after first point":
     @Event global
-    @Condition teamScore(Team.2) == 1
+    @Condition getPayloadProgressPercentage() > 38.20
 
-    wait(15)
     destroyDummy(Team.2, 1)
 
 rule "Keep match time high to prevent time based voice lines":
@@ -609,6 +612,9 @@ def playerInitialState():
 
     eventPlayer.canBeTheOtherGuy = false
 
+    eventPlayer.numVentsClosed = 0
+    eventPlayer.hasSunglasses = false
+    eventPlayer.hasSunscreen = false
     eventPlayer.canGoOutside = false
 
     # generate random 5 digit code
@@ -654,8 +660,10 @@ def playerInitialState():
     eventPlayer.innerBarrel2 = ["innerBarrel2", 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
     eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator hums with a dim energy"], null, null, null, null, ["Filled petrol can"], ["You pour the petrol into the generator"]]
 
-    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
     eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
+    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
+
+    eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -689,8 +697,7 @@ def playerInitialState():
         ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
         ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["A chest 2"], null, true],
-        ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["A toolbox 1"], null, true],
-        ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["A toolbox 2"], null, true],
+        ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["There's a note: \"Threw the key in the vent. As long as the vents are running, no one should be able to grab it.\""], null, true],
         ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
@@ -702,17 +709,17 @@ def playerInitialState():
         ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null],
         ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null],
 
-        ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tatted sunglasses hidden in the corner"], null, true],
+        ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tatted sunglasses hidden in the corner", "You've already scoured this area"]],
 
-        ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, ["valve 1"]],
-        ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, ["valve 2"]],
-        ["innerValve3", 0, vect(-53.58, 9.91, -122.34), 0.5, ["valve 3"]],
+        ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, ["You twist the valve shut", "The valve is already closed"]],
+        ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, ["You twist the valve shut", "The valve is already closed"]],
+        ["innerValve3", 0, vect(-53.58, 9.91, -122.34), 0.5, ["You twist the valve shut", "The valve is already closed"]],
 
-        ["innerVent1", 0, vect(-108.61, 10.46, -108.17), 1, ["vent 1"]],
-        ["innerVent2", 0, vect(-84.87, 11.34, -186.75), 1, ["vent 2"]],
-        ["innerVent3", 0, vect(-54.90, 10.74, -125.39), 1, ["vent 3"]],
-        ["innerVent4", 0, vect(-75.87, 14.17, -123.53), 2, ["vent 4"]],
-        ["innerVent5", 0, vect(-69.87, 15.81, -107.26), 1, ["vent 5"]],
+        ["innerVent1", 0, vect(-108.61, 10.46, -108.17), 1, ["You don't see anything in here"]],
+        ["innerVent2", 0, vect(-84.87, 11.34, -186.75), 1, ["You don't see anything in here"]],
+        ["innerVent3", 0, vect(-54.90, 10.74, -125.39), 1, null],
+        ["innerVent4", 0, vect(-75.87, 14.17, -123.53), 2, ["You don't see anything in here"]],
+        ["innerVent5", 0, vect(-69.87, 15.81, -107.26), 1, ["You don't see anything in here"]],
 
 
         # courtyard area
@@ -798,6 +805,7 @@ def playerInitialState():
         eventPlayer.innerGenerator,
         eventPlayer.innerRadio,
         eventPlayer.innerWorkbench,
+        eventPlayer.innerToolbox2,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -984,6 +992,14 @@ def doInnerRadioConversation():
 
     eventPlayer.pauseInteraction = false
 
+# Can go outside
+rule "Can go outside check":
+    @Event eachPlayer
+    @Condition eventPlayer.hasSunglasses
+    @Condition eventPlayer.hasSunscreen
+
+    eventPlayer.canGoOutside = true
+
 
 
 # CONTROLS
@@ -1051,6 +1067,7 @@ def playNoItem():
 #!define SHOULD_INTERACT(eventPlayer, item) (distance(eventPlayer.getEyePosition(), item[Item.POINT]) < INTERACT_DISTANCE and \
 distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * distance(eventPlayer.getEyePosition(), item[Item.POINT])) < (item[Item.RADIUS]) and \
 (not item[Item.NEEDS_LOS] or isInLoS(item[Item.POINT], eventPlayer.getEyePosition(), BarrierLos.PASS_THROUGH_BARRIERS)))
+#!define GIVE_ITEM(eventPlayer, item) eventPlayer.inventory = item.concat(eventPlayer.inventory)
 
 rule "Interact":
     @Event eachPlayer
@@ -1071,13 +1088,16 @@ rule "Interact":
     if eventPlayer.tValue[Item.STATE] < len(eventPlayer.tValue[Item.MESSAGE]):
         eventPlayer.tText = eventPlayer.tValue[Item.MESSAGE][eventPlayer.tValue[Item.STATE]]
         smallMessage(eventPlayer, eventPlayer.tText)
-        if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
-            playGetItem()
 
         if eventPlayer.tValue[Item.ITEM_NAME]:
-            eventPlayer.inventory = eventPlayer.tValue[Item.ITEM_NAME].concat(eventPlayer.inventory)
+            if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
+                playGetItem()
+            GIVE_ITEM(eventPlayer, eventPlayer.tValue[Item.ITEM_NAME])
             eventPlayer.tValue[Item.STATE]++
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+        else:
+            if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
+                playNoItem()
     elif eventPlayer.tValue[Item.MESSAGE]:
         playNoItem()
         smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
@@ -1143,9 +1163,26 @@ rule "Interact":
                 chase(eventPlayer.innerMinigameValue2, 9999, rate=PI/2, ChaseReeval.NONE)
         elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
             if "Sunglasses" not in eventPlayer.equipped:
+                INCREMENT_STATE(eventPlayer, "innerSunglasses")
+                eventPlayer.hasSunglasses = true
                 eventPlayer.equipped.append("Sunglasses")
                 manageEquips()
-            eventPlayer.canGoOutside = true
+        elif eventPlayer.tValue[Item.STATE] == 0 and (eventPlayer.tValue[Item.ID] == "innerValve1" or eventPlayer.tValue[Item.ID] == "innerValve2" or eventPlayer.tValue[Item.ID] == "innerValve3"):
+            eventPlayer.tValue[Item.STATE]++
+            eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+            eventPlayer.numVentsClosed++
+            playEffect(eventPlayer, DynamicEffect.DOOMFIST_RISING_UPPERCUT_IMPACT_SOUND, null, eventPlayer.tValue[Item.POINT], 100)
+        elif eventPlayer.tValue[Item.ID] == "innerVent3":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                if eventPlayer.numVentsClosed == 3:
+                    eventPlayer.tValue[Item.STATE]++
+                    eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+                    smallMessage(eventPlayer, "You carefully reach your hand in and extract a dusty key")
+                    GIVE_ITEM(eventPlayer, "Vent key")
+                else:
+                    smallMessage(eventPlayer, "There's something in the back, but the blades are spinning too fast to grab it")
+            else:
+                smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1259,7 +1296,7 @@ rule "Apply":
             SAVE_STATE(eventPlayer, eventPlayer.tValue)
 
             del eventPlayer.inventory[0]
-            eventPlayer.inventory = "Filled petrol can".concat(eventPlayer.inventory)
+            GIVE_ITEM(eventPlayer, "Filled petrol can")
             createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
             pushEffectDeleteQueue()
             wait(2)
@@ -1295,6 +1332,19 @@ rule "Apply":
             doInnerRadioConversation()
             INCREMENT_STATE(eventPlayer, "innerRadio")
             eventPlayer.inventory.remove("Reverse polarity fiddly part")
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerToolbox2):
+        if SHOULD_APPLY_ITEM(eventPlayer, innerToolbox2):
+            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerToolbox2")
+            APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+
+            eventPlayer.hasSunscreen = true
+            eventPlayer.equipped.append("Sunscreen")
+            manageEquips()
+            del eventPlayer.inventory[0]
         else:
             APPLY_ITEM_FAIL()
     else:
