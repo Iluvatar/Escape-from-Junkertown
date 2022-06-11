@@ -105,6 +105,14 @@ enum Equip:
 
 globalvar equipPlayers = [[], [], [], []]
 
+# NPCs
+
+globalvar cartMercyNpc
+globalvar bruceNpc
+globalvar outsideTracerNpc
+globalvar insideTracerNpc
+globalvar zenNpc
+
 
 
 # PLAYER VARIABLES
@@ -137,6 +145,7 @@ playervar inventory
 playervar junkEquipped
 playervar hogEquipped
 playervar equipped
+playervar smugglerItem
 playervar inSunlight
 
 # Game state
@@ -184,7 +193,10 @@ playervar innerGenerator
 playervar innerRadio
 playervar innerWorkbench
 playervar innerToolbox2
+
 playervar outerBruce
+playervar outsideTracer
+playervar outerTracer
 
 
 
@@ -263,7 +275,8 @@ def popTextDeleteQueue():
     del eventPlayer.textDeleteQueue[0]
 
 # Creates in world text for the event player
-#!define CREATE_TEXT(eventPlayer, text, location) createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
+#!define CREATE_TEXT(eventPlayer, text, location) popTextDeleteQueue() \
+createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
 
 # Used to turn the whole screen black (doesn't actually fade)
@@ -346,16 +359,17 @@ rule "Move payload to the end":
     # wait for starting player to get through intro so the sound doesn't interfere
     wait(15)
 
-    createDummy(Hero.MERCY, Team.2, 1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
-    getPlayersOnHero(Hero.MERCY, Team.2).disablePlayerCollision()
-    getPlayersOnHero(Hero.MERCY, Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
-    getPlayersOnHero(Hero.MERCY, Team.2).setInvisibility(Invis.ENEMIES)
+    createDummy(Hero.MERCY, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    cartMercyNpc = getLastCreatedEntity()
+    cartMercyNpc.disablePlayerCollision()
+    cartMercyNpc.setStatusEffect(null, Status.INVINCIBLE, 9999)
+    cartMercyNpc.setInvisibility(Invis.ENEMIES)
 
 rule "Stop payload after first point":
     @Event global
     @Condition getPayloadProgressPercentage() > 38.20
 
-    destroyDummy(Team.2, 1)
+    destroyDummy(Team.2, cartMercyNpc.getSlot())
     # match time restarts every checkpoint for some reason
     pauseMatchTime()
 
@@ -366,13 +380,22 @@ rule "Keep match time high to prevent time based voice lines":
 
     setMatchTime(3600)
 
-rule "Spawn Bruce":
+rule "Spawn NPCs":
     @Event global
     @Condition isGameInProgress()
 
-    createDummy(Hero.TORBJORN, Team.2, 2, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
-    getPlayersOnHero(Hero.TORBJORN, Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
-    getPlayersInSlot(2, Team.2).startForcingName("Bruce")
+    createDummy(Hero.TORBJORN, Team.2, -1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
+    bruceNpc = getLastCreatedEntity()
+    bruceNpc.startForcingName("Bruce")
+
+    createDummy(Hero.TRACER, Team.2, -1, vect(-19.06, 13.48, -88.07), vect(0.23, 0, -0.97))
+    insideTracerNpc = getLastCreatedEntity()
+    insideTracerNpc.startForcingName("Smuggler")
+    createDummy(Hero.TRACER, Team.2, -1, vect(-44.52, 4.49, -49.63), vect(0.54, 0, 0.84))
+    outsideTracerNpc = getLastCreatedEntity()
+    outsideTracerNpc.startForcingName("Smuggler")
+
+    getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
 
 rule "Global setup":
     @Event global
@@ -633,6 +656,8 @@ def playerInitialState():
     eventPlayer.hogEquipped = []
     eventPlayer.equipped = []
 
+    eventPlayer.smugglerItem = null
+
     eventPlayer.inSunlight = false
 
     # Game state
@@ -700,7 +725,9 @@ def playerInitialState():
 
     eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
 
-    eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.53, -104.95), 1, null]
+    eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
+    eventPlayer.outerTracer = ["outerTracer", 0, vect(-19.06, 14.48, -88.07), 1, null]
+    eventPlayer.outsideTracer = ["outsideTracer", 0, vect(-44.52, 5.49, -49.63), 1, null]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -848,6 +875,8 @@ def playerInitialState():
         eventPlayer.innerWorkbench,
         eventPlayer.innerToolbox2,
         eventPlayer.outerBruce,
+        eventPlayer.outerTracer,
+        eventPlayer.outsideTracer,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -953,9 +982,10 @@ rule "Update is in sunlight":
     wait()
     goto RULE_START
 
-rule "Hide Bruce text":
+# requires that all ncps are at least 10m apart
+rule "Hide npc text":
     @Event eachPlayer
-    @Condition distance(eventPlayer, vect(-21.62, 7.73 + 0.5, -104.95)) > 5
+    @Condition distance(eventPlayer, vect(-21.62, 7.48, -104.95)) > 5 and distance(eventPlayer, vect(-19.06, 14.48, -88.07)) > 5 and distance(eventPlayer, vect(-44.52, 5.49, -49.63)) > 5
 
     popTextDeleteQueue()
 
@@ -1242,9 +1272,21 @@ rule "Interact":
                 smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
         elif eventPlayer.tValue[Item.ID] == "outerBruce":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT(eventPlayer, "You want me to help you? I don't even know who you are", vect(-21.62, 7.73 + 0.5, -104.95))
+                CREATE_TEXT(eventPlayer, "You want me to help you? I don't even know who you are", vect(-21.62, 7.48 + 0.6, -104.95))
             elif eventPlayer.tValue[Item.STATE] == 1:
-                CREATE_TEXT(eventPlayer, "Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nSex, drugs, and rock and roll", vect(-21.62, 7.73 + 0.5, -104.95))
+                CREATE_TEXT(eventPlayer, "Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nSex, drugs, and rock and roll", vect(-21.62, 7.48 + 0.6, -104.95))
+        elif eventPlayer.tValue[Item.ID] == "outerTracer":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                CREATE_TEXT(eventPlayer, "Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", vect(-19.06, 14.48 + 0.6, -88.07))
+            elif eventPlayer.tValue[Item.STATE] == 1:
+                if eventPlayer.smugglerItem:
+                    CREATE_TEXT(eventPlayer, "Looks like we have something for you!", vect(-19.06, 14.48 + 0.6, -88.07))
+                    eventPlayer.tText = eventPlayer.smugglerItem
+                    smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                    GIVE_ITEM(eventPlayer, eventPlayer.smugglerItem)
+                    eventPlayer.smugglerItem = null
+                else:
+                    CREATE_TEXT(eventPlayer, "Sorry, nothing for you", vect(-19.06, 14.48 + 0.6, -88.07))
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1296,10 +1338,23 @@ rule "Interact":
             eventPlayer.stopCamera()
             eventPlayer.clearStatusEffect(Status.ROOTED)
             eventPlayer.pauseInteraction = false
+        elif eventPlayer.tValue[Item.ID] == "outsideTracer":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                CREATE_TEXT(eventPlayer, "Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", vect(-44.52, 5.49 + 0.6, -49.63))
+            elif eventPlayer.tValue[Item.STATE] == 1:
+                if eventPlayer.smugglerItem:
+                    CREATE_TEXT(eventPlayer, "Looks like we have something for you!", vect(-44.52, 5.49 + 0.6, -49.63))
+                    eventPlayer.tText = eventPlayer.smugglerItem
+                    smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                    GIVE_ITEM(eventPlayer, eventPlayer.smugglerItem)
+                    eventPlayer.smugglerItem = null
+                else:
+                    CREATE_TEXT(eventPlayer, "Sorry, nothing for you", vect(-44.52, 5.49 + 0.6, -49.63))
 
     if strContains(eventPlayer.tValue[Item.ID], "Poster"):
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
             eventPlayer.postersFound.append(eventPlayer.tValue[Item.ID])
+
 
 
 # Apply
@@ -1412,9 +1467,36 @@ rule "Apply":
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerBruce):
         if eventPlayer.inventory[0] == "Thing 1":
-            pass
+            CREATE_TEXT(eventPlayer, "Ah, perfect", vect(-21.62, 7.48 + 0.6, -104.95))
+            INCREMENT_STATE(eventPlayer, "outerBruce")
         else:
-            smallMessage(eventPlayer, "Bruce doesn't need that")
+            CREATE_TEXT(eventPlayer, "What is this? I don't need it.", vect(-21.62, 7.48 + 0.6, -104.95))
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerTracer):
+        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outerTracer")
+        if eventPlayer.tValue[Item.STATE] == 0:
+            CREATE_TEXT(eventPlayer, "Gotta buy a membership before we can deliver anything", vect(-19.06, 14.48 + 0.6, -88.07))
+        elif eventPlayer.tValue[Item.STATE] == 1:
+            if len(eventPlayer.inventory) == 0:
+                CREATE_TEXT(eventPlayer, "You want me to deliver the abstract notion of nothingness?", vect(-19.06, 14.48 + 0.6, -88.07))
+            elif eventPlayer.smugglerItem:
+                CREATE_TEXT(eventPlayer, "Only one delivery at a time", vect(-19.06, 14.48 + 0.6, -88.07))
+            else:
+                CREATE_TEXT(eventPlayer, "You got it!", vect(-19.06, 14.48 + 0.6, -88.07))
+                eventPlayer.smugglerItem = eventPlayer.inventory[0]
+                del eventPlayer.inventory[0]
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outsideTracer):
+        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outsideTracer")
+        if eventPlayer.tValue[Item.STATE] == 0:
+            CREATE_TEXT(eventPlayer, "Gotta buy a membership before we can deliver anything", vect(-44.52, 5.49 + 0.6, -49.63))
+        elif eventPlayer.tValue[Item.STATE] == 1:
+            if len(eventPlayer.inventory) == 0:
+                CREATE_TEXT(eventPlayer, "You want me to deliver the abstract notion of nothingness?", vect(-44.52, 5.49 + 0.6, -49.63))
+            elif eventPlayer.smugglerItem:
+                CREATE_TEXT(eventPlayer, "Only one delivery at a time", vect(-44.52, 5.49 + 0.6, -49.63))
+            else:
+                CREATE_TEXT(eventPlayer, "You got it!", vect(-44.52, 5.49 + 0.6, -49.63))
+                eventPlayer.smugglerItem = eventPlayer.inventory[0]
+                del eventPlayer.inventory[0]
     else:
         pass
         
@@ -1610,11 +1692,13 @@ rule "test":
     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(26.18, 15.70, -90.36), vect(29.31, 16.27, -90.89), null, EffectReeval.VISIBILITY)
 
 
-rule "trigger bruce":
+rule "trigger all npcs":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
 
     INCREMENT_STATE(eventPlayer, "outerBruce")
+    INCREMENT_STATE(eventPlayer, "outerTracer")
+    INCREMENT_STATE(eventPlayer, "outsideTracer")
 
 rule "Debug on":
     @Event eachPlayer
@@ -1708,7 +1792,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer") or strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "inner"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer") or strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
