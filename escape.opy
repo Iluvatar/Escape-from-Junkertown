@@ -120,6 +120,7 @@ playervar tStart
 playervar tEnd
 playervar tPos
 playervar tText
+playervar tMinigame
 
 # Player state
 playervar pauseInteraction
@@ -213,6 +214,8 @@ eventPlayer.itemPoints[eventPlayer.tIndex] = item
 # distance from pos to the vertical plane defined by start and end vectors
 #!define DIST_TO_WALL(start, end, pos) (sinDeg(angleBetweenVectors(vect(end.x - start.x, 0, end.z - start.z), vect(pos.x - start.x, 0, pos.z - start.z))) * DIST_2D(start, pos))
 
+#!define DIST_TO_WALL_2(start, end, pos) dotProduct(normalize(vect(-((end) - (start)).z, 0, ((end) - (start)).x)), start - pos)
+
 # MAKE_WALL creates a vertical wall from start to end, pushing 90 degrees clockwise to the (end - start) vector
 # when hit, displays the message, but with a timeout of WALL_MESSAGE_TIMEOUT
 # it's an instantaneous check, so must be rerun every tick
@@ -225,10 +228,20 @@ def doWallMessageTimeout():
 
 #!define MAKE_WALL(eventPlayer, start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
     eventPlayer.setMoveSpeed(5) \
-    eventPlayer.applyImpulse(normalize(vect(-((end) - (start)).z, 0, ((end) - (start)).x)), 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
+    eventPlayer.applyImpulse(vect(-((end) - (start)).z, 0, ((end) - (start)).x), 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
     if eventPlayer.isShowingWallMessage == false: \
         smallMessage(eventPlayer, message) \
         async(doWallMessageTimeout(), AsyncBehavior.RESTART) \
+    eventPlayer.setMoveSpeed(100)
+
+#!define MAKE_DAMAGE_WALL(eventPlayer, start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
+    eventPlayer.clearStatusEffect(Status.INVINCIBLE) \
+    damage(eventPlayer, eventPlayer, 50) \
+    eventPlayer.setMoveSpeed(5) \
+    eventPlayer.applyImpulse(vect(-((end) - (start)).z, 3, ((end) - (start)).x), 6, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
+    wait(0.1) \
+    eventPlayer.setStatusEffect(null, Status.INVINCIBLE, 9999) \
+    eventPlayer.setHealth(200) \
     eventPlayer.setMoveSpeed(100)
 
 # Push and pop effects using the effect deletion queue
@@ -319,7 +332,7 @@ rule "Move payload to the end":
     # wait for starting player to get through intro so the sound doesn't interfere
     wait(15)
 
-    createDummy(Hero.MERCY, Team.2, 1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    createDummy(Hero.MERCY, Team.2, 2, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
     getPlayersOnHero(Hero.MERCY, Team.2).disablePlayerCollision()
     getPlayersOnHero(Hero.MERCY, Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
     getPlayersOnHero(Hero.MERCY, Team.2).setInvisibility(Invis.ENEMIES)
@@ -332,7 +345,7 @@ rule "Stop payload after first point":
     @Event global
     @Condition getPayloadProgressPercentage() > 38.20
 
-    destroyDummy(Team.2, 1)
+    destroyDummy(Team.2, 2)
 
 rule "Keep match time high to prevent time based voice lines":
     @Event global
@@ -468,10 +481,11 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.94, -169.05), 3, EffectReeval.VISIBILITY)
 
     # workbench puzzle
-    # createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.55, 9.51, -184.89), vect(-103.60, 9.19, -185.16), Color.BLACK, EffectReeval.VISIBILITY)
-    # createBeam(getAllPlayers(), Beam.BRIGITTE_FLAIL_CHAIN, vect(-103.60, 9.19, -185.16), vect(-103.55, 8.89, -184.90), Color.BLACK, EffectReeval.VISIBILITY)
-    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.RED, INNER_MINIGAME_2D_TO_3D(vect(0.67 + sin(2) * 0.18, 0.16 + cos(2) * 0.18, 0)), 0.03, EffectReeval.VISIBILITY)
-    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.RED, INNER_MINIGAME_2D_TO_3D(vect(0.95 + sin(3) * 0.18, 0.16 + cos(3) * 0.18, 0)), 0.03, EffectReeval.VISIBILITY)
+    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.45, 8.89, -184.36), 0.04, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.50, 8.89, -184.63), 0.04, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
@@ -480,8 +494,8 @@ rule "Global setup":
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
 
     # barn paper clues
-    createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
-    createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
+    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
+    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
     
 
 def showIntro():
@@ -561,8 +575,8 @@ def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
     eventPlayer.isHoldingInnerMinigameControl1 = false
     eventPlayer.isHoldingInnerMinigameControl2 = false
-    eventPlayer.innerMinigameValue1 = 0
-    eventPlayer.innerMinigameValue2 = 0
+    eventPlayer.innerMinigameValue1 = PI / 2
+    eventPlayer.innerMinigameValue2 = PI / 2
 
 def manageEquips():
     equipPlayers[Equip.HAS_ANY].remove(eventPlayer)
@@ -722,6 +736,8 @@ def playerInitialState():
         ["innerVent3", 0, vect(-54.90, 10.74, -125.39), 1, null],
         ["innerVent4", 0, vect(-75.87, 14.17, -123.53), 2, ["You don't see anything in here"]],
         ["innerVent5", 0, vect(-69.87, 15.81, -107.26), 1, ["You don't see anything in here"]],
+        ["innerVent6", 0, vect(-94.74, 13.59, -177.53), 1, ["You don't see anything in here"]],
+        ["innerVent7", 0, vect(-86.38, 14.14, -180.01), 1.8, ["You don't see anything in here"]],
 
 
         # courtyard area
@@ -730,6 +746,8 @@ def playerInitialState():
         ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["toolbox 1"], null, true],
         ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["toolbox 2"], null, true],
         ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["toolbox 3"], null, true],
+        ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["radio"]],
+
         ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["cart"]],
 
         ["outerPoster1", 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"], null, null, true],
@@ -740,13 +758,16 @@ def playerInitialState():
         ["outerPoster6", 0, vect(-26.17, 14.43, -112.75), 0.5, ["poster6"], null, null, true],
         ["outerPoster7", 0, vect(-20.13, 8.15, -95.48), 0.7, ["poster7"], null, null, true],
         ["outerPoster8", 0, vect(-32.28, 7.78, -94.74), 0.5, ["poster8"], null, null, true],
-        ["outerPoster9", 0, vect(-44.65, 6.38, -76.55), 0.7, ["poster9"], null, null, true],
-        ["outerPoster10", 0, vect(-35.80, 5.70, -70.76), 1, ["poster10"], null, null, true],
-        ["outerPoster11", 0, vect(-44.66, 6.73, -60.23), 1.1, ["poster11"], null, null, true],
-        ["outerPoster12", 0, vect(-33.01, 5.96, -63.99), 0.7, ["poster12"], null, null, true],
-        ["outerPoster13", 0, vect(-54.26, 5.98, -47.88), 0.7, ["poster13"], null, null, true],
+        ["outerPoster9", 0, vect(-31.35, 7.44, -85.96), 1.1, ["poster9"], null, null, true],
+        ["outerPoster10", 0, vect(-44.65, 6.38, -76.55), 0.7, ["poster10"], null, null, true],
+        ["outerPoster11", 0, vect(-35.80, 5.70, -70.76), 1, ["poster11"], null, null, true],
+        ["outerPoster12", 0, vect(-44.66, 6.73, -60.23), 1.1, ["poster12"], null, null, true],
+        ["outerPoster13", 0, vect(-33.01, 5.96, -63.99), 0.7, ["poster13"], null, null, true],
+        ["outerPoster14", 0, vect(-54.26, 5.98, -47.88), 0.7, ["poster14"], null, null, true],
 
         ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
+
+        ["outerBruce", 0, vect(-21.62, 7.53, -104.95), 1, null],
 
 
         # barn area
@@ -852,7 +873,8 @@ rule "On player join":
     @Event playerJoined
     @Team 1
 
-    async(showIntro, AsyncBehavior.NOOP)
+    # async(showIntro, AsyncBehavior.NOOP)
+    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     playerInitialState()
 
@@ -918,7 +940,7 @@ rule "Update is in sunlight":
 
 rule "Poster achievement":
     @Event eachPlayer
-    @Condition len(eventPlayer.postersFound) == 15
+    @Condition len(eventPlayer.postersFound) == 16
 
     bigMessage(eventPlayer, "Achievement get: public menace")
 
@@ -939,11 +961,15 @@ rule "Workbench minigame start":
     @Event eachPlayer
     @Condition eventPlayer.isDoingInnerMinigame
 
-    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.45, 8.89, -184.36), INNER_MINIGAME_2D_TO_3D(vect(0.67 + sin(eventPlayer.innerMinigameValue1) * 0.15, 0.16 + cos(eventPlayer.innerMinigameValue1) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(eventPlayer, Beam.GRAPPLE, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801, 0.451, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422, 0.451 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.GRAPPLE, vect(-103.50, 8.89, -184.63), INNER_MINIGAME_2D_TO_3D(vect(0.95 + sin(eventPlayer.innerMinigameValue2) * 0.15, 0.16 + cos(eventPlayer.innerMinigameValue2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+
+    createBeam(eventPlayer, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
-    innerMinigamePlayers.append(eventPlayer)
+    createBeam(eventPlayer, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()    
+    createBeam(eventPlayer, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
 
 rule "Stop workbench minigame controls":
     @Event eachPlayer
@@ -957,13 +983,13 @@ rule "Stop workbench minigame controls":
 
 rule "Workbench minigame success":
     @Event eachPlayer
-    @Condition abs(eventPlayer.innerMinigameValue1 % (2 * PI) - 2) < 0.1 and abs(eventPlayer.innerMinigameValue2 % (2 * PI) - 3) < 0.1
+    @Condition abs(eventPlayer.innerMinigameValue1 % (2 * PI) - 3 * PI / 2) < 0.1 and abs(eventPlayer.innerMinigameValue2 % (2 * PI / 3) - PI / 6) < 0.05
 
     eventPlayer.hasFinishedInnerMinigame = true
     stopChasingVariable(eventPlayer.innerMinigameValue1)
     stopChasingVariable(eventPlayer.innerMinigameValue2)
-    eventPlayer.innerMinigameValue1 = 2
-    eventPlayer.innerMinigameValue2 = 3
+    eventPlayer.innerMinigameValue1 = 3 * PI / 2
+    eventPlayer.innerMinigameValue2 = PI / 6
     SET_STATE(eventPlayer, "innerWorkbench", 1)
     eventPlayer.inventory.remove("Fiddly part")
     eventPlayer.inventory = "Reverse polarity fiddly part".concat(eventPlayer.inventory)
@@ -974,6 +1000,8 @@ rule "Workbench minigame stop":
     @Condition eventPlayer.isDoingInnerMinigame and distance(eventPlayer, eventPlayer.innerWorkbench[Item.POINT]) > 3
 
     innerMinigameInitialState()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
     popEffectDeleteQueue()
     popEffectDeleteQueue()
     innerMinigamePlayers.remove(eventPlayer)
@@ -1158,11 +1186,13 @@ rule "Interact":
         elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and not eventPlayer.hasFinishedInnerMinigame:
             if eventPlayer.isDoingInnerMinigame:
                 eventPlayer.isHoldingInnerMinigameControl1 = true
-                chase(eventPlayer.innerMinigameValue1, 9999, rate=PI/2, ChaseReeval.NONE)
+                chase(eventPlayer.innerMinigameValue1, 9999, rate=1, ChaseReeval.NONE)
+                chase(eventPlayer.innerMinigameValue2, 9999, rate=1.8, ChaseReeval.NONE)
         elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2" and not eventPlayer.hasFinishedInnerMinigame:
             if eventPlayer.isDoingInnerMinigame:
                 eventPlayer.isHoldingInnerMinigameControl2 = true
-                chase(eventPlayer.innerMinigameValue2, 9999, rate=PI/2, ChaseReeval.NONE)
+                chase(eventPlayer.innerMinigameValue1, 9999, rate=1.8, ChaseReeval.NONE)
+                chase(eventPlayer.innerMinigameValue2, 9999, rate=1, ChaseReeval.NONE)
         elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
             if "Sunglasses" not in eventPlayer.equipped:
                 INCREMENT_STATE(eventPlayer, "innerSunglasses")
@@ -1406,6 +1436,17 @@ rule "Tutorial gate barrier":
     while RULE_CONDITION
     eventPlayer.setMoveSpeed(100)
 
+    # MAKE_DAMAGE_WALL(eventPlayer, vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), "Ouch!")
+    # MAKE_DAMAGE_WALL(eventPlayer, vect(-94.21, 10.19, -92.06), vect(-91.58, 14.05, -92.61), "Ouch!")
+
+    # wait(0.016, Wait.ABORT_WHEN_FALSE)
+    # goto RULE_START
+
+    # if DIST_TO_WALL_2(vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), eventPlayer.getPosition()) > 0:
+    #     pass
+
+    # hudHeader(eventPlayer, "dist: {0}".format(DIST_TO_WALL_2(vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), eventPlayer.getPosition())), HudPosition.RIGHT, 300, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+
 rule "Remove tutorial gate":
     @Event eachPlayer
     @Condition eventPlayer.tutorialFinished
@@ -1521,6 +1562,25 @@ playervar pointHelperHud
 playervar pointHelperState = 0
 
 
+
+rule "Spawn Bruce":
+    @Event global
+    @Condition isGameInProgress()
+
+    createDummy(Hero.TORBJORN, Team.2, 1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
+    getPlayersInSlot(1, Team.2).startForcingName("Bruce")
+
+rule "test":
+    @Event global
+
+    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(5.77, 16.46, -44.27), vect(-1.10, 15.52, -59.41), null, EffectReeval.VISIBILITY)
+    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(-1.10, 15.52, -59.41), vect(12.34, 17.12, -88.35), null, EffectReeval.VISIBILITY)
+    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(12.34, 17.12, -88.35), vect(20.92, 15.01, -86.41), null, EffectReeval.VISIBILITY)
+    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(20.92, 15.01, -86.41), vect(26.18, 15.70, -90.36), null, EffectReeval.VISIBILITY)
+    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(26.18, 15.70, -90.36), vect(29.31, 16.27, -90.89), null, EffectReeval.VISIBILITY)
+
+
+
 rule "Debug on":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ULTIMATE)
@@ -1546,6 +1606,27 @@ rule "Toggle infinite mercy ult":
 
     eventPlayer.isMercyUlting = not eventPlayer.isMercyUlting
 
+globalvar x
+
+rule "setup":
+    @Event global
+
+    chase(x, 9999, rate=2 * PI / 32, ChaseReeval.NONE)
+
+rule "trip cam":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+
+    eventPlayer.disableHeroHUD()
+    eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+
+rule "stop trip cam":
+    @Event eachPlayer
+    @Condition not eventPlayer.isHoldingButton(Button.RELOAD)
+
+    eventPlayer.enableHeroHud()
+    eventPlayer.stopCamera()
+
 rule "Mercy infinite ult":
     @Event eachPlayer
     @Condition eventPlayer.getCurrentHero() == Hero.MERCY
@@ -1569,7 +1650,7 @@ rule "Point helper":
     eventPlayer.canBeTheOtherGuy = true
 
     if eventPlayer.pointHelperState == 0:
-        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition() * 1000)), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
         eventPlayer.pointHelperHud = getLastCreatedText()
         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
         eventPlayer.pointHelperEffect = getLastCreatedEntity()
@@ -1589,9 +1670,10 @@ rule "Point helper":
 
 rule "Item visualization":
     @Event eachPlayer
+    @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer") or strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer") or strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "inner"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -1609,17 +1691,17 @@ rule "Noclip off":
 rule "Display stats":
     @Event eachPlayer
 
-    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    # hudHeader(eventPlayer, "mv1: {0}".format(eventPlayer.innerMinigameValue1), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "mv2: {0}".format(eventPlayer.innerMinigameValue2), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingInnerMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedInnerMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.innerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    # hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 3, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 4, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 3, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 4, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
