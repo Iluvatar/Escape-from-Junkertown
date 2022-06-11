@@ -110,6 +110,7 @@ globalvar equipPlayers = [[], [], [], []]
 # PLAYER VARIABLES
 
 playervar effectDeleteQueue = []
+playervar textDeleteQueue = []
 
 playervar argStack = []
 
@@ -183,6 +184,7 @@ playervar innerGenerator
 playervar innerRadio
 playervar innerWorkbench
 playervar innerToolbox2
+playervar outerBruce
 
 
 
@@ -251,6 +253,18 @@ def pushEffectDeleteQueue():
 def popEffectDeleteQueue():
     destroyEffect(eventPlayer.effectDeleteQueue[0])
     del eventPlayer.effectDeleteQueue[0]
+
+# Push and pop text using the text deletion queue
+def pushTextDeleteQueue():
+    eventPlayer.textDeleteQueue.append(getLastCreatedText())
+
+def popTextDeleteQueue():
+    destroyInWorldText(eventPlayer.textDeleteQueue[0])
+    del eventPlayer.textDeleteQueue[0]
+
+# Creates in world text for the event player
+#!define CREATE_TEXT(eventPlayer, text, location) createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
+pushTextDeleteQueue()
 
 # Used to turn the whole screen black (doesn't actually fade)
 #!define BLACK_SCREEN_POS vect(34, 6, -88)
@@ -332,20 +346,18 @@ rule "Move payload to the end":
     # wait for starting player to get through intro so the sound doesn't interfere
     wait(15)
 
-    createDummy(Hero.MERCY, Team.2, 2, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    createDummy(Hero.MERCY, Team.2, 1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
     getPlayersOnHero(Hero.MERCY, Team.2).disablePlayerCollision()
     getPlayersOnHero(Hero.MERCY, Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
     getPlayersOnHero(Hero.MERCY, Team.2).setInvisibility(Invis.ENEMIES)
-
-    # match time restarts every checkpoint for some reason
-    wait(15)
-    pauseMatchTime()
 
 rule "Stop payload after first point":
     @Event global
     @Condition getPayloadProgressPercentage() > 38.20
 
-    destroyDummy(Team.2, 2)
+    destroyDummy(Team.2, 1)
+    # match time restarts every checkpoint for some reason
+    pauseMatchTime()
 
 rule "Keep match time high to prevent time based voice lines":
     @Event global
@@ -353,6 +365,14 @@ rule "Keep match time high to prevent time based voice lines":
     @Condition getMatchTime() < 3000
 
     setMatchTime(3600)
+
+rule "Spawn Bruce":
+    @Event global
+    @Condition isGameInProgress()
+
+    createDummy(Hero.TORBJORN, Team.2, 2, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
+    getPlayersOnHero(Hero.TORBJORN, Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
+    getPlayersInSlot(2, Team.2).startForcingName("Bruce")
 
 rule "Global setup":
     @Event global
@@ -496,7 +516,6 @@ rule "Global setup":
     # barn paper clues
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
-    
 
 def showIntro():
     eventPlayer.disableHeroHUD()
@@ -681,6 +700,8 @@ def playerInitialState():
 
     eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
 
+    eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.53, -104.95), 1, null]
+
     eventPlayer.itemPoints = [
         # tutorial room
         ["tutSafe1", 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
@@ -767,9 +788,6 @@ def playerInitialState():
 
         ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
 
-        ["outerBruce", 0, vect(-21.62, 7.53, -104.95), 1, null],
-
-
         # barn area
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
         ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to change the TV channel right now"]],
@@ -829,6 +847,7 @@ def playerInitialState():
         eventPlayer.innerRadio,
         eventPlayer.innerWorkbench,
         eventPlayer.innerToolbox2,
+        eventPlayer.outerBruce,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -933,6 +952,12 @@ rule "Update is in sunlight":
 
     wait()
     goto RULE_START
+
+rule "Hide Bruce text":
+    @Event eachPlayer
+    @Condition distance(eventPlayer, vect(-21.62, 7.73 + 0.5, -104.95)) > 5
+
+    popTextDeleteQueue()
 
 
 
@@ -1215,6 +1240,11 @@ rule "Interact":
                     smallMessage(eventPlayer, "There's something in the back, but the blades are spinning too fast to grab it")
             else:
                 smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
+        elif eventPlayer.tValue[Item.ID] == "outerBruce":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                CREATE_TEXT(eventPlayer, "You want me to help you? I don't even know who you are", vect(-21.62, 7.73 + 0.5, -104.95))
+            elif eventPlayer.tValue[Item.STATE] == 1:
+                CREATE_TEXT(eventPlayer, "Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nSex, drugs, and rock and roll", vect(-21.62, 7.73 + 0.5, -104.95))
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1282,6 +1312,7 @@ rule "Interact":
 
 #!define SHOULD_APPLY_ITEM(eventPlayer, key) (eventPlayer.key[Item.STATE] < len(eventPlayer.key[Item.REQUIRED_ITEM]) and eventPlayer.inventory[0] == eventPlayer.key[Item.REQUIRED_ITEM][eventPlayer.key[Item.STATE]])
 
+# have to save to a variable due to race conditions when immediately changing the state after showing the message
 #!define APPLY_ITEM_SUCCESS(eventPlayer, item) eventPlayer.tText = item[Item.SUCCESS_MESSAGE][item[Item.STATE]] \
 smallMessage(eventPlayer, eventPlayer.tText)
 def APPLY_ITEM_FAIL():
@@ -1379,6 +1410,11 @@ rule "Apply":
             del eventPlayer.inventory[0]
         else:
             APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerBruce):
+        if eventPlayer.inventory[0] == "Thing 1":
+            pass
+        else:
+            smallMessage(eventPlayer, "Bruce doesn't need that")
     else:
         pass
         
@@ -1563,12 +1599,6 @@ playervar pointHelperState = 0
 
 
 
-rule "Spawn Bruce":
-    @Event global
-    @Condition isGameInProgress()
-
-    createDummy(Hero.TORBJORN, Team.2, 1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
-    getPlayersInSlot(1, Team.2).startForcingName("Bruce")
 
 rule "test":
     @Event global
@@ -1580,6 +1610,11 @@ rule "test":
     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(26.18, 15.70, -90.36), vect(29.31, 16.27, -90.89), null, EffectReeval.VISIBILITY)
 
 
+rule "trigger bruce":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
+
+    INCREMENT_STATE(eventPlayer, "outerBruce")
 
 rule "Debug on":
     @Event eachPlayer
