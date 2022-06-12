@@ -109,8 +109,9 @@ globalvar equipPlayers = [[], [], [], []]
 
 globalvar cartMercyNpc
 globalvar bruceNpc
-globalvar outsideTracerNpc
-globalvar insideTracerNpc
+globalvar outsideSmugglerNpc
+globalvar insideSmugglerNpc
+globalvar bartenderNpc
 globalvar zenNpc
 
 
@@ -195,8 +196,9 @@ playervar innerWorkbench
 playervar innerToolbox2
 
 playervar outerBruce
-playervar outsideTracer
-playervar outerTracer
+playervar outsideSmuggler
+playervar outerSmuggler
+playervar outerBartender
 
 
 
@@ -389,11 +391,15 @@ rule "Spawn NPCs":
     bruceNpc.startForcingName("Bruce")
 
     createDummy(Hero.TRACER, Team.2, -1, vect(-19.06, 13.48, -88.07), vect(0.23, 0, -0.97))
-    insideTracerNpc = getLastCreatedEntity()
-    insideTracerNpc.startForcingName("Smuggler")
+    insideSmugglerNpc = getLastCreatedEntity()
+    insideSmugglerNpc.startForcingName("Smuggler")
     createDummy(Hero.TRACER, Team.2, -1, vect(-44.52, 4.49, -49.63), vect(0.54, 0, 0.84))
-    outsideTracerNpc = getLastCreatedEntity()
-    outsideTracerNpc.startForcingName("Smuggler")
+    outsideSmugglerNpc = getLastCreatedEntity()
+    outsideSmugglerNpc.startForcingName("Smuggler")
+
+    createDummy(Hero.ASHE, Team.2, -1, vect(-54.65, 1.73, -131.02), vect(0.87, 0, -0.49))
+    bartenderNpc = getLastCreatedEntity()
+    bartenderNpc.startForcingName("Bartender")
 
     getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
 
@@ -726,8 +732,11 @@ def playerInitialState():
     eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
 
     eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
-    eventPlayer.outerTracer = ["outerTracer", 0, vect(-19.06, 14.48, -88.07), 1, null]
-    eventPlayer.outsideTracer = ["outsideTracer", 0, vect(-44.52, 5.49, -49.63), 1, null]
+    eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
+    eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
+    eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
+
+    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Blue battery"], ["This should help you change the color of the battery"]]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -875,8 +884,10 @@ def playerInitialState():
         eventPlayer.innerWorkbench,
         eventPlayer.innerToolbox2,
         eventPlayer.outerBruce,
-        eventPlayer.outerTracer,
-        eventPlayer.outsideTracer,
+        eventPlayer.outerSmuggler,
+        eventPlayer.outsideSmuggler,
+        eventPlayer.outerBartender,
+        eventPlayer.innerWorkbench,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -1272,10 +1283,10 @@ rule "Interact":
                 smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
         elif eventPlayer.tValue[Item.ID] == "outerBruce":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT(eventPlayer, "You want me to help you? I don't even know who you are", vect(-21.62, 7.48 + 0.6, -104.95))
+                CREATE_TEXT(eventPlayer, "You want me to help you? I don't even know who you are.", vect(-21.62, 7.48 + 0.6, -104.95))
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT(eventPlayer, "Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nSex, drugs, and rock and roll", vect(-21.62, 7.48 + 0.6, -104.95))
-        elif eventPlayer.tValue[Item.ID] == "outerTracer":
+        elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT(eventPlayer, "Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", vect(-19.06, 14.48 + 0.6, -88.07))
             elif eventPlayer.tValue[Item.STATE] == 1:
@@ -1338,7 +1349,7 @@ rule "Interact":
             eventPlayer.stopCamera()
             eventPlayer.clearStatusEffect(Status.ROOTED)
             eventPlayer.pauseInteraction = false
-        elif eventPlayer.tValue[Item.ID] == "outsideTracer":
+        elif eventPlayer.tValue[Item.ID] == "outsideSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT(eventPlayer, "Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", vect(-44.52, 5.49 + 0.6, -49.63))
             elif eventPlayer.tValue[Item.STATE] == 1:
@@ -1471,8 +1482,8 @@ rule "Apply":
             INCREMENT_STATE(eventPlayer, "outerBruce")
         else:
             CREATE_TEXT(eventPlayer, "What is this? I don't need it.", vect(-21.62, 7.48 + 0.6, -104.95))
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerTracer):
-        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outerTracer")
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerSmuggler):
+        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outerSmuggler")
         if eventPlayer.tValue[Item.STATE] == 0:
             CREATE_TEXT(eventPlayer, "Gotta buy a membership before we can deliver anything", vect(-19.06, 14.48 + 0.6, -88.07))
         elif eventPlayer.tValue[Item.STATE] == 1:
@@ -1484,8 +1495,8 @@ rule "Apply":
                 CREATE_TEXT(eventPlayer, "You got it!", vect(-19.06, 14.48 + 0.6, -88.07))
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outsideTracer):
-        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outsideTracer")
+    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outsideSmuggler):
+        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outsideSmuggler")
         if eventPlayer.tValue[Item.STATE] == 0:
             CREATE_TEXT(eventPlayer, "Gotta buy a membership before we can deliver anything", vect(-44.52, 5.49 + 0.6, -49.63))
         elif eventPlayer.tValue[Item.STATE] == 1:
@@ -1680,8 +1691,6 @@ playervar pointHelperHud
 playervar pointHelperState = 0
 
 
-
-
 rule "test":
     @Event global
 
@@ -1697,8 +1706,8 @@ rule "trigger all npcs":
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
 
     INCREMENT_STATE(eventPlayer, "outerBruce")
-    INCREMENT_STATE(eventPlayer, "outerTracer")
-    INCREMENT_STATE(eventPlayer, "outsideTracer")
+    INCREMENT_STATE(eventPlayer, "outerSmuggler")
+    INCREMENT_STATE(eventPlayer, "outsideSmuggler")
 
 rule "Debug on":
     @Event eachPlayer
