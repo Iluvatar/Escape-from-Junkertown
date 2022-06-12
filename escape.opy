@@ -225,10 +225,10 @@ eventPlayer.argStack.append(arg3)
 # 2d arrays can't be modified directly, so we have to pull out a row, modify it, then reinsert it
 
 # get an item entry by id
-#!define GET_ITEM_ENTRY(eventPlayer, id) [elem for elem in eventPlayer.itemPoints if elem[Item.ID] == id][0]
+#!define GET_ITEM_ENTRY(id) [elem for elem in eventPlayer.itemPoints if elem[Item.ID] == id][0]
 
 # save an item entry
-#!define SAVE_STATE(eventPlayer, item) eventPlayer.tIndex = eventPlayer.itemIds.index(item[Item.ID]) \
+#!define SAVE_STATE(item) eventPlayer.tIndex = eventPlayer.itemIds.index(item[Item.ID]) \
 eventPlayer.itemPoints[eventPlayer.tIndex] = item
 
 # distance between two vectors ignoring the height component
@@ -249,7 +249,7 @@ def doWallMessageTimeout():
     wait(WALL_MESSAGE_TIMEOUT)
     eventPlayer.isShowingWallMessage = false
 
-#!define MAKE_WALL(eventPlayer, start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
+#!define MAKE_WALL(start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
     eventPlayer.setMoveSpeed(5) \
     eventPlayer.applyImpulse(vect(-((end) - (start)).z, 0, ((end) - (start)).x), 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
     if eventPlayer.isShowingWallMessage == false: \
@@ -257,7 +257,7 @@ def doWallMessageTimeout():
         async(doWallMessageTimeout(), AsyncBehavior.RESTART) \
     eventPlayer.setMoveSpeed(100)
 
-#!define MAKE_DAMAGE_WALL(eventPlayer, start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
+#!define MAKE_DAMAGE_WALL(start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
     eventPlayer.clearStatusEffect(Status.INVINCIBLE) \
     damage(eventPlayer, eventPlayer, 50) \
     eventPlayer.setMoveSpeed(5) \
@@ -284,7 +284,7 @@ def popTextDeleteQueue():
     del eventPlayer.textDeleteQueue[0]
 
 # Creates in world text for the event player
-#!define CREATE_TEXT(eventPlayer, text, location) popTextDeleteQueue() \
+#!define CREATE_TEXT(text, location) popTextDeleteQueue() \
 createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
 
@@ -294,17 +294,17 @@ pushTextDeleteQueue()
 #!define FADE_TO_BLACK() eventPlayer.startCamera(BLACK_SCREEN_POS, BLACK_SCREEN_POS + BLACK_SCREEN_FACING, 0)
 
 # Increments the state of the item with the given id
-#!define INCREMENT_STATE(eventPlayer, id) eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, id) \
+#!define INCREMENT_STATE(id) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
 eventPlayer.tValue[Item.STATE]++ \
-SAVE_STATE(eventPlayer, eventPlayer.tValue)
+SAVE_STATE(eventPlayer.tValue)
 
 # Sets the state of the item with the given id
-#!define SET_STATE(eventPlayer, id, value) eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, id) \
+#!define SET_STATE(id, value) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
 eventPlayer.tValue[Item.STATE] = value \
-SAVE_STATE(eventPlayer, eventPlayer.tValue)
+SAVE_STATE(eventPlayer.tValue)
 
 # Toggles visiblity of the given power panel switch
-#!define TOGGLE_POWER_SWITCH(eventPlayer, index) if eventPlayer in powerPanelPlayers[index]: \
+#!define TOGGLE_POWER_SWITCH(index) if eventPlayer in powerPanelPlayers[index]: \
     powerPanelPlayers[index].remove(eventPlayer) \
 else: \
     powerPanelPlayers[index].append(eventPlayer)
@@ -975,17 +975,17 @@ rule "Update hog position and direction":
     goto RULE_START
     
 #!define SPAWN_CLIP_RADIUS 1.3
-#!define NEXT_TO(eventPlayer, pos) (distance(eventPlayer.getEyePosition(), pos) < SPAWN_CLIP_RADIUS)
+#!define NEXT_TO(pos) (distance(eventPlayer.getEyePosition(), pos) < SPAWN_CLIP_RADIUS)
 
 rule "Walk through spawn protections enable":
     @Event eachPlayer
-    @Condition NEXT_TO(eventPlayer, vect(-55.57, 9, -82.41)) or NEXT_TO(eventPlayer, vect(-66.38, 11, -80.21))
+    @Condition NEXT_TO(vect(-55.57, 9, -82.41)) or NEXT_TO(vect(-66.38, 11, -80.21))
 
     eventPlayer.disableEnvironmentCollision(false)
 
 rule "Walk through spawn protections disable":
     @Event eachPlayer
-    @Condition not NEXT_TO(eventPlayer, vect(-55.57, 9, -82.41)) and not NEXT_TO(eventPlayer, vect(-66.38, 11, -80.21))
+    @Condition not NEXT_TO(vect(-55.57, 9, -82.41)) and not NEXT_TO(vect(-66.38, 11, -80.21))
 
     eventPlayer.enableEnvironmentCollision()
 
@@ -1026,11 +1026,11 @@ rule "Lights on check":
     eventPlayer.lightsOn = true
     playersInDark.remove(eventPlayer)
     playEffect(eventPlayer, DynamicEffect.SOMBRA_TRANSLOCATING_SOUND, null, eventPlayer.getPosition() - eventPlayer.getFacingDirection() * 0.1, 100)
-    INCREMENT_STATE(eventPlayer, "innerSwitch1")
-    INCREMENT_STATE(eventPlayer, "innerSwitch2")
-    INCREMENT_STATE(eventPlayer, "innerSwitch3")
-    INCREMENT_STATE(eventPlayer, "innerSwitch4")
-    INCREMENT_STATE(eventPlayer, "innerSwitch5")
+    INCREMENT_STATE("innerSwitch1")
+    INCREMENT_STATE("innerSwitch2")
+    INCREMENT_STATE("innerSwitch3")
+    INCREMENT_STATE("innerSwitch4")
+    INCREMENT_STATE("innerSwitch5")
 
 rule "Workbench minigame start":
     @Event eachPlayer
@@ -1065,7 +1065,7 @@ rule "Workbench minigame success":
     stopChasingVariable(eventPlayer.innerMinigameValue2)
     eventPlayer.innerMinigameValue1 = 3 * PI / 2
     eventPlayer.innerMinigameValue2 = PI / 6
-    SET_STATE(eventPlayer, "innerWorkbench", 1)
+    SET_STATE("innerWorkbench", 1)
     eventPlayer.inventory.remove("Fiddly part")
     eventPlayer.inventory = "Reverse polarity fiddly part".concat(eventPlayer.inventory)
     smallMessage(eventPlayer, "You manager to reverse the polarity of the fiddly part")
@@ -1169,16 +1169,16 @@ def playNoItem():
 
 #!define NOTHING_LEFT_MESSAGE "There's nothing left in there"
 
-#!define SHOULD_INTERACT(eventPlayer, item) (distance(eventPlayer.getEyePosition(), item[Item.POINT]) < INTERACT_DISTANCE and \
+#!define SHOULD_INTERACT(item) (distance(eventPlayer.getEyePosition(), item[Item.POINT]) < INTERACT_DISTANCE and \
 distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * distance(eventPlayer.getEyePosition(), item[Item.POINT])) < (item[Item.RADIUS]) and \
 (not item[Item.NEEDS_LOS] or isInLoS(item[Item.POINT], eventPlayer.getEyePosition(), BarrierLos.PASS_THROUGH_BARRIERS)))
-#!define GIVE_ITEM(eventPlayer, item) eventPlayer.inventory = item.concat(eventPlayer.inventory)
+#!define GIVE_ITEM(item) eventPlayer.inventory = item.concat(eventPlayer.inventory)
 
 rule "Interact":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction
 
-    eventPlayer.tValue = [elem for elem in eventPlayer.itemPoints if SHOULD_INTERACT(eventPlayer, elem)]
+    eventPlayer.tValue = [elem for elem in eventPlayer.itemPoints if SHOULD_INTERACT(elem)]
 
     if len(eventPlayer.tValue) == 0:
         return
@@ -1197,7 +1197,7 @@ rule "Interact":
         if eventPlayer.tValue[Item.ITEM_NAME]:
             if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
                 playGetItem()
-            GIVE_ITEM(eventPlayer, eventPlayer.tValue[Item.ITEM_NAME])
+            GIVE_ITEM(eventPlayer.tValue[Item.ITEM_NAME])
             eventPlayer.tValue[Item.STATE]++
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
         else:
@@ -1212,33 +1212,33 @@ rule "Interact":
     if eventPlayer.isJunk:
         if eventPlayer.wiresConnected and eventPlayer.generatorOn and not eventPlayer.lightsOn:
             if eventPlayer.tValue[Item.ID] == "innerSwitch1":
-                TOGGLE_POWER_SWITCH(eventPlayer, 4)
-                TOGGLE_POWER_SWITCH(eventPlayer, 0)
-                TOGGLE_POWER_SWITCH(eventPlayer, 1)
+                TOGGLE_POWER_SWITCH(4)
+                TOGGLE_POWER_SWITCH(0)
+                TOGGLE_POWER_SWITCH(1)
                 makeSwitchNoise()
                 checkPowerPanel()
             elif eventPlayer.tValue[Item.ID] == "innerSwitch2":
-                TOGGLE_POWER_SWITCH(eventPlayer, 0)
-                TOGGLE_POWER_SWITCH(eventPlayer, 1)
-                TOGGLE_POWER_SWITCH(eventPlayer, 2)
+                TOGGLE_POWER_SWITCH(0)
+                TOGGLE_POWER_SWITCH(1)
+                TOGGLE_POWER_SWITCH(2)
                 makeSwitchNoise()
                 checkPowerPanel()
             elif eventPlayer.tValue[Item.ID] == "innerSwitch3":
-                TOGGLE_POWER_SWITCH(eventPlayer, 1)
-                TOGGLE_POWER_SWITCH(eventPlayer, 2)
-                TOGGLE_POWER_SWITCH(eventPlayer, 3)
+                TOGGLE_POWER_SWITCH(1)
+                TOGGLE_POWER_SWITCH(2)
+                TOGGLE_POWER_SWITCH(3)
                 makeSwitchNoise()
                 checkPowerPanel()
             elif eventPlayer.tValue[Item.ID] == "innerSwitch4":
-                TOGGLE_POWER_SWITCH(eventPlayer, 2)
-                TOGGLE_POWER_SWITCH(eventPlayer, 3)
-                TOGGLE_POWER_SWITCH(eventPlayer, 4)
+                TOGGLE_POWER_SWITCH(2)
+                TOGGLE_POWER_SWITCH(3)
+                TOGGLE_POWER_SWITCH(4)
                 makeSwitchNoise()
                 checkPowerPanel()
             elif eventPlayer.tValue[Item.ID] == "innerSwitch5":
-                TOGGLE_POWER_SWITCH(eventPlayer, 3)
-                TOGGLE_POWER_SWITCH(eventPlayer, 4)
-                TOGGLE_POWER_SWITCH(eventPlayer, 0)
+                TOGGLE_POWER_SWITCH(3)
+                TOGGLE_POWER_SWITCH(4)
+                TOGGLE_POWER_SWITCH(0)
                 makeSwitchNoise()
                 checkPowerPanel()
 
@@ -1270,7 +1270,7 @@ rule "Interact":
                 chase(eventPlayer.innerMinigameValue2, 9999, rate=1, ChaseReeval.NONE)
         elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
             if "Sunglasses" not in eventPlayer.equipped:
-                INCREMENT_STATE(eventPlayer, "innerSunglasses")
+                INCREMENT_STATE("innerSunglasses")
                 eventPlayer.hasSunglasses = true
                 eventPlayer.equipped.append("Sunglasses")
                 manageEquips()
@@ -1285,33 +1285,33 @@ rule "Interact":
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
                     smallMessage(eventPlayer, "You carefully reach your hand in and extract a dusty key")
-                    GIVE_ITEM(eventPlayer, "Vent key")
+                    GIVE_ITEM("Vent key")
                 else:
                     smallMessage(eventPlayer, "There's something in the back, but the blades are spinning too fast to grab it")
             else:
                 smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
         elif eventPlayer.tValue[Item.ID] == "outerBruce":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT(eventPlayer, "You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
+                CREATE_TEXT("You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
-                CREATE_TEXT(eventPlayer, "Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nSex, drugs, and rock and roll", BRUCE_TEXT_LOCATION)
+                CREATE_TEXT("Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nSex, drugs, and rock and roll", BRUCE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT(eventPlayer, "Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 if eventPlayer.smugglerItem:
-                    CREATE_TEXT(eventPlayer, "Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.smugglerItem
                     smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
-                    GIVE_ITEM(eventPlayer, eventPlayer.smugglerItem)
+                    GIVE_ITEM(eventPlayer.smugglerItem)
                     eventPlayer.smugglerItem = null
                 else:
-                    CREATE_TEXT(eventPlayer, "Sorry, nothing for you", INSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Sorry, nothing for you", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerBartender":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT(eventPlayer, "If ya want something, ya gotta pay for it.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("If ya want something, ya gotta pay for it.", BARTENDER_TEXT_LOCATION)
             else:
-                CREATE_TEXT(eventPlayer, "You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1365,16 +1365,16 @@ rule "Interact":
             eventPlayer.pauseInteraction = false
         elif eventPlayer.tValue[Item.ID] == "outsideSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT(eventPlayer, "Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 if eventPlayer.smugglerItem:
-                    CREATE_TEXT(eventPlayer, "Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.smugglerItem
                     smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
-                    GIVE_ITEM(eventPlayer, eventPlayer.smugglerItem)
+                    GIVE_ITEM(eventPlayer.smugglerItem)
                     eventPlayer.smugglerItem = null
                 else:
-                    CREATE_TEXT(eventPlayer, "Sorry, nothing for you", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Sorry, nothing for you", OUTSIDE_SMUGGLER_TEXT_LOCATION)
 
     if strContains(eventPlayer.tValue[Item.ID], "Poster"):
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
@@ -1390,10 +1390,10 @@ rule "Interact":
 #!define NO_ITEM_MESSAGE random.choice(["You don't have anything to use", "You don't have anything to use", "You don't have anything to use", \
 "Your hands are empty", "Your hands are empty", "Your hands are empty", "You try punching it, but nothing happens"])
 
-#!define SHOULD_APPLY_ITEM(eventPlayer, key) (eventPlayer.key[Item.STATE] < len(eventPlayer.key[Item.REQUIRED_ITEM]) and eventPlayer.inventory[0] == eventPlayer.key[Item.REQUIRED_ITEM][eventPlayer.key[Item.STATE]])
+#!define SHOULD_APPLY_ITEM(key) (eventPlayer.key[Item.STATE] < len(eventPlayer.key[Item.REQUIRED_ITEM]) and eventPlayer.inventory[0] == eventPlayer.key[Item.REQUIRED_ITEM][eventPlayer.key[Item.STATE]])
 
 # have to save to a variable due to race conditions when immediately changing the state after showing the message
-#!define APPLY_ITEM_SUCCESS(eventPlayer, item) eventPlayer.tText = item[Item.SUCCESS_MESSAGE][item[Item.STATE]] \
+#!define APPLY_ITEM_SUCCESS(item) eventPlayer.tText = item[Item.SUCCESS_MESSAGE][item[Item.STATE]] \
 smallMessage(eventPlayer, eventPlayer.tText)
 def APPLY_ITEM_FAIL():
     if len(eventPlayer.inventory) == 0:
@@ -1405,53 +1405,53 @@ rule "Apply":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction
 
-    if SHOULD_INTERACT(eventPlayer, eventPlayer.tutGate1) or SHOULD_INTERACT(eventPlayer, eventPlayer.tutGate2):
-        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "tutGate1")
+    if SHOULD_INTERACT(eventPlayer.tutGate1) or SHOULD_INTERACT(eventPlayer.tutGate2):
+        eventPlayer.tValue = GET_ITEM_ENTRY("tutGate1")
         if eventPlayer.tValue[Item.STATE] == 0:
-            if SHOULD_APPLY_ITEM(eventPlayer, tutGate1):
-                APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+            if SHOULD_APPLY_ITEM(tutGate1):
+                APPLY_ITEM_SUCCESS(eventPlayer.tValue)
                 eventPlayer.tValue[Item.STATE]++
-                SAVE_STATE(eventPlayer, eventPlayer.tValue)
-                INCREMENT_STATE(eventPlayer, "tutGate2")
+                SAVE_STATE(eventPlayer.tValue)
+                INCREMENT_STATE("tutGate2")
 
                 del eventPlayer.inventory[0]
                 playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 100)
                 eventPlayer.tutorialFinished = true
             else:
                 APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerWires):
-        if SHOULD_APPLY_ITEM(eventPlayer, innerWires):
-            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerWires")
-            APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+    elif SHOULD_INTERACT(eventPlayer.innerWires):
+        if SHOULD_APPLY_ITEM(innerWires):
+            eventPlayer.tValue = GET_ITEM_ENTRY("innerWires")
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+            SAVE_STATE(eventPlayer.tValue)
 
             innerWirePlayers.append(eventPlayer)
             eventPlayer.wiresConnected = true
             del eventPlayer.inventory[0]
         else:
             APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerBarrel2):
-        if SHOULD_APPLY_ITEM(eventPlayer, innerBarrel2):
-            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerBarrel2")
-            APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+    elif SHOULD_INTERACT(eventPlayer.innerBarrel2):
+        if SHOULD_APPLY_ITEM(innerBarrel2):
+            eventPlayer.tValue = GET_ITEM_ENTRY("innerBarrel2")
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+            SAVE_STATE(eventPlayer.tValue)
 
             del eventPlayer.inventory[0]
-            GIVE_ITEM(eventPlayer, "Filled petrol can")
+            GIVE_ITEM("Filled petrol can")
             createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
             pushEffectDeleteQueue()
             wait(2)
             popEffectDeleteQueue()
         else:
             APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerGenerator):
-        if SHOULD_APPLY_ITEM(eventPlayer, innerGenerator):
-            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerGenerator")
-            APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+    elif SHOULD_INTERACT(eventPlayer.innerGenerator):
+        if SHOULD_APPLY_ITEM(innerGenerator):
+            eventPlayer.tValue = GET_ITEM_ENTRY("innerGenerator")
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+            SAVE_STATE(eventPlayer.tValue)
 
             del eventPlayer.inventory[0]
             createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -1461,28 +1461,28 @@ rule "Apply":
             eventPlayer.generatorOn = true
         else:
             APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerWorkbench):
-        if SHOULD_APPLY_ITEM(eventPlayer, innerWorkbench):
-            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerWorkbench")
-            APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+    elif SHOULD_INTERACT(eventPlayer.innerWorkbench):
+        if SHOULD_APPLY_ITEM(innerWorkbench):
+            eventPlayer.tValue = GET_ITEM_ENTRY("innerWorkbench")
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingInnerMinigame = true
         else:
             APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerRadio):
+    elif SHOULD_INTERACT(eventPlayer.innerRadio):
         if eventPlayer.inventory[0] == "Fiddly part":
             smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios.\n                        Maybe you can switch this one at a workbench")
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
             doInnerRadioConversation()
-            INCREMENT_STATE(eventPlayer, "innerRadio")
+            INCREMENT_STATE("innerRadio")
             eventPlayer.inventory.remove("Reverse polarity fiddly part")
         else:
             APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.innerToolbox2):
-        if SHOULD_APPLY_ITEM(eventPlayer, innerToolbox2):
-            eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "innerToolbox2")
-            APPLY_ITEM_SUCCESS(eventPlayer, eventPlayer.tValue)
+    elif SHOULD_INTERACT(eventPlayer.innerToolbox2):
+        if SHOULD_APPLY_ITEM(innerToolbox2):
+            eventPlayer.tValue = GET_ITEM_ENTRY("innerToolbox2")
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer, eventPlayer.tValue)
+            SAVE_STATE(eventPlayer.tValue)
 
             eventPlayer.hasSunscreen = true
             eventPlayer.equipped.append("Sunscreen")
@@ -1490,49 +1490,49 @@ rule "Apply":
             del eventPlayer.inventory[0]
         else:
             APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerBruce):
+    elif SHOULD_INTERACT(eventPlayer.outerBruce):
         if eventPlayer.inventory[0] == "Thing 1":
-            CREATE_TEXT(eventPlayer, "Ah, perfect", BRUCE_TEXT_LOCATION)
-            INCREMENT_STATE(eventPlayer, "outerBruce")
+            CREATE_TEXT("Ah, perfect", BRUCE_TEXT_LOCATION)
+            INCREMENT_STATE("outerBruce")
         else:
-            CREATE_TEXT(eventPlayer, "What is this? I don't need it.", BRUCE_TEXT_LOCATION)
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerSmuggler):
-        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outerSmuggler")
+            CREATE_TEXT("What is this? I don't need it.", BRUCE_TEXT_LOCATION)
+    elif SHOULD_INTERACT(eventPlayer.outerSmuggler):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outerSmuggler")
         if eventPlayer.tValue[Item.STATE] == 0:
-            CREATE_TEXT(eventPlayer, "Gotta buy a membership before we can deliver anything.", INSIDE_SMUGGLER_TEXT_LOCATION)
+            CREATE_TEXT("Gotta buy a membership before we can deliver anything.", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.STATE] == 1:
             if len(eventPlayer.inventory) == 0:
-                CREATE_TEXT(eventPlayer, "You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.smugglerItem:
-                CREATE_TEXT(eventPlayer, "Only one delivery at a time.", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Only one delivery at a time.", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
-                CREATE_TEXT(eventPlayer, "You got it!", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You got it!", INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outsideSmuggler):
-        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outsideSmuggler")
+    elif SHOULD_INTERACT(eventPlayer.outsideSmuggler):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSmuggler")
         if eventPlayer.tValue[Item.STATE] == 0:
-            CREATE_TEXT(eventPlayer, "Gotta buy a membership before we can deliver anything.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+            CREATE_TEXT("Gotta buy a membership before we can deliver anything.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.STATE] == 1:
             if len(eventPlayer.inventory) == 0:
-                CREATE_TEXT(eventPlayer, "You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.smugglerItem:
-                CREATE_TEXT(eventPlayer, "Only one delivery at a time.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Only one delivery at a time.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             else:
-                CREATE_TEXT(eventPlayer, "You got it!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You got it!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
-    elif SHOULD_INTERACT(eventPlayer, eventPlayer.outerBartender):
-        eventPlayer.tValue = GET_ITEM_ENTRY(eventPlayer, "outsideBartender")
+    elif SHOULD_INTERACT(eventPlayer.outerBartender):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideBartender")
         if eventPlayer.tValue[Item.STATE] == 0:
             if strContains(eventPlayer.inventory[0], "dollars"):
-                CREATE_TEXT(eventPlayer, "Here ya go, my last bottle of hard liquor.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("Here ya go, my last bottle of hard liquor.", BARTENDER_TEXT_LOCATION)
                 del eventPlayer.inventory[0]
                 eventPlayer.money -= ALCOHOL_COST
                 if eventPlayer.money > 0:
-                    GIVE_ITEM(eventPlayer, "{0} dollars".format(eventPlayer.money))
+                    GIVE_ITEM("{0} dollars".format(eventPlayer.money))
             else:
-                CREATE_TEXT(eventPlayer, "Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
     else:
         pass
         
@@ -1590,8 +1590,8 @@ rule "Tutorial gate barrier":
     while RULE_CONDITION
     eventPlayer.setMoveSpeed(100)
 
-    # MAKE_DAMAGE_WALL(eventPlayer, vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), "Ouch!")
-    # MAKE_DAMAGE_WALL(eventPlayer, vect(-94.21, 10.19, -92.06), vect(-91.58, 14.05, -92.61), "Ouch!")
+    # MAKE_DAMAGE_WALL(vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), "Ouch!")
+    # MAKE_DAMAGE_WALL(vect(-94.21, 10.19, -92.06), vect(-91.58, 14.05, -92.61), "Ouch!")
 
     # wait(0.016, Wait.ABORT_WHEN_FALSE)
     # goto RULE_START
@@ -1621,11 +1621,11 @@ rule "Create lights out barriers":
     @Condition eventPlayer.isJunk
     @Condition not eventPlayer.lightsOn
 
-    MAKE_WALL(eventPlayer, vect(-85.53, 10.44, -97.39), vect(-85, 14.38, -94.87), DARK_AND_SCARY_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-104.47, 5.37, -128.85), vect(-99.85, 12.44, -107.17), DARK_AND_SCARY_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-103.34, 6.04, -140.02), vect(-102.20, 16.33, -134.55), DARK_AND_SCARY_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-99.65, 12.44, -153.76), vect(-102.71, 16, -149.09), DARK_AND_SCARY_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-97.29, 12.44, -169.53), vect(-96.75, 16, -166.99), DARK_AND_SCARY_MESSAGE)
+    MAKE_WALL(vect(-85.53, 10.44, -97.39), vect(-85, 14.38, -94.87), DARK_AND_SCARY_MESSAGE)
+    MAKE_WALL(vect(-104.47, 5.37, -128.85), vect(-99.85, 12.44, -107.17), DARK_AND_SCARY_MESSAGE)
+    MAKE_WALL(vect(-103.34, 6.04, -140.02), vect(-102.20, 16.33, -134.55), DARK_AND_SCARY_MESSAGE)
+    MAKE_WALL(vect(-99.65, 12.44, -153.76), vect(-102.71, 16, -149.09), DARK_AND_SCARY_MESSAGE)
+    MAKE_WALL(vect(-97.29, 12.44, -169.53), vect(-96.75, 16, -166.99), DARK_AND_SCARY_MESSAGE)
 
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
@@ -1651,12 +1651,12 @@ rule "Create sunlight barriers":
     @Condition eventPlayer.lightsOn
     @Condition not eventPlayer.canGoOutside
 
-    MAKE_WALL(eventPlayer, vect(-37.91, 13.26, -123.26), vect(-41.45, 16.37, -122.51), SCRAPYARD_OUTSIDE_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-46.03, 7.37, -113.09), vect(-49.96, 11.37, -112.03), SCRAPYARD_OUTSIDE_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-65.11, 7.43, -101.49), vect(-63.95, 11.43, -96.06), SCRAPYARD_OUTSIDE_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-52.07, 13.51, -116.27), vect(-51.45, 16.35, -113.52), SCRAPYARD_OUTSIDE_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-56.23, 14.48, -110.34), vect(-62.38, 17.43, -109.05), SCRAPYARD_OUTSIDE_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-68.33, 12.43, -103.68), vect(-73.34, 17.6, -102.63), SCRAPYARD_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(-37.91, 13.26, -123.26), vect(-41.45, 16.37, -122.51), SCRAPYARD_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(-46.03, 7.37, -113.09), vect(-49.96, 11.37, -112.03), SCRAPYARD_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(-65.11, 7.43, -101.49), vect(-63.95, 11.43, -96.06), SCRAPYARD_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(-52.07, 13.51, -116.27), vect(-51.45, 16.35, -113.52), SCRAPYARD_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(-56.23, 14.48, -110.34), vect(-62.38, 17.43, -109.05), SCRAPYARD_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(-68.33, 12.43, -103.68), vect(-73.34, 17.6, -102.63), SCRAPYARD_OUTSIDE_MESSAGE)
 
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
@@ -1670,9 +1670,9 @@ rule "Create barn outside wall":
     @Condition eventPlayer.isHog
     @Condition not eventPlayer.canLeaveBarn
 
-    MAKE_WALL(eventPlayer, vect(43.16, 16, -72.95), vect(46.87, 19, -73.26), BARN_OUTSIDE_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(43.08, 10, -74.13), vect(42.65, 12.75, -78.85), BARN_OUTSIDE_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(49.50, 10, -91.89), vect(49.17, 13, -95.62), BARN_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(43.16, 16, -72.95), vect(46.87, 19, -73.26), BARN_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(43.08, 10, -74.13), vect(42.65, 12.75, -78.85), BARN_OUTSIDE_MESSAGE)
+    MAKE_WALL(vect(49.50, 10, -91.89), vect(49.17, 13, -95.62), BARN_OUTSIDE_MESSAGE)
     
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
@@ -1684,7 +1684,7 @@ rule "Create barn secret wall":
     @Condition eventPlayer.isHog
     @Condition not eventPlayer.canAccessBarnSecret
 
-    MAKE_WALL(eventPlayer, vect(55.83, 9, -65.80), vect(52.28, 11.81, -65.50), "Enter the code first!")
+    MAKE_WALL(vect(55.83, 9, -65.80), vect(52.28, 11.81, -65.50), "Enter the code first!")
 
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
@@ -1699,9 +1699,9 @@ rule "Junkertown entry wall":
     @Condition eventPlayer.isHog
     @Condition eventPlayer.canLeaveBarn
 
-    MAKE_WALL(eventPlayer, vect(-50.22, 4.35, -41.54), vect(-48.34, 8.47, -47.74), JUNKERTOWN_WALL_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-48.99, 9.49, -46.47), vect(-47.91, 13.48, -50.19), JUNKERTOWN_WALL_MESSAGE)
-    MAKE_WALL(eventPlayer, vect(-28.33, 4.48, -64.23), vect(-25.17, 8.48, -66.02), JUNKERTOWN_WALL_MESSAGE)
+    MAKE_WALL(vect(-50.22, 4.35, -41.54), vect(-48.34, 8.47, -47.74), JUNKERTOWN_WALL_MESSAGE)
+    MAKE_WALL(vect(-48.99, 9.49, -46.47), vect(-47.91, 13.48, -50.19), JUNKERTOWN_WALL_MESSAGE)
+    MAKE_WALL(vect(-28.33, 4.48, -64.23), vect(-25.17, 8.48, -66.02), JUNKERTOWN_WALL_MESSAGE)
 
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
@@ -1730,9 +1730,9 @@ rule "trigger all npcs":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
 
-    INCREMENT_STATE(eventPlayer, "outerBruce")
-    INCREMENT_STATE(eventPlayer, "outerSmuggler")
-    INCREMENT_STATE(eventPlayer, "outsideSmuggler")
+    INCREMENT_STATE("outerBruce")
+    INCREMENT_STATE("outerSmuggler")
+    INCREMENT_STATE("outsideSmuggler")
 
 rule "Debug on":
     @Event eachPlayer
