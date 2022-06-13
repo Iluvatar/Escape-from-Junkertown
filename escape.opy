@@ -82,6 +82,7 @@ enum Item:
 #!define POWER_OFF_COLOR Color.RED
 #!define POWER_BROKEN_COLOR Color.BLACK
 #!define ALCOHOL_COST 40
+#!define SMUGGLER_COST 100
 
 #!define ZEN_HIDE_LOCATION vect(51, 9.15, -57)
 #!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.6, -104.95)
@@ -570,9 +571,9 @@ rule "Global setup":
     # inner workbench puzzle
     createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.45, 8.89, -184.36), 0.04, EffectReeval.VISIBILITY)
     createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.50, 8.89, -184.63), 0.04, EffectReeval.VISIBILITY)
-    createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
@@ -1448,7 +1449,7 @@ rule "Interact":
                 OUTER_MINIGAME_TOGGLE(7)
                 OUTER_MINIGAME_TOGGLE(8)
             elif eventPlayer.tValue[Item.ID] == "outerMinigameDot5":
-                pass
+                playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer, 30)
             if eventPlayer.tValue[Item.ID] == "outerMinigameDot6":
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(5)
@@ -1680,7 +1681,14 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.outerSmuggler):
         eventPlayer.tValue = GET_ITEM_ENTRY("outerSmuggler")
         if eventPlayer.tValue[Item.STATE] == 0:
-            CREATE_TEXT("Gotta buy a membership before we can deliver anything.", INSIDE_SMUGGLER_TEXT_LOCATION)
+            if strContains(eventPlayer.inventory[0], "dollars"):
+                CREATE_TEXT("Great! I'll sign you right up.", INSIDE_SMUGGLER_TEXT_LOCATION)
+                del eventPlayer.inventory[0]
+                eventPlayer.money -= SMUGGLER_COST
+                if eventPlayer.money > 0:
+                    GIVE_ITEM("{0} dollars".format(eventPlayer.money))
+            else:
+                CREATE_TEXT("Gotta buy a membership before we can deliver anything.", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.STATE] == 1:
             if len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
@@ -1693,7 +1701,7 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.outsideSmuggler):
         eventPlayer.tValue = GET_ITEM_ENTRY("outsideSmuggler")
         if eventPlayer.tValue[Item.STATE] == 0:
-            CREATE_TEXT("Gotta buy a membership before we can deliver anything.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+            CREATE_TEXT("You gotta buy a membership before we can deliver anything.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.STATE] == 1:
             if len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
