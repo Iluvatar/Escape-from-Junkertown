@@ -83,10 +83,12 @@ enum Item:
 #!define POWER_BROKEN_COLOR Color.BLACK
 #!define ALCOHOL_COST 40
 
+#!define ZEN_HIDE_LOCATION vect(51, 9.15, -57)
 #!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.6, -104.95)
 #!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 14.48 + 1.6, -88.07)
 #!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 5.49 + 1.6, -49.63)
 #!define BARTENDER_TEXT_LOCATION vect(-54.65, 2.7 + 1.6, -131.02)
+#!define OUTER_MINIGAME_BALL_SIZE 0.05
 
 
 
@@ -98,6 +100,7 @@ globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
 globalvar innerMinigamePlayers = []
+globalvar outerMinigamePlayers = []
 globalvar radioSmokePlayers = []
 globalvar mapMarkerPlayers = []
 globalvar barnHintPlayers = []
@@ -120,6 +123,8 @@ globalvar insideSmugglerNpc
 globalvar bartenderNpc
 globalvar zenNpc
 
+# other
+globalvar outerMinigameColors = [Color.RED, Color.BLACK]
 
 
 # PLAYER VARIABLES
@@ -182,6 +187,10 @@ playervar barnCodeInputted
 playervar canLeaveBarn
 playervar canAccessBarnSecret
 
+playervar isDoingOuterMinigame
+playervar outerMinigameState
+playervar hasFinishedOuterMinigame
+
 # achievements
 playervar postersFound
 
@@ -206,6 +215,7 @@ playervar outerBruce
 playervar outsideSmuggler
 playervar outerSmuggler
 playervar outerBartender
+playervar outerWorkbench
 
 
 
@@ -303,6 +313,14 @@ SAVE_STATE(eventPlayer.tValue)
 eventPlayer.tValue[Item.STATE] = value \
 SAVE_STATE(eventPlayer.tValue)
 
+# Opens the barn secret area
+def openSecretDoor():
+    zenNpc.teleport(vect(54.41, 9.5, -64.48))
+    wait(0.5)
+    zenNpc.teleport(ZEN_HIDE_LOCATION)
+    # cooldown
+    wait(5)
+
 # Toggles visiblity of the given power panel switch
 #!define TOGGLE_POWER_SWITCH(index) if eventPlayer in powerPanelPlayers[index]: \
     powerPanelPlayers[index].remove(eventPlayer) \
@@ -314,12 +332,23 @@ def checkPowerPanel():
     if all([eventPlayer not in elem for elem in powerPanelPlayers]):
         eventPlayer.powerSwitched = true
 
-# Converts between 2D and 3D coordinate locations for the workbench minigame
+# Converts between 2D and 3D coordinate locations for the inner workbench minigame
 #!define INNER_MINIGAME_X_0 vect(-103.33, 0, -183.70)
 #!define INNER_MINIGAME_X_MAX vect(-103.65, 0, -185.43)
 #!define INNER_MINIGAME_Y_0 8.73
 #!define INNER_MINIGAME_2D_TO_3D(vect2d) INNER_MINIGAME_X_0 + (INNER_MINIGAME_X_MAX - INNER_MINIGAME_X_0) * vect2d.x / distance(INNER_MINIGAME_X_0, INNER_MINIGAME_X_MAX) + vect(0, vect2d.y + INNER_MINIGAME_Y_0, 0)
 #!define INNER_MINIGAME_3D_TO_2D(vect3d) vect(distance(INNER_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - INNER_MINIGAME_Y_0, 0)
+
+# Converts between 2D and 3D coordinate locations for the outer workbench minigame
+#!define OUTER_MINIGAME_X_0 vect(-56.627, 0, -61.328)
+#!define OUTER_MINIGAME_X_MAX vect(-56.286, 0, -59.735)
+#!define OUTER_MINIGAME_Y_0 11.998
+#!define OUTER_MINIGAME_2D_TO_3D(vect2d) OUTER_MINIGAME_X_0 + (OUTER_MINIGAME_X_MAX - OUTER_MINIGAME_X_0) * vect2d.x / distance(OUTER_MINIGAME_X_0, OUTER_MINIGAME_X_MAX) + vect(0, vect2d.y + OUTER_MINIGAME_Y_0, 0)
+#!define OUTER_MINIGAME_3D_TO_2D(vect3d) vect(distance(OUTER_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - OUTER_MINIGAME_Y_0, 0)
+
+# Toggle outer minigame state
+#!define OUTER_MINIGAME_TOGGLE(num) eventPlayer.outerMinigameState[num]++ \
+eventPlayer.outerMinigameState[num] %= 2
 
 # Enters a digit to the barn code
 #!define ENTER_BARN_DIGIT(digit) eventPlayer.barnCodeInputted.append(digit) \
@@ -333,10 +362,7 @@ def checkBarnCode():
         barnHintPlayers.remove(eventPlayer)
 
         # Zen drop
-        createDummy(Hero.ZENYATTA, Team.2, 1, vect(54.41, 9.5, -64.48), vect(1, 0, 0))
-        getPlayersInSlot(1, Team.2).setInvisibility(Invis.ALL)
-        wait(0.5)
-        destroyDummy(Team.2, 1)
+        async(openSecretDoor(), AsyncBehavior.NOOP)
 
 # Makes a noise for when a switch is pressed
 def makeSwitchNoise():
@@ -392,6 +418,11 @@ rule "Keep match time high to prevent time based voice lines":
 rule "Spawn NPCs":
     @Event global
     @Condition isGameInProgress()
+
+    createDummy(Hero.ZENYATTA, Team.2, -1, ZEN_HIDE_LOCATION, null)
+    zenNpc = getLastCreatedEntity()
+    zenNpc.setInvisibility(Invis.ALL)
+    zenNpc.disablePlayerCollision()
 
     createDummy(Hero.TORBJORN, Team.2, -1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
     bruceNpc = getLastCreatedEntity()
@@ -536,15 +567,20 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.44, -169.05), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.94, -169.05), 3, EffectReeval.VISIBILITY)
 
-    # workbench puzzle
-    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.45, 8.89, -184.36), 0.04, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.50, 8.89, -184.63), 0.04, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    # inner workbench puzzle
+    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.45, 8.89, -184.36), 0.04, EffectReeval.VISIBILITY)
+    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.50, 8.89, -184.63), 0.04, EffectReeval.VISIBILITY)
     createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createBeam(innerMinigamePlayers, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
+
+    # outer workbench puzzle
+    createInWorldText(outerMinigamePlayers, iconString(Icon.RECYCLE), OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(outerMinigamePlayers, iconString(Icon.RECYCLE), OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(outerMinigamePlayers, iconString(Icon.RECYCLE), OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 2, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # map marker
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
@@ -633,6 +669,10 @@ def innerMinigameInitialState():
     eventPlayer.innerMinigameValue1 = PI / 2
     eventPlayer.innerMinigameValue2 = PI / 2
 
+def outerMinigameInitialState():
+    eventPlayer.isDoingOuterMinigame = false
+    eventPlayer.outerMinigameState = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
 def manageEquips():
     equipPlayers[Equip.HAS_ANY].remove(eventPlayer)
     equipPlayers[Equip.LITTLE_BUDDY].remove(eventPlayer)
@@ -692,6 +732,9 @@ def playerInitialState():
     eventPlayer.hasSunscreen = false
     eventPlayer.canGoOutside = false
 
+    outerMinigameInitialState()
+    eventPlayer.hasFinishedOuterMinigame = false
+
     # generate random 5 digit code
     eventPlayer.barnCode = [random.randint(0, 5 ** 5 - 1)]
     eventPlayer.barnCode.append(eventPlayer.barnCode[0] % 5 ** 4)
@@ -745,7 +788,7 @@ def playerInitialState():
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
 
-    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Blue battery"], ["This should help you change the color of the battery"]]
+    eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Red battery"], ["This should help you change the color of the battery"]]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -778,7 +821,7 @@ def playerInitialState():
         # larger inner section
         ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
-        ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["A chest 2"], null, true],
+        ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["There's a red battery inside"], "Red battery", true],
         ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["There's a note: \"Threw the key in the vent. As long as the vents are running, no one should be able to grab it.\""], null, true],
         ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
@@ -832,6 +875,20 @@ def playerInitialState():
         ["outerPoster14", 0, vect(-54.26, 5.98, -47.88), 0.7, ["poster14"], null, null, true],
 
         ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
+
+        ["outerMinigameDot1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 3, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot4", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot5", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot6", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot7", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.42, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot8", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot9", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameDot10", 0, OUTER_MINIGAME_2D_TO_3D(vect(1.02, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        ["outerMinigameRotate1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 2.5, 0)), 0.08, null],
+        ["outerMinigameRotate2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 2, 0)), 0.08, null],
+        ["outerMinigameRotate3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 2, 0)), 0.08, null],
 
         # barn area
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
@@ -892,11 +949,12 @@ def playerInitialState():
         eventPlayer.innerRadio,
         eventPlayer.innerWorkbench,
         eventPlayer.innerToolbox2,
+
         eventPlayer.outerBruce,
         eventPlayer.outerSmuggler,
         eventPlayer.outsideSmuggler,
         eventPlayer.outerBartender,
-        eventPlayer.innerWorkbench,
+        eventPlayer.outerWorkbench,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -930,6 +988,8 @@ def playerInitialState():
 
     barnHintPlayers.remove(eventPlayer)
     barnHintPlayers.append(eventPlayer)
+
+    outerMinigamePlayers.remove(eventPlayer)
 
     eventPlayer.startForcingHero(Hero.JUNKRAT)
     eventPlayer.teleport(eventPlayer.junkPos)
@@ -1032,7 +1092,7 @@ rule "Lights on check":
     INCREMENT_STATE("innerSwitch4")
     INCREMENT_STATE("innerSwitch5")
 
-rule "Workbench minigame start":
+rule "Inner workbench minigame start":
     @Event eachPlayer
     @Condition eventPlayer.isDoingInnerMinigame
 
@@ -1046,7 +1106,7 @@ rule "Workbench minigame start":
     createBeam(eventPlayer, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
 
-rule "Stop workbench minigame controls":
+rule "Stop inner workbench minigame controls":
     @Event eachPlayer
     @Condition eventPlayer.isDoingInnerMinigame and not eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
 
@@ -1056,7 +1116,7 @@ rule "Stop workbench minigame controls":
     stopChasingVariable(eventPlayer.innerMinigameValue1)
     stopChasingVariable(eventPlayer.innerMinigameValue2)
 
-rule "Workbench minigame success":
+rule "Inner workbench minigame success":
     @Event eachPlayer
     @Condition abs(eventPlayer.innerMinigameValue1 % (2 * PI) - 3 * PI / 2) < 0.1 and abs(eventPlayer.innerMinigameValue2 % (2 * PI / 3) - PI / 6) < 0.05
 
@@ -1070,7 +1130,7 @@ rule "Workbench minigame success":
     eventPlayer.inventory = "Reverse polarity fiddly part".concat(eventPlayer.inventory)
     smallMessage(eventPlayer, "You manager to reverse the polarity of the fiddly part")
 
-rule "Workbench minigame stop":
+rule "Inner workbench minigame stop":
     @Event eachPlayer
     @Condition eventPlayer.isDoingInnerMinigame and distance(eventPlayer, eventPlayer.innerWorkbench[Item.POINT]) > 3
 
@@ -1080,6 +1140,58 @@ rule "Workbench minigame stop":
     popEffectDeleteQueue()
     popEffectDeleteQueue()
     innerMinigamePlayers.remove(eventPlayer)
+
+rule "Outer workbench minigame start":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingOuterMinigame
+
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[1]], OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[2]], OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[3]], OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[4]], OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[5]], OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[6]], OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[7]], OUTER_MINIGAME_2D_TO_3D(vect(0.42, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[8]], OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[9]], OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[10]], OUTER_MINIGAME_2D_TO_3D(vect(1.02, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    pushEffectDeleteQueue()
+
+rule "Outer workbench minigame success":
+    @Event eachPlayer
+    @Condition all([e == 1 for e in eventPlayer.outerMinigameState])
+
+    eventPlayer.hasFinishedOuterMinigame = true
+    SET_STATE("outerWorkbench", 1)
+    eventPlayer.inventory.remove("Red battery")
+    eventPlayer.inventory = "Black battery".concat(eventPlayer.inventory)
+    smallMessage(eventPlayer, "You manager to change the color of the battery")
+
+rule "Outer workbench minigame stop":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingOuterMinigame and distance(eventPlayer, eventPlayer.outerWorkbench[Item.POINT]) > 3
+
+    outerMinigameInitialState()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    outerMinigamePlayers.remove(eventPlayer)
 
 # Radio conversation
 def doInnerRadioConversation():
@@ -1294,7 +1406,7 @@ rule "Interact":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
-                CREATE_TEXT("Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nSex, drugs, and rock and roll", BRUCE_TEXT_LOCATION)
+                CREATE_TEXT("Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nThing 1, Thing 2, and a black battery.", BRUCE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", INSIDE_SMUGGLER_TEXT_LOCATION)
@@ -1312,6 +1424,72 @@ rule "Interact":
                 CREATE_TEXT("If ya want something, ya gotta pay for it.", BARTENDER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
+        elif strContains(eventPlayer.tValue[Item.ID], "outerMinigame") and not eventPlayer.hasFinishedOuterMinigame:
+            if eventPlayer.tValue[Item.ID] == "outerMinigameDot1":
+                OUTER_MINIGAME_TOGGLE(1)
+                OUTER_MINIGAME_TOGGLE(2)
+                OUTER_MINIGAME_TOGGLE(3)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot2":
+                OUTER_MINIGAME_TOGGLE(1)
+                OUTER_MINIGAME_TOGGLE(2)
+                OUTER_MINIGAME_TOGGLE(3)
+                OUTER_MINIGAME_TOGGLE(4)
+                OUTER_MINIGAME_TOGGLE(5)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot3":
+                OUTER_MINIGAME_TOGGLE(1)
+                OUTER_MINIGAME_TOGGLE(2)
+                OUTER_MINIGAME_TOGGLE(3)
+                OUTER_MINIGAME_TOGGLE(5)
+                OUTER_MINIGAME_TOGGLE(6)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot4":
+                OUTER_MINIGAME_TOGGLE(2)
+                OUTER_MINIGAME_TOGGLE(4)
+                OUTER_MINIGAME_TOGGLE(5)
+                OUTER_MINIGAME_TOGGLE(7)
+                OUTER_MINIGAME_TOGGLE(8)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot5":
+                pass
+            if eventPlayer.tValue[Item.ID] == "outerMinigameDot6":
+                OUTER_MINIGAME_TOGGLE(3)
+                OUTER_MINIGAME_TOGGLE(5)
+                OUTER_MINIGAME_TOGGLE(6)
+                OUTER_MINIGAME_TOGGLE(9)
+                OUTER_MINIGAME_TOGGLE(10)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot7":
+                OUTER_MINIGAME_TOGGLE(4)
+                OUTER_MINIGAME_TOGGLE(7)
+                OUTER_MINIGAME_TOGGLE(8)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot8":
+                OUTER_MINIGAME_TOGGLE(4)
+                OUTER_MINIGAME_TOGGLE(5)
+                OUTER_MINIGAME_TOGGLE(7)
+                OUTER_MINIGAME_TOGGLE(8)
+                OUTER_MINIGAME_TOGGLE(9)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot9":
+                OUTER_MINIGAME_TOGGLE(5)
+                OUTER_MINIGAME_TOGGLE(6)
+                OUTER_MINIGAME_TOGGLE(8)
+                OUTER_MINIGAME_TOGGLE(9)
+                OUTER_MINIGAME_TOGGLE(10)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot10":
+                OUTER_MINIGAME_TOGGLE(6)
+                OUTER_MINIGAME_TOGGLE(9)
+                OUTER_MINIGAME_TOGGLE(10)
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameRotate1":
+                eventPlayer.tMinigame = eventPlayer.outerMinigameState[1]
+                eventPlayer.outerMinigameState[1] = eventPlayer.outerMinigameState[2]
+                eventPlayer.outerMinigameState[2] = eventPlayer.outerMinigameState[3]
+                eventPlayer.outerMinigameState[3] = eventPlayer.tMinigame
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameRotate2":
+                eventPlayer.tMinigame = eventPlayer.outerMinigameState[4]
+                eventPlayer.outerMinigameState[4] = eventPlayer.outerMinigameState[7]
+                eventPlayer.outerMinigameState[7] = eventPlayer.outerMinigameState[8]
+                eventPlayer.outerMinigameState[8] = eventPlayer.tMinigame
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameRotate3":
+                eventPlayer.tMinigame = eventPlayer.outerMinigameState[6]
+                eventPlayer.outerMinigameState[6] = eventPlayer.outerMinigameState[9]
+                eventPlayer.outerMinigameState[9] = eventPlayer.outerMinigameState[10]
+                eventPlayer.outerMinigameState[10] = eventPlayer.tMinigame
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1466,6 +1644,7 @@ rule "Apply":
             eventPlayer.tValue = GET_ITEM_ENTRY("innerWorkbench")
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingInnerMinigame = true
+            innerMinigamePlayers.append(eventPlayer)
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerRadio):
@@ -1491,9 +1670,11 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outerBruce):
-        if eventPlayer.inventory[0] == "Thing 1":
+        if eventPlayer.inventory[0] == "Black battery":
             CREATE_TEXT("Ah, perfect", BRUCE_TEXT_LOCATION)
             INCREMENT_STATE("outerBruce")
+        elif eventPlayer.inventory[0] == "Red battery":
+            CREATE_TEXT("Weren't you listening? I need a black battery.", BRUCE_TEXT_LOCATION)
         else:
             CREATE_TEXT("What is this? I don't need it.", BRUCE_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.outerSmuggler):
@@ -1533,6 +1714,14 @@ rule "Apply":
                     GIVE_ITEM("{0} dollars".format(eventPlayer.money))
             else:
                 CREATE_TEXT("Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
+    elif SHOULD_INTERACT(eventPlayer.outerWorkbench):
+        if SHOULD_APPLY_ITEM(outerWorkbench):
+            eventPlayer.tValue = GET_ITEM_ENTRY("outerWorkbench")
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
+            eventPlayer.isDoingOuterMinigame = true
+            outerMinigamePlayers.append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
     else:
         pass
         
@@ -1826,7 +2015,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer") or strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outerMinigame"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -1850,9 +2039,11 @@ rule "Display stats":
 
     # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingInnerMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedInnerMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.innerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingOuterMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedOuterMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.outerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "workbench coords: {0}".format(updateEveryTick(OUTER_MINIGAME_3D_TO_2D(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()))), HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+
 
     hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
