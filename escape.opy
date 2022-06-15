@@ -85,14 +85,15 @@ enum Item:
 #!define WALL_MESSAGE_TIMEOUT 3
 #!define POWER_OFF_COLOR Color.RED
 #!define POWER_BROKEN_COLOR Color.BLACK
-#!define ALCOHOL_COST 40
+#!define ALCOHOL_COST 60
 #!define SMUGGLER_COST 100
 
 #!define BARN_NPC_HIDE_LOCATION vect(51, 9.15, -57)
 #!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.6, -104.95)
 #!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 13.48 + 1.6, -88.07)
 #!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 4.49 + 1.6, -49.63)
-#!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 1.6, -131.02)
+#!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 1.8, -131.02)
+#!define NOT_SMUGGLER_TEXT_LOCATION vect(-35.02, 1.48 + 1.6, -126.33)
 #!define OUTER_MINIGAME_BALL_SIZE 0.05
 
 
@@ -240,6 +241,7 @@ playervar outerBruce
 playervar outsideSmuggler
 playervar outerSmuggler
 playervar outerBartender
+playervar outerNotSmuggler
 playervar outerWorkbench
 
 playervar outsideHose
@@ -886,6 +888,7 @@ def playerInitialState():
     eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
+    eventPlayer.outerNotSmuggler = ["outerNotSmuggler", 0, vect(-35.02, 2.48, -126.33), 1, null]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -953,6 +956,7 @@ def playerInitialState():
         ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["toolbox 2"], null, true],
         ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["toolbox 3"], null, true],
         ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["radio"]],
+        ["outerMic", 0, vect(-30.95, 3.80, -135.05), 0.5, null],
 
         ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["cart"]],
 
@@ -1054,6 +1058,7 @@ def playerInitialState():
         eventPlayer.outerSmuggler,
         eventPlayer.outsideSmuggler,
         eventPlayer.outerBartender,
+        eventPlayer.outerNotSmuggler,
         eventPlayer.outerWorkbench,
 
         eventPlayer.outsideSat1,
@@ -1185,6 +1190,7 @@ rule "Hide npc text":
     @Condition distance(eventPlayer, INSIDE_SMUGGLER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, OUTSIDE_SMUGGLER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, BARTENDER_TEXT_LOCATION) > 5
+    @Condition distance(eventPlayer, NOT_SMUGGLER_TEXT_LOCATION) > 5
 
     popTextDeleteQueue()
 
@@ -1549,7 +1555,7 @@ rule "Interact":
                 CREATE_TEXT(eventPlayer.tText, BRUCE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), INSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 if eventPlayer.smugglerItem:
                     CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
@@ -1561,9 +1567,20 @@ rule "Interact":
                     CREATE_TEXT("Sorry, nothing for you", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerBartender":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("If ya want something, ya gotta pay for it.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("Drinks round here cost {0} bucks. But just for you,\nI'll make an exception and only charge you {1}.".format(ALCOHOL_COST / 2, ALCOHOL_COST), BARTENDER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outerNotSmuggler":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                CREATE_TEXT("Dance for me, monkey.", NOT_SMUGGLER_TEXT_LOCATION)
+            elif eventPlayer.tValue[Item.STATE] == 1:
+                CREATE_TEXT("Alright, you've earned your pay.", NOT_SMUGGLER_TEXT_LOCATION)
+                GIVE_ITEM("{0} dollars".format(ALCOHOL_COST + SMUGGLER_COST))
+                eventPlayer.money = ALCOHOL_COST + SMUGGLER_COST
+                eventPlayer.tValue[Item.STATE]++
+                SAVE_STATE(eventPlayer.tValue)
+            else:
+                CREATE_TEXT("Hey, I already paid you.", NOT_SMUGGLER_TEXT_LOCATION)
         elif strContains(eventPlayer.tValue[Item.ID], "outerMinigame") and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
             eventPlayer.outerMinigameMovesMade++
             if eventPlayer.tValue[Item.ID] == "outerMinigameDot1":
@@ -1634,6 +1651,17 @@ rule "Interact":
                 eventPlayer.outerMinigameState[10] = eventPlayer.tMinigame
             else:
                 eventPlayer.outerMinigameMovesMade--
+        elif eventPlayer.tValue[Item.ID] == "outerMic":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                smallMessage(eventPlayer, "You make a couple jokes")
+                eventPlayer.tValue[Item.STATE]++
+                eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+
+                eventPlayer.tValue = GET_ITEM_ENTRY("outerNotSmuggler")
+                eventPlayer.tValue[Item.STATE]++
+                SAVE_STATE(eventPlayer.tValue)
+            else:
+                smallMessage(eventPlayer, "You're done with comedy for today")
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1688,7 +1716,7 @@ rule "Interact":
             eventPlayer.pauseInteraction = false
         elif eventPlayer.tValue[Item.ID] == "outsideSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), OUTSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 if eventPlayer.smugglerItem:
                     CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
@@ -1848,6 +1876,8 @@ rule "Apply":
                 eventPlayer.money -= SMUGGLER_COST
                 if eventPlayer.money > 0:
                     GIVE_ITEM("{0} dollars".format(eventPlayer.money))
+                eventPlayer.tValue[Item.STATE]++
+                SAVE_STATE(eventPlayer.tValue)
             else:
                 CREATE_TEXT("Gotta buy a membership before we can deliver anything.", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.STATE] == 1:
@@ -1873,16 +1903,21 @@ rule "Apply":
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
     elif SHOULD_INTERACT(eventPlayer.outerBartender):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideBartender")
-        if eventPlayer.tValue[Item.STATE] == 0:
-            if strContains(eventPlayer.inventory[0], "dollars"):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outerBartender")
+        if strContains(eventPlayer.inventory[0], "dollars"):
+            if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Here ya go, my last bottle of hard liquor.", BARTENDER_TEXT_LOCATION)
                 del eventPlayer.inventory[0]
                 eventPlayer.money -= ALCOHOL_COST
                 if eventPlayer.money > 0:
                     GIVE_ITEM("{0} dollars".format(eventPlayer.money))
+                GIVE_ITEM("Strong alcohol")
+                eventPlayer.tValue[Item.STATE]++
+                SAVE_STATE(eventPlayer.tValue)
             else:
-                CREATE_TEXT("Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("I've got nothing left for ya, bud.", BARTENDER_TEXT_LOCATION)
+        else:
+            CREATE_TEXT("Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.outerWorkbench):
         eventPlayer.tValue = GET_ITEM_ENTRY("outerWorkbench")
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
@@ -2266,7 +2301,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outerMinigame"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
