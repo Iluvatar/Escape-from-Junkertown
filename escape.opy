@@ -429,26 +429,19 @@ rule "Move payload to the end":
     # wait for starting player to get through intro so the sound doesn't interfere
     wait(15)
 
-    createDummy(Hero.ASHE, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    createDummy(Hero.TRACER, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
     cartNpc = getLastCreatedEntity()
-    cartNpc.startForcingName("Cart")
-    cartNpc.disablePlayerCollision()
+    cartNpc.startForcingName("Not a smuggler")
     cartNpc.setStatusEffect(null, Status.INVINCIBLE, INF)
-    cartNpc.setInvisibility(Invis.ENEMIES)
 
 rule "Stop payload after first point":
     @Event global
     @Condition getPayloadProgressPercentage() > 38.20
 
-    # destroyDummy(Team.2, cartNpc.getSlot())
-    # match time restarts every checkpoint for some reason
     pauseMatchTime()
 
-    cartNpc.teleport(vect(-46, 14, -70))
-    cartNpc.setFacing(vect(-0.98, 0, -0.07), Relativity.TO_WORLD)
-    wait(1)
-    cartNpc.setUltCharge(100)
-    cartNpc.forceButtonPress(Button.ULTIMATE)
+    cartNpc.teleport(vect(-35.02, 1.48, -126.33))
+    cartNpc.setFacing(vect(0.42, 0.10, -0.90), Relativity.TO_WORLD)
 
 rule "Keep match time high to prevent time based voice lines":
     @Event global
@@ -461,10 +454,14 @@ rule "Spawn NPCs":
     @Event global
     @Condition isGameInProgress()
 
-    createDummy(Hero.TRACER, Team.2, -1, BARN_NPC_HIDE_LOCATION, null)
+    createDummy(Hero.ASHE, Team.2, -1, vect(-46, 14, -70), vect(-0.98, 0, -0.07))
     barnNpc = getLastCreatedEntity()
+    wait(RACE_CONDITION_DELAY)
     barnNpc.setInvisibility(Invis.ALL)
     barnNpc.disablePlayerCollision()
+    barnNpc.setUltCharge(100)
+    barnNpc.forceButtonPress(Button.ULTIMATE)
+    barnNpc.teleport(BARN_NPC_HIDE_LOCATION)
 
     createDummy(Hero.TORBJORN, Team.2, -1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
     bruceNpc = getLastCreatedEntity()
@@ -652,14 +649,15 @@ rule "Global setup":
     createBeam(satTunedPlayers[3], Beam.TORBJORN_TURRET_SIGHT, vect(6.139, 17.041, -44.789), vect(6.139, 17.041, -44.789) + 100 * vect(-0.551, 0.428, 0.716), Color.TEAM_1, EffectReeval.VISIBILITY)
 
 def showIntro():
+    wait(1)
     eventPlayer.disableHeroHUD()
-    eventPlayer.setStatusEffect(null, Status.FROZEN, INF)
+    eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
     eventPlayer.setInvisibility(Invis.ALL)
     introStage1Players.append(eventPlayer)
 
     FADE_TO_BLACK()
 
-    wait(4.5)
+    wait(3.5)
 
     # Stage 1, view of plan
     eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
@@ -719,7 +717,7 @@ def showIntro():
 
     eventPlayer.stopCamera()
     eventPlayer.enableHeroHud()
-    eventPlayer.clearStatusEffect(Status.FROZEN)
+    eventPlayer.clearStatusEffect(Status.ROOTED)
     eventPlayer.setInvisibility(Invis.NONE)
 
     hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
@@ -2206,13 +2204,14 @@ rule "trip cam":
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
     eventPlayer.disableHeroHUD()
-    eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
-    GIVE_ITEM("Strong alcohol")
-    GIVE_ITEM("Tuned satellite tuner")
-    satUntunedPlayers[0].append(eventPlayer)
-    satUntunedPlayers[1].append(eventPlayer)
-    satUntunedPlayers[2].append(eventPlayer)
-    satUntunedPlayers[3].append(eventPlayer)
+    # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+    # GIVE_ITEM("Strong alcohol")
+    # GIVE_ITEM("Tuned satellite tuner")
+    # satUntunedPlayers[0].append(eventPlayer)
+    # satUntunedPlayers[1].append(eventPlayer)
+    # satUntunedPlayers[2].append(eventPlayer)
+    # satUntunedPlayers[3].append(eventPlayer)
+    FADE_TO_BLACK()
 
 rule "stop trip cam":
     @Event eachPlayer
