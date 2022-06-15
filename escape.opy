@@ -54,6 +54,7 @@ settings {
 #!extension explosionSounds
 #!extension kineticExplosionEffects
 #!extension playMoreEffects
+#!extension spawnMoreDummyBots
 
 #!define PI 3.1415926535
 #!define RACE_CONDITION_DELAY 0.1
@@ -123,6 +124,8 @@ globalvar bruceNpc
 globalvar outsideSmugglerNpc
 globalvar insideSmugglerNpc
 globalvar bartenderNpc
+globalvar cassNpc
+globalvar doomNpc
 globalvar zenNpc
 
 # other
@@ -446,6 +449,18 @@ rule "Spawn NPCs":
     createDummy(Hero.ASHE, Team.2, -1, vect(-54.65, 1.73, -131.02), vect(0.87, 0, -0.49))
     bartenderNpc = getLastCreatedEntity()
     bartenderNpc.startForcingName("Bartender")
+
+    createDummy(Hero.REAPER, Team.2, -1, vect(-26.31, 12.75, -64.86), vect(0.42, -0.66, 0.62))
+    getLastCreatedEntity().startForcingName("Guard")
+    createDummy(Hero.REAPER, Team.2, -1, vect(-42.06, 6.15, -68.68), vect(0.30, -0.50, 0.81))
+    getLastCreatedEntity().startForcingName("Guard")
+
+    createDummy(Hero.MCCREE, Team.2, -1, vect(-38.38, 1.48, -130.95), vect(0.87, 0.10, -0.48))
+    cassNpc = getLastCreatedEntity()
+    cassNpc.startForcingName("Lone Starr")
+    createDummy(Hero.DOOMFIST, Team.2, -1, vect(-35.02, 1.48, -126.33), vect(0.42, 0.10, -0.90))
+    doomNpc = getLastCreatedEntity()
+    doomNpc.startForcingName("Tall handsome stranger")
 
     getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
 
@@ -1735,7 +1750,7 @@ rule "Apply":
             if len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.smugglerItem:
-                CREATE_TEXT("Only one delivery at a time.", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Only one delivery at a time, love.", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it!", INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
@@ -1748,7 +1763,7 @@ rule "Apply":
             if len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.smugglerItem:
-                CREATE_TEXT("Only one delivery at a time.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Only one delivery at a time, love.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
@@ -1807,6 +1822,7 @@ playervar gate2End = vect(-91.58, 10.93, -92.60)
 
 rule "Tutorial gate visual":
     @Event eachPlayer
+    @Condition not eventPlayer.isDummy()
 
     eventPlayer.gate1Visibility = eventPlayer
 
