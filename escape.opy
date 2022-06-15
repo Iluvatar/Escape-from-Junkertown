@@ -122,6 +122,17 @@ enum Equip:
 
 globalvar equipPlayers = [[], [], [], [], []]
 
+# achievements
+enum Achievement:
+    HAS_ANY = 0,
+    MOST_WANTED, # find all the posters
+    INFRASIGHT, # find the sunglasses without using the map
+    PUZZLE_MASTER, # finish the color minigame in 5 moves
+    IN_A_HURRY, # click on Bruce 60 times before the minute is up
+    ESCAPE_ARTIST # escape Junkertown
+
+globalvar achievementPlayers = [[], [], [], [], [], []]
+
 # NPCs
 
 globalvar cartNpc
@@ -167,6 +178,7 @@ playervar hogEquipped
 playervar equipped
 playervar smugglerItem
 playervar money
+playervar achievements
 playervar inSunlight
 
 # Game state
@@ -203,6 +215,9 @@ playervar satsTuned
 
 # achievements
 playervar postersFound
+playervar outsideMapFound
+playervar outerMinigameMovesMade
+playervar timesBruceClicked
 
 # Item points
 
@@ -484,11 +499,19 @@ rule "Global setup":
     createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # equipped hud text
-    hudHeader(equipPlayers[Equip.HAS_ANY], "Equipped", HudPosition.LEFT, 9, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 10, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.ABILITY_2)), HudPosition.LEFT, 11, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(equipPlayers[Equip.SUNGLASES], "{0} Sunglasses".format(abilityIconString(Hero.WINSTON, Button.ULTIMATE)), HudPosition.LEFT, 12, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(equipPlayers[Equip.WINGS], "{0} Mechanical wings".format(abilityIconString(Hero.MERCY, Button.ULTIMATE)), HudPosition.LEFT, 13, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.HAS_ANY], "Equipped", HudPosition.LEFT, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.ABILITY_2)), HudPosition.LEFT, 3, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.SUNGLASES], "{0} Sunglasses".format(abilityIconString(Hero.WINSTON, Button.ULTIMATE)), HudPosition.LEFT, 4, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.WINGS], "{0} Mechanical wings".format(abilityIconString(Hero.MERCY, Button.ULTIMATE)), HudPosition.LEFT, 5, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+
+    # achievement hud text
+    hudHeader(achievementPlayers[Achievement.HAS_ANY], "Achievements", HudPosition.RIGHT, 1, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.MOST_WANTED], "{0} Most wanted".format(abilityIconString(Hero.MCCREE, Button.ULTIMATE)), HudPosition.RIGHT, 2, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.INFRASIGHT], "{0} Infrasight".format(abilityIconString(Hero.WIDOWMAKER, Button.ULTIMATE)), HudPosition.RIGHT, 3, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "{0} Puzzle master".format(abilityIconString(Hero.LUCIO, Button.JUMP)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.IN_A_HURRY], "{0} In a hurry".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)), HudPosition.RIGHT, 5, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "{0} Escape artist".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
@@ -699,7 +722,7 @@ def showIntro():
     eventPlayer.clearStatusEffect(Status.FROZEN)
     eventPlayer.setInvisibility(Invis.NONE)
 
-    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
@@ -711,6 +734,7 @@ def innerMinigameInitialState():
 def outerMinigameInitialState():
     eventPlayer.isDoingOuterMinigame = false
     eventPlayer.outerMinigameState = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    eventPlayer.outerMinigameMovesMade = 0
 
 def manageEquips():
     equipPlayers[Equip.HAS_ANY].remove(eventPlayer)
@@ -721,14 +745,34 @@ def manageEquips():
 
     if len(eventPlayer.equipped) > 0:
         equipPlayers[Equip.HAS_ANY].append(eventPlayer)
-    if "Little buddy" in eventPlayer.equipped:
+    if Equip.LITTLE_BUDDY in eventPlayer.equipped:
         equipPlayers[Equip.LITTLE_BUDDY].append(eventPlayer)
-    if "Sunscreen" in eventPlayer.equipped:
+    if Equip.SUNSCREEN in eventPlayer.equipped:
         equipPlayers[Equip.SUNSCREEN].append(eventPlayer)
-    if "Sunglasses" in eventPlayer.equipped:
+    if Equip.SUNGLASES in eventPlayer.equipped:
         equipPlayers[Equip.SUNGLASES].append(eventPlayer)
-    if "Mechanical wings" in eventPlayer.equipped:
+    if Equip.WINGS in eventPlayer.equipped:
         equipPlayers[Equip.WINGS].append(eventPlayer)
+
+def manageAchievements():
+    achievementPlayers[Achievement.MOST_WANTED].remove(eventPlayer)
+    achievementPlayers[Achievement.INFRASIGHT].remove(eventPlayer)
+    achievementPlayers[Achievement.PUZZLE_MASTER].remove(eventPlayer)
+    achievementPlayers[Achievement.IN_A_HURRY].remove(eventPlayer)
+    achievementPlayers[Achievement.ESCAPE_ARTIST].remove(eventPlayer)
+
+    if len(eventPlayer.equipped) > 0:
+        achievementPlayers[Achievement.HAS_ANY].append(eventPlayer)
+    if Achievement.MOST_WANTED in eventPlayer.equipped:
+        achievementPlayers[Achievement.MOST_WANTED].append(eventPlayer)
+    if Achievement.INFRASIGHT in eventPlayer.equipped:
+        achievementPlayers[Achievement.INFRASIGHT].append(eventPlayer)
+    if Achievement.ESCAPE_ARTIST in eventPlayer.equipped:
+        achievementPlayers[Achievement.PUZZLE_MASTER].append(eventPlayer)
+    if Achievement.ESCAPE_ARTIST in eventPlayer.equipped:
+        achievementPlayers[Achievement.IN_A_HURRY].append(eventPlayer)
+    if Achievement.PUZZLE_MASTER in eventPlayer.equipped:
+        achievementPlayers[Achievement.ESCAPE_ARTIST].append(eventPlayer)
 
 def playerInitialState():
     # Player state
@@ -754,6 +798,8 @@ def playerInitialState():
     eventPlayer.smugglerItem = null
 
     eventPlayer.money = 0
+
+    eventPlayer.achievements = []
 
     eventPlayer.inSunlight = false
 
@@ -796,6 +842,8 @@ def playerInitialState():
     eventPlayer.satsTuned = 0
 
     eventPlayer.postersFound = []
+    eventPlayer.outsideMapFound = false
+    eventPlayer.timesBruceClicked = 0
 
     # Item points
 
@@ -1023,6 +1071,7 @@ def playerInitialState():
     introStage2Players.remove(eventPlayer)
 
     manageEquips()
+    manageAchievements()
 
     playersInDark.remove(eventPlayer)
     playersInDark.append(eventPlayer)
@@ -1149,7 +1198,9 @@ rule "Poster achievement":
     @Event eachPlayer
     @Condition len(eventPlayer.postersFound) == 16
 
-    bigMessage(eventPlayer, "Achievement get: public menace")
+    bigMessage(eventPlayer, "Achievement get! Most wanted: find all the posters of you")
+    eventPlayer.achievements.append(Achievement.MOST_WANTED)
+    manageAchievements()
 
 rule "Lights on check":
     @Event eachPlayer
@@ -1247,6 +1298,12 @@ rule "Outer workbench minigame success":
     eventPlayer.inventory.remove("Red battery")
     eventPlayer.inventory = "Black battery".concat(eventPlayer.inventory)
     smallMessage(eventPlayer, "You manager to change the color of the battery")
+
+    if eventPlayer.outerMinigameMovesMade <= 5:
+        wait(3) # wait for small message to disappear
+        bigMessage(eventPlayer, "Achievement get! Puzzle master: solve the color puzzle in 5 moves")
+        eventPlayer.achievements.append(Achievement.PUZZLE_MASTER)
+        manageAchievements()
 
 rule "Outer workbench minigame stop":
     @Event eachPlayer
@@ -1452,11 +1509,15 @@ rule "Interact":
             chase(eventPlayer.innerMinigameValue1, INF, rate=1.8, ChaseReeval.NONE)
             chase(eventPlayer.innerMinigameValue2, INF, rate=1, ChaseReeval.NONE)
         elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
-            if "Sunglasses" not in eventPlayer.equipped:
+            if Equip.SUNGLASES not in eventPlayer.equipped:
                 INCREMENT_STATE("innerSunglasses")
                 eventPlayer.hasSunglasses = true
-                eventPlayer.equipped.append("Sunglasses")
+                eventPlayer.equipped.append(Equip.SUNGLASES)
                 manageEquips()
+                if not eventPlayer.outsideMapFound:
+                    bigMessage(eventPlayer, "Achievement get! Infrasight: find the sunglasses without using the map")
+                    eventPlayer.achievements.append(Achievement.INFRASIGHT)
+                    manageAchievements()
         elif eventPlayer.tValue[Item.STATE] == 0 and (eventPlayer.tValue[Item.ID] == "innerValve1" or eventPlayer.tValue[Item.ID] == "innerValve2" or eventPlayer.tValue[Item.ID] == "innerValve3"):
             eventPlayer.tValue[Item.STATE]++
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
@@ -1505,6 +1566,7 @@ rule "Interact":
             else:
                 CREATE_TEXT("You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
         elif strContains(eventPlayer.tValue[Item.ID], "outerMinigame") and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
+            eventPlayer.outerMinigameMovesMade++
             if eventPlayer.tValue[Item.ID] == "outerMinigameDot1":
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
@@ -1529,7 +1591,8 @@ rule "Interact":
                 OUTER_MINIGAME_TOGGLE(8)
             elif eventPlayer.tValue[Item.ID] == "outerMinigameDot5":
                 playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer, 30)
-            if eventPlayer.tValue[Item.ID] == "outerMinigameDot6":
+                eventPlayer.outerMinigameMovesMade--
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot6":
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(6)
@@ -1570,6 +1633,8 @@ rule "Interact":
                 eventPlayer.outerMinigameState[6] = eventPlayer.outerMinigameState[9]
                 eventPlayer.outerMinigameState[9] = eventPlayer.outerMinigameState[10]
                 eventPlayer.outerMinigameState[10] = eventPlayer.tMinigame
+            else:
+                eventPlayer.outerMinigameMovesMade--
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -1597,11 +1662,12 @@ rule "Interact":
         elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
             smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
         elif eventPlayer.tValue[Item.ID] == "barnSafe2":
-            if "Little buddy" not in eventPlayer.equipped:
-                eventPlayer.equipped.append("Little buddy")
+            if Equip.LITTLE_BUDDY not in eventPlayer.equipped:
+                eventPlayer.equipped.append(Equip.LITTLE_BUDDY)
                 manageEquips()
             eventPlayer.canLeaveBarn = true
         elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
+            eventPlayer.outsideMapFound = true
             eventPlayer.pauseInteraction = true
             eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
             eventPlayer.disableHeroHUD()
@@ -1746,7 +1812,7 @@ rule "Apply":
             SAVE_STATE(eventPlayer.tValue)
 
             eventPlayer.hasSunscreen = true
-            eventPlayer.equipped.append("Sunscreen")
+            eventPlayer.equipped.append(Equip.SUNSCREEN)
             manageEquips()
             del eventPlayer.inventory[0]
         else:
