@@ -86,8 +86,8 @@ enum Item:
 
 #!define ZEN_HIDE_LOCATION vect(51, 9.15, -57)
 #!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.6, -104.95)
-#!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 14.48 + 1.6, -88.07)
-#!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 5.49 + 1.6, -49.63)
+#!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 13.48 + 1.6, -88.07)
+#!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 4.49 + 1.6, -49.63)
 #!define BARTENDER_TEXT_LOCATION vect(-54.65, 2.7 + 1.6, -131.02)
 #!define OUTER_MINIGAME_BALL_SIZE 0.05
 
@@ -111,9 +111,10 @@ enum Equip:
     HAS_ANY = 0,
     LITTLE_BUDDY,
     SUNSCREEN,
-    SUNGLASES
+    SUNGLASES,
+    WINGS
 
-globalvar equipPlayers = [[], [], [], []]
+globalvar equipPlayers = [[], [], [], [], []]
 
 # NPCs
 
@@ -218,6 +219,8 @@ playervar outerSmuggler
 playervar outerBartender
 playervar outerWorkbench
 
+playervar outsideHose
+
 
 
 # UTILITIES
@@ -307,6 +310,10 @@ pushTextDeleteQueue()
 # Increments the state of the item with the given id
 #!define INCREMENT_STATE(id) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
 eventPlayer.tValue[Item.STATE]++ \
+SAVE_STATE(eventPlayer.tValue)
+
+#!define ADD_TO_STATE(id, val) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
+eventPlayer.tValue[Item.STATE] += val \
 SAVE_STATE(eventPlayer.tValue)
 
 # Sets the state of the item with the given id
@@ -462,6 +469,7 @@ rule "Global setup":
     hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 10, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.ABILITY_2)), HudPosition.LEFT, 11, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.SUNGLASES], "{0} Sunglasses".format(abilityIconString(Hero.WINSTON, Button.ULTIMATE)), HudPosition.LEFT, 12, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.WINGS], "{0} Mechanical wings".format(abilityIconString(Hero.MERCY, Button.ULTIMATE)), HudPosition.LEFT, 13, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
@@ -679,6 +687,7 @@ def manageEquips():
     equipPlayers[Equip.LITTLE_BUDDY].remove(eventPlayer)
     equipPlayers[Equip.SUNSCREEN].remove(eventPlayer)
     equipPlayers[Equip.SUNGLASES].remove(eventPlayer)
+    equipPlayers[Equip.WINGS].remove(eventPlayer)
 
     if len(eventPlayer.equipped) > 0:
         equipPlayers[Equip.HAS_ANY].append(eventPlayer)
@@ -688,6 +697,8 @@ def manageEquips():
         equipPlayers[Equip.SUNSCREEN].append(eventPlayer)
     if "Sunglasses" in eventPlayer.equipped:
         equipPlayers[Equip.SUNGLASES].append(eventPlayer)
+    if "Mechanical wings" in eventPlayer.equipped:
+        equipPlayers[Equip.WINGS].append(eventPlayer)
 
 def playerInitialState():
     # Player state
@@ -777,19 +788,21 @@ def playerInitialState():
 
     eventPlayer.innerWires = ["innerWires", 0, vect(-106.91, 12.44, -135.82), 0.4, ["The wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
     eventPlayer.innerBarrel2 = ["innerBarrel2", 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
-    eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator hums with a dim energy"], null, null, null, null, ["Filled petrol can"], ["You pour the petrol into the generator"]]
+    eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator hums with a dim energy"], null, null, null, null, ["Fuel filled petrol can"], ["You pour the petrol into the generator"]]
 
     eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
-    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
+    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
 
     eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
+
+    eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
+
+    eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
 
     eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
     eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
-
-    eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, 1, ["Red battery"], ["This should help you change the color of the battery"]]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -920,10 +933,13 @@ def playerInitialState():
         ["barnCodePanel", 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]],
 
         # larger outside area
+        eventPlayer.outsideHose, # placed here for priority reasons 
+
         ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["outsideJunkWorkbench"]],
         ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["outsideSafe"], null, true],
         ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["outsideIceBox"], null, true, true],
         ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]],
+        ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["water tower hose"]],
         ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["outsideFridge2"], null, true],
         ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["outsideFridge3"], null, true, true],
         ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["outsideFridge4"], null, true, true],
@@ -1407,7 +1423,16 @@ rule "Interact":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
-                CREATE_TEXT("Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\nThing 1, Thing 2, and a black battery.", BRUCE_TEXT_LOCATION)
+                CREATE_TEXT("Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\n- a black battery\n- some purified water\n- and a bottle of strong alcohol.", BRUCE_TEXT_LOCATION)
+            else:
+                eventPlayer.tText = "You still need to bring me:"
+                if eventPlayer.tValue[Item.STATE] % 2 == 1:
+                    eventPlayer.tText = "{0}\n- a black battery".format(eventPlayer.tText)
+                if (eventPlayer.tValue[Item.STATE] - 1) % 4 < 2:
+                    eventPlayer.tText = "{0}\n- some purified water".format(eventPlayer.tText)
+                if eventPlayer.tValue[Item.STATE] <= 4:
+                    eventPlayer.tText = "{0}\n- a bottle of strong alcohol".format(eventPlayer.tText)
+                CREATE_TEXT(eventPlayer.tText, BRUCE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only 400 shekels!", INSIDE_SMUGGLER_TEXT_LOCATION)
@@ -1569,7 +1594,7 @@ rule "Interact":
 #!define NO_ITEM_MESSAGE random.choice(["You don't have anything to use", "You don't have anything to use", "You don't have anything to use", \
 "Your hands are empty", "Your hands are empty", "Your hands are empty", "You try punching it, but nothing happens"])
 
-#!define SHOULD_APPLY_ITEM(key) (eventPlayer.key[Item.STATE] < len(eventPlayer.key[Item.REQUIRED_ITEM]) and eventPlayer.inventory[0] == eventPlayer.key[Item.REQUIRED_ITEM][eventPlayer.key[Item.STATE]])
+#!define SHOULD_APPLY_ITEM(entry) (entry[Item.STATE] < len(entry[Item.REQUIRED_ITEM]) and eventPlayer.inventory[0] == entry[Item.REQUIRED_ITEM][entry[Item.STATE]])
 
 # have to save to a variable due to race conditions when immediately changing the state after showing the message
 #!define APPLY_ITEM_SUCCESS(item) eventPlayer.tText = item[Item.SUCCESS_MESSAGE][item[Item.STATE]] \
@@ -1587,7 +1612,7 @@ rule "Apply":
     if SHOULD_INTERACT(eventPlayer.tutGate1) or SHOULD_INTERACT(eventPlayer.tutGate2):
         eventPlayer.tValue = GET_ITEM_ENTRY("tutGate1")
         if eventPlayer.tValue[Item.STATE] == 0:
-            if SHOULD_APPLY_ITEM(tutGate1):
+            if SHOULD_APPLY_ITEM(eventPlayer.tValue):
                 APPLY_ITEM_SUCCESS(eventPlayer.tValue)
                 eventPlayer.tValue[Item.STATE]++
                 SAVE_STATE(eventPlayer.tValue)
@@ -1599,8 +1624,8 @@ rule "Apply":
             else:
                 APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWires):
-        if SHOULD_APPLY_ITEM(innerWires):
-            eventPlayer.tValue = GET_ITEM_ENTRY("innerWires")
+        eventPlayer.tValue = GET_ITEM_ENTRY("innerWires")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
             SAVE_STATE(eventPlayer.tValue)
@@ -1611,14 +1636,15 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerBarrel2):
-        if SHOULD_APPLY_ITEM(innerBarrel2):
-            eventPlayer.tValue = GET_ITEM_ENTRY("innerBarrel2")
+        eventPlayer.tValue = GET_ITEM_ENTRY("innerBarrel2")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            printLog("Item state is {0}, req items {1}".format(eventPlayer.tValue[Item.STATE], len(eventPlayer.innerBarrel2[Item.REQUIRED_ITEM])))
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
             SAVE_STATE(eventPlayer.tValue)
 
             del eventPlayer.inventory[0]
-            GIVE_ITEM("Filled petrol can")
+            GIVE_ITEM("Fuel filled petrol can")
             createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
             pushEffectDeleteQueue()
             wait(2)
@@ -1626,13 +1652,14 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerGenerator):
-        if SHOULD_APPLY_ITEM(innerGenerator):
-            eventPlayer.tValue = GET_ITEM_ENTRY("innerGenerator")
+        eventPlayer.tValue = GET_ITEM_ENTRY("innerGenerator")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
             SAVE_STATE(eventPlayer.tValue)
 
             del eventPlayer.inventory[0]
+            GIVE_ITEM("Empty petrol can")
             createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
             pushEffectDeleteQueue()
             wait(2)
@@ -1641,8 +1668,8 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWorkbench):
-        if SHOULD_APPLY_ITEM(innerWorkbench):
-            eventPlayer.tValue = GET_ITEM_ENTRY("innerWorkbench")
+        eventPlayer.tValue = GET_ITEM_ENTRY("innerWorkbench")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingInnerMinigame = true
             innerMinigamePlayers.append(eventPlayer)
@@ -1658,8 +1685,8 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerToolbox2):
-        if SHOULD_APPLY_ITEM(innerToolbox2):
-            eventPlayer.tValue = GET_ITEM_ENTRY("innerToolbox2")
+        eventPlayer.tValue = GET_ITEM_ENTRY("innerToolbox2")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
             SAVE_STATE(eventPlayer.tValue)
@@ -1671,13 +1698,28 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outerBruce):
-        if eventPlayer.inventory[0] == "Black battery":
-            CREATE_TEXT("Ah, perfect", BRUCE_TEXT_LOCATION)
-            INCREMENT_STATE("outerBruce")
-        elif eventPlayer.inventory[0] == "Red battery":
-            CREATE_TEXT("Weren't you listening? I need a black battery.", BRUCE_TEXT_LOCATION)
+        eventPlayer.tValue = GET_ITEM_ENTRY("outerBruce")
+
+        if eventPlayer.tValue[Item.STATE] == 0:
+            CREATE_TEXT("I have enough junk in here without that cluttering the place up.", BRUCE_TEXT_LOCATION)
         else:
-            CREATE_TEXT("What is this? I don't need it.", BRUCE_TEXT_LOCATION)
+            if eventPlayer.inventory[0] == "Black battery":
+                del eventPlayer.inventory[0]
+                CREATE_TEXT("Hmph, I guess this will have to do.", BRUCE_TEXT_LOCATION)
+                eventPlayer.tValue[Item.STATE]++
+            elif eventPlayer.inventory[0] == "Water filled petrol can":
+                del eventPlayer.inventory[0]
+                CREATE_TEXT("Are you sure this water is pure?", BRUCE_TEXT_LOCATION)
+                eventPlayer.tValue[Item.STATE] += 2
+            elif eventPlayer.inventory[0] == "Strong alcohol":
+                del eventPlayer.inventory[0]
+                CREATE_TEXT("Ah, this is the stuff.", BRUCE_TEXT_LOCATION)
+                eventPlayer.tValue[Item.STATE] += 4
+            elif eventPlayer.inventory[0] == "Red battery":
+                CREATE_TEXT("Weren't you listening? I need a black battery.", BRUCE_TEXT_LOCATION)
+            else:
+                CREATE_TEXT("What is this? I don't need it.", BRUCE_TEXT_LOCATION)
+            SAVE_STATE(eventPlayer.tValue)
     elif SHOULD_INTERACT(eventPlayer.outerSmuggler):
         eventPlayer.tValue = GET_ITEM_ENTRY("outerSmuggler")
         if eventPlayer.tValue[Item.STATE] == 0:
@@ -1723,11 +1765,26 @@ rule "Apply":
             else:
                 CREATE_TEXT("Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.outerWorkbench):
-        if SHOULD_APPLY_ITEM(outerWorkbench):
-            eventPlayer.tValue = GET_ITEM_ENTRY("outerWorkbench")
+        eventPlayer.tValue = GET_ITEM_ENTRY("outerWorkbench")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingOuterMinigame = true
             outerMinigamePlayers.append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outsideHose):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideHose")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer.tValue)
+
+            del eventPlayer.inventory[0]
+            GIVE_ITEM("Water filled petrol can")
+            createEffect(eventPlayer, Effect.MOIRA_ORB_HEAL_SOUND, null, eventPlayer, 100, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+            pushEffectDeleteQueue()
+            wait(2)
+            popEffectDeleteQueue()
         else:
             APPLY_ITEM_FAIL()
     else:
@@ -1858,6 +1915,21 @@ rule "Create sunlight barriers":
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
+# Junkertown exit wall
+
+#!define JUNKERTOWN_EXIT_WALL_MESSAGE "The guard will see you if you go any further"
+
+rule "Junkertown entry wall":
+    @Event eachPlayer
+    @Condition eventPlayer.isJunk
+    @Condition eventPlayer.canGoOutside
+
+    MAKE_WALL(vect(-12.67, 6.20, -83.32), vect(-31.22, 16, -86.91), JUNKERTOWN_EXIT_WALL_MESSAGE)
+    MAKE_WALL(vect(-41.66, 12.54, -82.73), vect(-44.69, 15.31, -80.84), JUNKERTOWN_EXIT_WALL_MESSAGE)
+
+    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    goto RULE_START
+
 # Barn outside wall
 
 #!define BARN_OUTSIDE_MESSAGE "You could never leave the house without your little buddy"
@@ -1889,16 +1961,16 @@ rule "Create barn secret wall":
 
 # Junkertown entry wall
 
-#!define JUNKERTOWN_WALL_MESSAGE "The Queen isn't too keen on you coming back after what happened last time"
+#!define JUNKERTOWN_ENTRY_WALL_MESSAGE "The Queen isn't too keen on you coming back after what happened last time"
 
 rule "Junkertown entry wall":
     @Event eachPlayer
     @Condition eventPlayer.isHog
     @Condition eventPlayer.canLeaveBarn
 
-    MAKE_WALL(vect(-50.22, 4.35, -41.54), vect(-48.34, 8.47, -47.74), JUNKERTOWN_WALL_MESSAGE)
-    MAKE_WALL(vect(-48.99, 9.49, -46.47), vect(-47.91, 13.48, -50.19), JUNKERTOWN_WALL_MESSAGE)
-    MAKE_WALL(vect(-28.33, 4.48, -64.23), vect(-25.17, 8.48, -66.02), JUNKERTOWN_WALL_MESSAGE)
+    MAKE_WALL(vect(-50.22, 4.35, -41.54), vect(-48.34, 8.47, -47.74), JUNKERTOWN_ENTRY_WALL_MESSAGE)
+    MAKE_WALL(vect(-48.99, 9.49, -46.47), vect(-47.91, 13.48, -50.19), JUNKERTOWN_ENTRY_WALL_MESSAGE)
+    MAKE_WALL(vect(-28.33, 4.48, -64.23), vect(-25.17, 8.48, -66.02), JUNKERTOWN_ENTRY_WALL_MESSAGE)
 
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
@@ -2023,7 +2095,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outerMinigame"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -2047,10 +2119,10 @@ rule "Display stats":
 
     # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingOuterMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedOuterMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.outerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "workbench coords: {0}".format(updateEveryTick(OUTER_MINIGAME_3D_TO_2D(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()))), HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingOuterMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedOuterMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.outerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "workbench coords: {0}".format(updateEveryTick(OUTER_MINIGAME_3D_TO_2D(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()))), HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 
     hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
