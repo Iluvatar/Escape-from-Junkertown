@@ -57,9 +57,9 @@ settings {
 #!extension explosionSounds
 #!extension kineticExplosionEffects
 #!extension playMoreEffects
-#!extension spawnMoreDummyBots
 
 #!define PI 3.1415926535
+#!define INF 100000000
 #!define RACE_CONDITION_DELAY 0.1
 
 
@@ -105,10 +105,12 @@ globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
 globalvar innerMinigamePlayers = []
-globalvar outerMinigamePlayers = []
 globalvar radioSmokePlayers = []
-globalvar mapMarkerPlayers = []
+globalvar outerMinigamePlayers = []
 globalvar barnHintPlayers = []
+globalvar mapMarkerPlayers = []
+globalvar satUntunedPlayers = [[], [], [], []]
+globalvar satTunedPlayers = [[], [], [], []]
 
 # equippables
 enum Equip:
@@ -197,6 +199,8 @@ playervar isDoingOuterMinigame
 playervar outerMinigameState
 playervar hasFinishedOuterMinigame
 
+playervar satsTuned
+
 # achievements
 playervar postersFound
 
@@ -224,6 +228,10 @@ playervar outerBartender
 playervar outerWorkbench
 
 playervar outsideHose
+playervar outsideSat1
+playervar outsideSat2
+playervar outsideSat3
+playervar outsideSat4
 
 
 
@@ -281,7 +289,7 @@ def doWallMessageTimeout():
     eventPlayer.setMoveSpeed(5) \
     eventPlayer.applyImpulse(vect(-((end) - (start)).z, 3, ((end) - (start)).x), 6, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
     wait(0.1) \
-    eventPlayer.setStatusEffect(null, Status.INVINCIBLE, 9999) \
+    eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF) \
     eventPlayer.setHealth(200) \
     eventPlayer.setMoveSpeed(100)
 
@@ -410,7 +418,7 @@ rule "Move payload to the end":
     cartNpc = getLastCreatedEntity()
     cartNpc.startForcingName("Cart")
     cartNpc.disablePlayerCollision()
-    cartNpc.setStatusEffect(null, Status.INVINCIBLE, 9999)
+    cartNpc.setStatusEffect(null, Status.INVINCIBLE, INF)
     cartNpc.setInvisibility(Invis.ENEMIES)
 
 rule "Stop payload after first point":
@@ -458,7 +466,7 @@ rule "Spawn NPCs":
     bartenderNpc = getLastCreatedEntity()
     bartenderNpc.startForcingName("Bartender")
 
-    getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
+    getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, INF)
 
 rule "Global setup":
     @Event global
@@ -598,9 +606,9 @@ rule "Global setup":
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
 
     # outer workbench puzzle
-    createInWorldText(outerMinigamePlayers, iconString(Icon.RECYCLE), OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(outerMinigamePlayers, iconString(Icon.RECYCLE), OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(outerMinigamePlayers, iconString(Icon.RECYCLE), OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 2, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
+    createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
+    createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
 
     # map marker
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
@@ -609,9 +617,20 @@ rule "Global setup":
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
 
+    # satellite beam
+    createBeam(satUntunedPlayers[0], Beam.ECHO_FOCUSING, vect(25.774, 16.251, -90.842), vect(25.774, 16.251, -90.842) + 100 * vect(0.542, 0.416, 0.730), Color.TEAM_2, EffectReeval.VISIBILITY)
+    createBeam(satUntunedPlayers[1], Beam.ECHO_FOCUSING, vect(12.000, 17.647, -88.850), vect(12.000, 17.647, -88.850) + 100 * vect(0.529, 0.427, 0.733), Color.TEAM_2, EffectReeval.VISIBILITY)
+    createBeam(satUntunedPlayers[2], Beam.ECHO_FOCUSING, vect(-1.572, 16.131, -58.995), vect(-1.572, 16.131, -58.995) + 100 * vect(0.693, 0.460, -0.555), Color.TEAM_2, EffectReeval.VISIBILITY)
+    createBeam(satUntunedPlayers[3], Beam.ECHO_FOCUSING, vect(6.139, 17.041, -44.789), vect(6.139, 17.041, -44.789) + 100 * vect(-0.551, 0.428, 0.716), Color.TEAM_2, EffectReeval.VISIBILITY)
+
+    createBeam(satTunedPlayers[0], Beam.TORBJORN_TURRET_SIGHT, vect(25.774, 16.251, -90.842), vect(25.774, 16.251, -90.842) + 100 * vect(0.542, 0.416, 0.730), Color.TEAM_1, EffectReeval.VISIBILITY)
+    createBeam(satTunedPlayers[1], Beam.TORBJORN_TURRET_SIGHT, vect(12.000, 17.647, -88.850), vect(12.000, 17.647, -88.850) + 100 * vect(0.529, 0.427, 0.733), Color.TEAM_1, EffectReeval.VISIBILITY)
+    createBeam(satTunedPlayers[2], Beam.TORBJORN_TURRET_SIGHT, vect(-1.572, 16.131, -58.995), vect(-1.572, 16.131, -58.995) + 100 * vect(0.693, 0.460, -0.555), Color.TEAM_1, EffectReeval.VISIBILITY)
+    createBeam(satTunedPlayers[3], Beam.TORBJORN_TURRET_SIGHT, vect(6.139, 17.041, -44.789), vect(6.139, 17.041, -44.789) + 100 * vect(-0.551, 0.428, 0.716), Color.TEAM_1, EffectReeval.VISIBILITY)
+
 def showIntro():
     eventPlayer.disableHeroHUD()
-    eventPlayer.setStatusEffect(null, Status.FROZEN, 9999)
+    eventPlayer.setStatusEffect(null, Status.FROZEN, INF)
     eventPlayer.setInvisibility(Invis.ALL)
     introStage1Players.append(eventPlayer)
 
@@ -774,6 +793,8 @@ def playerInitialState():
     eventPlayer.canAccessBarnSecret = false
     eventPlayer.canLeaveBarn = false
 
+    eventPlayer.satsTuned = 0
+
     eventPlayer.postersFound = []
 
     # Item points
@@ -809,6 +830,11 @@ def playerInitialState():
     eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
 
     eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
+    eventPlayer.outsideSat1 = ["outsideSat1", 0, vect(25.774, 16.251, -90.842), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
+    eventPlayer.outsideSat2 = ["outsideSat2", 0, vect(12.000, 17.647, -88.850), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
+    eventPlayer.outsideSat3 = ["outsideSat3", 0, vect(-1.572, 16.131, -58.995), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
+    eventPlayer.outsideSat4 = ["outsideSat4", 0, vect(6.139, 17.041, -44.789), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
+
 
     eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
     eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
@@ -911,9 +937,9 @@ def playerInitialState():
         ["outerMinigameDot8", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
         ["outerMinigameDot9", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
         ["outerMinigameDot10", 0, OUTER_MINIGAME_2D_TO_3D(vect(1.02, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameRotate1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 2.5, 0)), 0.08, null],
-        ["outerMinigameRotate2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 2, 0)), 0.08, null],
-        ["outerMinigameRotate3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 2, 0)), 0.08, null],
+        ["outerMinigameRotate1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.08, null],
+        ["outerMinigameRotate2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 3, 0)), 0.08, null],
+        ["outerMinigameRotate3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.08, null],
 
         # barn area
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
@@ -955,7 +981,7 @@ def playerInitialState():
         ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["outsideFridge3"], null, true, true],
         ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["outsideFridge4"], null, true, true],
         ["outsideToolbox1", 0, vect(-6.67, 8.55, -77.17), 0.7, ["outsideToolbox1"], null, true],
-        ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["outsideToolbox2"], null, true],
+        ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["Satellite tuner"], null, true],
         ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["outsideSmallToolbox"], null, true],
         ["outsideChest1", 0, vect(19.26, 8.73, -55.36), 1.2, ["outsideChest1"], null, true],
         ["outsideChest2", 0, vect(-7.98, 8.35, -47.93), 1.2, ["outsideChest2"], null, true],
@@ -983,6 +1009,11 @@ def playerInitialState():
         eventPlayer.outsideSmuggler,
         eventPlayer.outerBartender,
         eventPlayer.outerWorkbench,
+
+        eventPlayer.outsideSat1,
+        eventPlayer.outsideSat2,
+        eventPlayer.outsideSat3,
+        eventPlayer.outsideSat4,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -1012,12 +1043,21 @@ def playerInitialState():
     innerMinigamePlayers.remove(eventPlayer)
     radioSmokePlayers.remove(eventPlayer)
 
+    outerMinigamePlayers.remove(eventPlayer)
+
     mapMarkerPlayers.remove(eventPlayer)
 
     barnHintPlayers.remove(eventPlayer)
     barnHintPlayers.append(eventPlayer)
 
-    outerMinigamePlayers.remove(eventPlayer)
+    satUntunedPlayers[0].remove(eventPlayer)
+    satUntunedPlayers[1].remove(eventPlayer)
+    satUntunedPlayers[2].remove(eventPlayer)
+    satUntunedPlayers[3].remove(eventPlayer)
+    satTunedPlayers[0].remove(eventPlayer)
+    satTunedPlayers[1].remove(eventPlayer)
+    satTunedPlayers[2].remove(eventPlayer)
+    satTunedPlayers[3].remove(eventPlayer)
 
     eventPlayer.startForcingHero(Hero.JUNKRAT)
     eventPlayer.teleport(eventPlayer.junkPos)
@@ -1034,7 +1074,7 @@ rule "On player join":
 
     playerInitialState()
 
-    eventPlayer.setStatusEffect(null, Status.INVINCIBLE, 9999)
+    eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF)
     eventPlayer.setInvisibility(Invis.ENEMIES)
     eventPlayer.disableGamemodeHud()
     # eventPlayer.disableScoreboard()
@@ -1212,7 +1252,6 @@ rule "Outer workbench minigame stop":
     @Event eachPlayer
     @Condition eventPlayer.isDoingOuterMinigame and distance(eventPlayer, eventPlayer.outerWorkbench[Item.POINT]) > 3
 
-    outerMinigameInitialState()
     popEffectDeleteQueue()
     popEffectDeleteQueue()
     popEffectDeleteQueue()
@@ -1224,6 +1263,8 @@ rule "Outer workbench minigame stop":
     popEffectDeleteQueue()
     popEffectDeleteQueue()
     outerMinigamePlayers.remove(eventPlayer)
+    wait(RACE_CONDITION_DELAY) # prevents flashes
+    outerMinigameInitialState()
 
 # Radio conversation
 def doInnerRadioConversation():
@@ -1402,16 +1443,14 @@ rule "Interact":
                 smallMessage(eventPlayer, "One of the panels is broken, just like everything else in this place")
             else:
                 smallMessage(eventPlayer, "The pretty green lights make you giddy")
-        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and not eventPlayer.hasFinishedInnerMinigame:
-            if eventPlayer.isDoingInnerMinigame:
-                eventPlayer.isHoldingInnerMinigameControl1 = true
-                chase(eventPlayer.innerMinigameValue1, 9999, rate=1, ChaseReeval.NONE)
-                chase(eventPlayer.innerMinigameValue2, 9999, rate=1.8, ChaseReeval.NONE)
-        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2" and not eventPlayer.hasFinishedInnerMinigame:
-            if eventPlayer.isDoingInnerMinigame:
-                eventPlayer.isHoldingInnerMinigameControl2 = true
-                chase(eventPlayer.innerMinigameValue1, 9999, rate=1.8, ChaseReeval.NONE)
-                chase(eventPlayer.innerMinigameValue2, 9999, rate=1, ChaseReeval.NONE)
+        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
+            eventPlayer.isHoldingInnerMinigameControl1 = true
+            chase(eventPlayer.innerMinigameValue1, INF, rate=1, ChaseReeval.NONE)
+            chase(eventPlayer.innerMinigameValue2, INF, rate=1.8, ChaseReeval.NONE)
+        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2" and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
+            eventPlayer.isHoldingInnerMinigameControl2 = true
+            chase(eventPlayer.innerMinigameValue1, INF, rate=1.8, ChaseReeval.NONE)
+            chase(eventPlayer.innerMinigameValue2, INF, rate=1, ChaseReeval.NONE)
         elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
             if "Sunglasses" not in eventPlayer.equipped:
                 INCREMENT_STATE("innerSunglasses")
@@ -1465,7 +1504,7 @@ rule "Interact":
                 CREATE_TEXT("If ya want something, ya gotta pay for it.", BARTENDER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
-        elif strContains(eventPlayer.tValue[Item.ID], "outerMinigame") and not eventPlayer.hasFinishedOuterMinigame:
+        elif strContains(eventPlayer.tValue[Item.ID], "outerMinigame") and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
             if eventPlayer.tValue[Item.ID] == "outerMinigameDot1":
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
@@ -1564,7 +1603,7 @@ rule "Interact":
             eventPlayer.canLeaveBarn = true
         elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
             eventPlayer.pauseInteraction = true
-            eventPlayer.setStatusEffect(null, Status.ROOTED, 9999)
+            eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
             eventPlayer.disableHeroHUD()
             mapMarkerPlayers.append(eventPlayer)
             eventPlayer.startCamera(vect(-81.29, 50.24, -143.14), vect(-81.29, 50.24, -143.14) + vect(-0.00682, -0.9994, -0.03402), 0)
@@ -1802,6 +1841,50 @@ rule "Apply":
             popEffectDeleteQueue()
         else:
             APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outsideSat1):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat1")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer.tValue)
+            eventPlayer.satsTuned++
+            satUntunedPlayers[0].remove(eventPlayer)
+            satTunedPlayers[0].append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outsideSat2):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat2")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer.tValue)
+            eventPlayer.satsTuned++
+            satUntunedPlayers[1].remove(eventPlayer)
+            satTunedPlayers[1].append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outsideSat3):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat3")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer.tValue)
+            eventPlayer.satsTuned++
+            satUntunedPlayers[2].remove(eventPlayer)
+            satTunedPlayers[2].append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outsideSat4):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat4")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer.tValue)
+            eventPlayer.satsTuned++
+            satUntunedPlayers[3].remove(eventPlayer)
+            satTunedPlayers[3].append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
     else:
         pass
         
@@ -1855,7 +1938,7 @@ rule "Tutorial gate barrier":
         eventPlayer.setMoveSpeed(5)
         eventPlayer.applyImpulse(vect(2.14, 6, 10.06), 8, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION)
         wait(0.1)
-        eventPlayer.setStatusEffect(null, Status.INVINCIBLE, 9999)
+        eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF)
         eventPlayer.setHealth(200)
     while RULE_CONDITION
     eventPlayer.setMoveSpeed(100)
@@ -2049,7 +2132,7 @@ globalvar x
 rule "setup":
     @Event global
 
-    chase(x, 9999, rate=2 * PI / 32, ChaseReeval.NONE)
+    chase(x, INF, rate=2 * PI / 32, ChaseReeval.NONE)
 
 rule "trip cam":
     @Event eachPlayer
@@ -2057,6 +2140,12 @@ rule "trip cam":
 
     eventPlayer.disableHeroHUD()
     eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+    GIVE_ITEM("Strong alcohol")
+    GIVE_ITEM("Tuned satellite tuner")
+    satUntunedPlayers[0].append(eventPlayer)
+    satUntunedPlayers[1].append(eventPlayer)
+    satUntunedPlayers[2].append(eventPlayer)
+    satUntunedPlayers[3].append(eventPlayer)
 
 rule "stop trip cam":
     @Event eachPlayer
@@ -2111,7 +2200,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outerMinigame"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
