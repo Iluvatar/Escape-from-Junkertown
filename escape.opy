@@ -17,6 +17,9 @@ settings {
     },
     "heroes": {
         "allTeams": {
+            "ashe": {
+                "enableInfiniteUlt": true
+            },
             "junkrat": {
                 "enablePrimaryFire": false,
                 "enableAbility1": false,
@@ -85,11 +88,11 @@ enum Item:
 #!define ALCOHOL_COST 40
 #!define SMUGGLER_COST 100
 
-#!define ZEN_HIDE_LOCATION vect(51, 9.15, -57)
+#!define BARN_NPC_HIDE_LOCATION vect(51, 9.15, -57)
 #!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.6, -104.95)
 #!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 13.48 + 1.6, -88.07)
 #!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 4.49 + 1.6, -49.63)
-#!define BARTENDER_TEXT_LOCATION vect(-54.65, 2.7 + 1.6, -131.02)
+#!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 1.6, -131.02)
 #!define OUTER_MINIGAME_BALL_SIZE 0.05
 
 
@@ -119,14 +122,12 @@ globalvar equipPlayers = [[], [], [], [], []]
 
 # NPCs
 
-globalvar cartMercyNpc
+globalvar cartNpc
 globalvar bruceNpc
 globalvar outsideSmugglerNpc
 globalvar insideSmugglerNpc
 globalvar bartenderNpc
-globalvar cassNpc
-globalvar doomNpc
-globalvar zenNpc
+globalvar barnNpc
 
 # other
 globalvar outerMinigameColors = [Color.RED, Color.BLACK]
@@ -326,9 +327,9 @@ SAVE_STATE(eventPlayer.tValue)
 
 # Opens the barn secret area
 def openSecretDoor():
-    zenNpc.teleport(vect(54.41, 9.5, -64.48))
+    barnNpc.teleport(vect(54.41, 9.5, -64.48))
     wait(0.5)
-    zenNpc.teleport(ZEN_HIDE_LOCATION)
+    barnNpc.teleport(BARN_NPC_HIDE_LOCATION)
     # cooldown
     wait(5)
 
@@ -405,19 +406,26 @@ rule "Move payload to the end":
     # wait for starting player to get through intro so the sound doesn't interfere
     wait(15)
 
-    createDummy(Hero.MERCY, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
-    cartMercyNpc = getLastCreatedEntity()
-    cartMercyNpc.disablePlayerCollision()
-    cartMercyNpc.setStatusEffect(null, Status.INVINCIBLE, 9999)
-    cartMercyNpc.setInvisibility(Invis.ENEMIES)
+    createDummy(Hero.ASHE, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    cartNpc = getLastCreatedEntity()
+    cartNpc.startForcingName("Cart")
+    cartNpc.disablePlayerCollision()
+    cartNpc.setStatusEffect(null, Status.INVINCIBLE, 9999)
+    cartNpc.setInvisibility(Invis.ENEMIES)
 
 rule "Stop payload after first point":
     @Event global
     @Condition getPayloadProgressPercentage() > 38.20
 
-    destroyDummy(Team.2, cartMercyNpc.getSlot())
+    # destroyDummy(Team.2, cartNpc.getSlot())
     # match time restarts every checkpoint for some reason
     pauseMatchTime()
+
+    cartNpc.teleport(vect(-46, 14, -70))
+    cartNpc.setFacing(vect(-0.98, 0, -0.07), Relativity.TO_WORLD)
+    wait(1)
+    cartNpc.setUltCharge(100)
+    cartNpc.forceButtonPress(Button.ULTIMATE)
 
 rule "Keep match time high to prevent time based voice lines":
     @Event global
@@ -430,10 +438,10 @@ rule "Spawn NPCs":
     @Event global
     @Condition isGameInProgress()
 
-    createDummy(Hero.ZENYATTA, Team.2, -1, ZEN_HIDE_LOCATION, null)
-    zenNpc = getLastCreatedEntity()
-    zenNpc.setInvisibility(Invis.ALL)
-    zenNpc.disablePlayerCollision()
+    createDummy(Hero.TRACER, Team.2, -1, BARN_NPC_HIDE_LOCATION, null)
+    barnNpc = getLastCreatedEntity()
+    barnNpc.setInvisibility(Invis.ALL)
+    barnNpc.disablePlayerCollision()
 
     createDummy(Hero.TORBJORN, Team.2, -1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
     bruceNpc = getLastCreatedEntity()
@@ -450,18 +458,6 @@ rule "Spawn NPCs":
     bartenderNpc = getLastCreatedEntity()
     bartenderNpc.startForcingName("Bartender")
 
-    createDummy(Hero.REAPER, Team.2, -1, vect(-26.31, 12.75, -64.86), vect(0.42, -0.66, 0.62))
-    getLastCreatedEntity().startForcingName("Guard")
-    createDummy(Hero.REAPER, Team.2, -1, vect(-42.06, 6.15, -68.68), vect(0.30, -0.50, 0.81))
-    getLastCreatedEntity().startForcingName("Guard")
-
-    createDummy(Hero.MCCREE, Team.2, -1, vect(-38.38, 1.48, -130.95), vect(0.87, 0.10, -0.48))
-    cassNpc = getLastCreatedEntity()
-    cassNpc.startForcingName("Lone Starr")
-    createDummy(Hero.DOOMFIST, Team.2, -1, vect(-35.02, 1.48, -126.33), vect(0.42, 0.10, -0.90))
-    doomNpc = getLastCreatedEntity()
-    doomNpc.startForcingName("Tall handsome stranger")
-
     getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, 9999)
 
 rule "Global setup":
@@ -470,7 +466,7 @@ rule "Global setup":
     disableAnnouncer()
     disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
-    startForcingSpawn(Team.ALL, 2)
+    startForcingSpawn(Team.2, 2)
     getAllPlayers().disableNameplatesFor(getAllPlayers())
 
     # intro text
@@ -1039,8 +1035,9 @@ rule "On player join":
     playerInitialState()
 
     eventPlayer.setStatusEffect(null, Status.INVINCIBLE, 9999)
+    eventPlayer.setInvisibility(Invis.ENEMIES)
     eventPlayer.disableGamemodeHud()
-    eventPlayer.disableScoreboard()
+    # eventPlayer.disableScoreboard()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
 
@@ -1097,7 +1094,10 @@ rule "Update is in sunlight":
 # requires that all ncps are at least 10m apart
 rule "Hide npc text":
     @Event eachPlayer
-    @Condition distance(eventPlayer, vect(-21.62, 7.48, -104.95)) > 5 and distance(eventPlayer, vect(-19.06, 14.48, -88.07)) > 5 and distance(eventPlayer, vect(-44.52, 5.49, -49.63)) > 5
+    @Condition distance(eventPlayer, BRUCE_TEXT_LOCATION) > 5
+    @Condition distance(eventPlayer, INSIDE_SMUGGLER_TEXT_LOCATION) > 5
+    @Condition distance(eventPlayer, OUTSIDE_SMUGGLER_TEXT_LOCATION) > 5
+    @Condition distance(eventPlayer, BARTENDER_TEXT_LOCATION) > 5
 
     popTextDeleteQueue()
 
