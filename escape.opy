@@ -507,11 +507,11 @@ rule "Global setup":
 
     # achievement hud text
     hudHeader(achievementPlayers[Achievement.HAS_ANY], "Achievements", HudPosition.RIGHT, 1, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.MOST_WANTED], "{0} Most wanted".format(abilityIconString(Hero.MCCREE, Button.ULTIMATE)), HudPosition.RIGHT, 2, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.INFRASIGHT], "{0} Infrasight".format(abilityIconString(Hero.WIDOWMAKER, Button.ULTIMATE)), HudPosition.RIGHT, 3, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "{0} Puzzle master".format(abilityIconString(Hero.LUCIO, Button.JUMP)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.IN_A_HURRY], "{0} In a hurry".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)), HudPosition.RIGHT, 5, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "{0} Escape artist".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.MOST_WANTED], "Most wanted {0}".format(abilityIconString(Hero.MCCREE, Button.ULTIMATE)), HudPosition.RIGHT, 2, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.INFRASIGHT], "Infrasight {0}".format(abilityIconString(Hero.WIDOWMAKER, Button.ULTIMATE)), HudPosition.RIGHT, 3, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "Puzzle master {0}".format(abilityIconString(Hero.LUCIO, Button.JUMP)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.IN_A_HURRY], "In a hurry {0}".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)), HudPosition.RIGHT, 5, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
@@ -761,17 +761,17 @@ def manageAchievements():
     achievementPlayers[Achievement.IN_A_HURRY].remove(eventPlayer)
     achievementPlayers[Achievement.ESCAPE_ARTIST].remove(eventPlayer)
 
-    if len(eventPlayer.equipped) > 0:
+    if len(eventPlayer.achievements) > 0:
         achievementPlayers[Achievement.HAS_ANY].append(eventPlayer)
-    if Achievement.MOST_WANTED in eventPlayer.equipped:
+    if Achievement.MOST_WANTED in eventPlayer.achievements:
         achievementPlayers[Achievement.MOST_WANTED].append(eventPlayer)
-    if Achievement.INFRASIGHT in eventPlayer.equipped:
+    if Achievement.INFRASIGHT in eventPlayer.achievements:
         achievementPlayers[Achievement.INFRASIGHT].append(eventPlayer)
-    if Achievement.ESCAPE_ARTIST in eventPlayer.equipped:
+    if Achievement.PUZZLE_MASTER in eventPlayer.achievements:
         achievementPlayers[Achievement.PUZZLE_MASTER].append(eventPlayer)
-    if Achievement.ESCAPE_ARTIST in eventPlayer.equipped:
+    if Achievement.IN_A_HURRY in eventPlayer.achievements:
         achievementPlayers[Achievement.IN_A_HURRY].append(eventPlayer)
-    if Achievement.PUZZLE_MASTER in eventPlayer.equipped:
+    if Achievement.ESCAPE_ARTIST in eventPlayer.achievements:
         achievementPlayers[Achievement.ESCAPE_ARTIST].append(eventPlayer)
 
 def playerInitialState():
@@ -933,7 +933,7 @@ def playerInitialState():
         ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null],
         ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null],
 
-        ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tatted sunglasses hidden in the corner", "You've already scoured this area"]],
+        ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tattered sunglasses hidden in the corner", "You've already scoured this area"]],
 
         ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, ["You twist the valve shut", "The valve is already closed"]],
         ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, ["You twist the valve shut", "The valve is already closed"]],
@@ -1515,6 +1515,7 @@ rule "Interact":
                 eventPlayer.equipped.append(Equip.SUNGLASES)
                 manageEquips()
                 if not eventPlayer.outsideMapFound:
+                    wait(3) # wait for small message to disappear
                     bigMessage(eventPlayer, "Achievement get! Infrasight: find the sunglasses without using the map")
                     eventPlayer.achievements.append(Achievement.INFRASIGHT)
                     manageAchievements()
@@ -2296,7 +2297,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "workbench coords: {0}".format(updateEveryTick(OUTER_MINIGAME_3D_TO_2D(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()))), HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 
-    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 1, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 2, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 3, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 4, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
