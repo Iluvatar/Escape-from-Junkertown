@@ -130,7 +130,9 @@ enum Achievement:
     INFRASIGHT, # find the sunglasses without using the map
     PUZZLE_MASTER, # finish the color minigame in 5 moves
     IN_A_HURRY, # click on Bruce 60 times before the minute is up
-    ESCAPE_ARTIST # escape Junkertown
+    ESCAPE_ARTIST, # escape Junkertown
+    END_MARKER # always at the end, the number of total achievements
+
 
 globalvar achievementPlayers = [[], [], [], [], [], []]
 
@@ -627,6 +629,8 @@ rule "Global setup":
     createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(innerMinigamePlayers, Effect.SPHERE, Color.BLACK, INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73, 0)), 0.05, EffectReeval.VISIBILITY)
+    createInWorldText(innerMinigamePlayers, "skip", INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
@@ -635,6 +639,8 @@ rule "Global setup":
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
+    createEffect(outerMinigamePlayers, Effect.SPHERE, Color.BLACK, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, EffectReeval.VISIBILITY)
+    createInWorldText(outerMinigamePlayers, "skip", OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # map marker
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
@@ -941,6 +947,7 @@ def playerInitialState():
 
         ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null],
         ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null],
+        ["innerMinigameSkip", 0, INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73, 0)), 0.05, null],
 
         ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tattered sunglasses hidden in the corner", "You've already scoured this area"]],
 
@@ -998,6 +1005,8 @@ def playerInitialState():
         ["outerMinigameRotate1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.08, null],
         ["outerMinigameRotate2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 3, 0)), 0.08, null],
         ["outerMinigameRotate3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.08, null],
+        ["outerMinigameSkip", 0, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, null],
+
 
         # barn area
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
@@ -1536,6 +1545,9 @@ rule "Interact":
             eventPlayer.isHoldingInnerMinigameControl2 = true
             chase(eventPlayer.innerMinigameValue1, INF, rate=1.8, ChaseReeval.NONE)
             chase(eventPlayer.innerMinigameValue2, INF, rate=1, ChaseReeval.NONE)
+        elif eventPlayer.tValue[Item.ID] == "innerMinigameSkip" and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
+            eventPlayer.innerMinigameValue1 = 3 * PI / 2
+            eventPlayer.innerMinigameValue2 = PI / 6
         elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
             if Equip.SUNGLASES not in eventPlayer.equipped:
                 INCREMENT_STATE("innerSunglasses")
@@ -1683,6 +1695,9 @@ rule "Interact":
                 eventPlayer.outerMinigameState[6] = eventPlayer.outerMinigameState[9]
                 eventPlayer.outerMinigameState[9] = eventPlayer.outerMinigameState[10]
                 eventPlayer.outerMinigameState[10] = eventPlayer.tMinigame
+            elif eventPlayer.tValue[Item.ID] == "outerMinigameSkip":
+                eventPlayer.outerMinigameState = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                eventPlayer.outerMinigameMovesMade = INF
             else:
                 eventPlayer.outerMinigameMovesMade--
         elif eventPlayer.tValue[Item.ID] == "outerMic":
@@ -2361,7 +2376,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingOuterMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedOuterMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.outerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "workbench coords: {0}".format(updateEveryTick(OUTER_MINIGAME_3D_TO_2D(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()))), HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "workbench coords: {0}".format(updateEveryTick(OUTER_MINIGAME_3D_TO_2D(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()))), HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 
     hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
