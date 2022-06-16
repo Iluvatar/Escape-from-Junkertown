@@ -94,6 +94,15 @@ enum Item:
 #!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 4.49 + 1.6, -49.63)
 #!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 1.8, -131.02)
 #!define NOT_SMUGGLER_TEXT_LOCATION vect(-35.02, 1.48 + 1.6, -126.33)
+
+#!define DOOR_21_TEXT_LOCATION vect(-50.47, 13.63 + 0.6, -84.74)
+#!define DOOR_22_TEXT_LOCATION vect(-54.41, 13.63 + 0.6, -84.09)
+#!define DOOR_23_TEXT_LOCATION vect(-59.72, 13.63 + 0.6, -85.31)
+#!define DOOR_24_TEXT_LOCATION vect(-48.46, 13.63 + 0.6, -90.79)
+#!define DOOR_25_TEXT_LOCATION vect(-42.10, 14.63 + 0.6, -94.75)
+
+#!define MOLE_PERSON_TEXT_LOCATION vect(-51.97, 6.14 + 0.6, -3.03)
+
 #!define OUTER_MINIGAME_BALL_SIZE 0.05
 
 
@@ -216,6 +225,8 @@ playervar hasFinishedOuterMinigame
 
 playervar canUtilizeSmuggler
 
+playervar isMolePersonFriend
+
 playervar bruceTimer
 
 playervar satsTuned
@@ -244,12 +255,13 @@ playervar innerWorkbench
 playervar innerToolbox2
 
 playervar outerBruce
-playervar outsideSmuggler
 playervar outerSmuggler
 playervar outerBartender
 playervar outerNotSmuggler
 playervar outerWorkbench
 
+playervar outsideSmuggler
+playervar outsideMolePerson
 playervar outsideHose
 playervar outsideSat1
 playervar outsideSat2
@@ -851,6 +863,8 @@ def playerInitialState():
 
     eventPlayer.canUtilizeSmuggler = false
 
+    eventPlayer.isMolePersonFriend = false
+
     eventPlayer.bruceTimer = 0
 
     eventPlayer.satsTuned = 0
@@ -891,18 +905,19 @@ def playerInitialState():
 
     eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
 
+
+    eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
+    eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
+    eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
+    eventPlayer.outerNotSmuggler = ["outerNotSmuggler", 0, vect(-35.02, 2.48, -126.33), 1, null]
+
     eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
     eventPlayer.outsideSat1 = ["outsideSat1", 0, vect(25.774, 16.251, -90.842), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
     eventPlayer.outsideSat2 = ["outsideSat2", 0, vect(12.000, 17.647, -88.850), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
     eventPlayer.outsideSat3 = ["outsideSat3", 0, vect(-1.572, 16.131, -58.995), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
     eventPlayer.outsideSat4 = ["outsideSat4", 0, vect(6.139, 17.041, -44.789), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
-
-
-    eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
-    eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
-    eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
-    eventPlayer.outerNotSmuggler = ["outerNotSmuggler", 0, vect(-35.02, 2.48, -126.33), 1, null]
+    eventPlayer.outsideMolePerson = ["outsideMolePerson", 0, vect(-51.97, 6.14, -3.03), 2, null]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -1007,6 +1022,12 @@ def playerInitialState():
         ["outerMinigameRotate3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.08, null],
         ["outerMinigameSkip", 0, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, null],
 
+        ["outerDoor21", 0, vect(-50.47, 13.63, -84.74), 1.1, null],
+        ["outerDoor22", 0, vect(-54.41, 13.63, -84.09), 1.1, null],
+        ["outerDoor23", 0, vect(-59.72, 13.63, -85.31), 1.1, null],
+        ["outerDoor24", 0, vect(-48.46, 13.63, -90.79), 1.1, null],
+        ["outerDoor25", 0, vect(-42.10, 14.63, -94.75), 1.1, null],
+
 
         # barn area
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
@@ -1036,6 +1057,7 @@ def playerInitialState():
         ["barnSwitch5", 0, vect(56.48, 10.345, -66.584), 0.05, null],
         ["barnCodePanel", 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]],
 
+
         # larger outside area
         eventPlayer.outsideHose, # placed here for priority reasons 
 
@@ -1061,6 +1083,7 @@ def playerInitialState():
         ["outsidePoster2", 0, vect(-23.46, 6.70, -66.49), 0.8, ["poster 2"], null, null, true],
 
 
+        # item apply points
         eventPlayer.tutGate1,
         eventPlayer.tutGate2,
 
@@ -1073,11 +1096,12 @@ def playerInitialState():
 
         eventPlayer.outerBruce,
         eventPlayer.outerSmuggler,
-        eventPlayer.outsideSmuggler,
         eventPlayer.outerBartender,
         eventPlayer.outerNotSmuggler,
         eventPlayer.outerWorkbench,
 
+        eventPlayer.outsideSmuggler,
+        eventPlayer.outsideMolePerson,
         eventPlayer.outsideSat1,
         eventPlayer.outsideSat2,
         eventPlayer.outsideSat3,
@@ -1208,6 +1232,8 @@ rule "Hide npc text":
     @Condition distance(eventPlayer, OUTSIDE_SMUGGLER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, BARTENDER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, NOT_SMUGGLER_TEXT_LOCATION) > 5
+    @Condition distance(eventPlayer, vect(-49.37, 13.63, -86.90)) > 12 or eventPlayer.getPosition().y < 12.40
+    @Condition distance(eventPlayer, MOLE_PERSON_TEXT_LOCATION) > 16
 
     popTextDeleteQueue()
 
@@ -1711,6 +1737,12 @@ rule "Interact":
                 SAVE_STATE(eventPlayer.tValue)
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
+        elif strContains(eventPlayer.tValue[Item.ID], "outerDoor"):
+            if Equip.WINGS not in eventPlayer.equipped:
+                CREATE_TEXT("'ere, 'oo are you?", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
+            else:
+                if eventPlayer.tValue[Item.ID] == "outerDoor21":
+                    pass
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -2208,7 +2240,6 @@ rule "Create barn secret wall":
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
-
 # Junkertown entry wall
 
 #!define JUNKERTOWN_ENTRY_WALL_MESSAGE "The Queen isn't too keen on you coming back after what happened last time"
@@ -2224,6 +2255,24 @@ rule "Junkertown entry wall":
 
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
+
+# Mole person hiding text
+
+rule "Mole person shuffle text":
+    @Event eachPlayer
+    @Condition not eventPlayer.isMolePersonFriend
+    @Condition distance(eventPlayer, MOLE_PERSON_TEXT_LOCATION) < 16
+
+    CREATE_TEXT("*shuffle shuffle*", MOLE_PERSON_TEXT_LOCATION)
+
+rule "Mole person away text":
+    @Event eachPlayer
+    @Condition not eventPlayer.isMolePersonFriend
+    @Condition distance(eventPlayer, MOLE_PERSON_TEXT_LOCATION) < 10
+
+    CREATE_TEXT("*mole away!*", MOLE_PERSON_TEXT_LOCATION)
+    wait(0.5)
+    popTextDeleteQueue()
 
 
 
@@ -2349,7 +2398,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outerDoor"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -2376,7 +2425,6 @@ rule "Display stats":
     # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingOuterMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedOuterMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.outerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "workbench coords: {0}".format(updateEveryTick(OUTER_MINIGAME_3D_TO_2D(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()))), HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 
     hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
