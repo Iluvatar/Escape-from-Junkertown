@@ -212,6 +212,10 @@ playervar isDoingOuterMinigame
 playervar outerMinigameState
 playervar hasFinishedOuterMinigame
 
+playervar canUtilizeSmuggler
+
+playervar bruceTimer
+
 playervar satsTuned
 
 # achievements
@@ -839,6 +843,10 @@ def playerInitialState():
     eventPlayer.canAccessBarnSecret = false
     eventPlayer.canLeaveBarn = false
 
+    eventPlayer.canUtilizeSmuggler = false
+
+    eventPlayer.bruceTimer = 0
+
     eventPlayer.satsTuned = 0
 
     eventPlayer.postersFound = []
@@ -1351,6 +1359,22 @@ rule "Can go outside check":
 
     eventPlayer.canGoOutside = true
 
+# Bruce wings fix
+rule "Bruce wings fix":
+    @Event eachPlayer
+    @Condition eventPlayer.bruceTimer == 60
+
+    SET_STATE("outerBruce", 9)
+
+# In a hurry achievement
+rule "In a hurry achievement":
+    @Event eachPlayer
+    @Condition eventPlayer.timesBruceClicked == 60
+
+    bigMessage(eventPlayer, "Achievement get! In a hurry: pester Bruce 60 times")
+    eventPlayer.achievements.append(Achievement.IN_A_HURRY)
+    manageAchievements()
+
 
 
 # CONTROLS
@@ -1544,7 +1568,7 @@ rule "Interact":
                 CREATE_TEXT("You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\n- a black battery\n- some purified water\n- and a bottle of strong alcohol.", BRUCE_TEXT_LOCATION)
-            else:
+            elif eventPlayer.tValue[Item.STATE] < 8:
                 eventPlayer.tText = "You still need to bring me:"
                 if eventPlayer.tValue[Item.STATE] % 2 == 1:
                     eventPlayer.tText = "{0}\n- a black battery".format(eventPlayer.tText)
@@ -1553,10 +1577,20 @@ rule "Interact":
                 if eventPlayer.tValue[Item.STATE] <= 4:
                     eventPlayer.tText = "{0}\n- a bottle of strong alcohol".format(eventPlayer.tText)
                 CREATE_TEXT(eventPlayer.tText, BRUCE_TEXT_LOCATION)
+            elif eventPlayer.tValue[Item.STATE] == 8:
+                CREATE_TEXT("Don't be impatient, it's only been {0} seconds".format(floor(eventPlayer.bruceTimer)), BRUCE_TEXT_LOCATION)
+                eventPlayer.timesBruceClicked++
+            elif eventPlayer.tValue[Item.STATE] == 9:
+                if Equip.WINGS not in eventPlayer.equipped:
+                    CREATE_TEXT("Alright, the wings are done. You're going to have to find a high place to use\nthem though. I've heard there are secret tunnels that lead up to the dome. The\nbartender might know more.", BRUCE_TEXT_LOCATION)
+                    eventPlayer.equipped.append(Equip.WINGS)
+                    manageEquips()
+                else:
+                    CREATE_TEXT("You're going to have to find a high place to use your wings. I've heard there\nare secret tunnels that lead up to the dome. The bartender might know more.", BRUCE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
-            if eventPlayer.tValue[Item.STATE] == 0:
+            if not eventPlayer.canUtilizeSmuggler:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), INSIDE_SMUGGLER_TEXT_LOCATION)
-            elif eventPlayer.tValue[Item.STATE] == 1:
+            else:
                 if eventPlayer.smugglerItem:
                     CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.smugglerItem
@@ -1715,9 +1749,9 @@ rule "Interact":
             eventPlayer.clearStatusEffect(Status.ROOTED)
             eventPlayer.pauseInteraction = false
         elif eventPlayer.tValue[Item.ID] == "outsideSmuggler":
-            if eventPlayer.tValue[Item.STATE] == 0:
+            if not eventPlayer.canUtilizeSmuggler:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), OUTSIDE_SMUGGLER_TEXT_LOCATION)
-            elif eventPlayer.tValue[Item.STATE] == 1:
+            else:
                 if eventPlayer.smugglerItem:
                     CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.smugglerItem
@@ -1846,10 +1880,9 @@ rule "Apply":
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outerBruce):
         eventPlayer.tValue = GET_ITEM_ENTRY("outerBruce")
-
-        if eventPlayer.tValue[Item.STATE] == 0:
+        if eventPlayer.tValue[Item.STATE] == 0 or eventPlayer.tValue[Item.STATE] > 8:
             CREATE_TEXT("I have enough junk in here without that cluttering the place up.", BRUCE_TEXT_LOCATION)
-        else:
+        elif eventPlayer.tValue[Item.STATE] < 8:
             if eventPlayer.inventory[0] == "Black battery":
                 del eventPlayer.inventory[0]
                 CREATE_TEXT("Hmph, I guess this will have to do.", BRUCE_TEXT_LOCATION)
@@ -1867,37 +1900,40 @@ rule "Apply":
             else:
                 CREATE_TEXT("What is this? I don't need it.", BRUCE_TEXT_LOCATION)
             SAVE_STATE(eventPlayer.tValue)
+
+            if eventPlayer.tValue[Item.STATE] == 8:
+                CREATE_TEXT("Alright, that's all the items. Give me a minute and I'll have\nthe wings ready for you.", BRUCE_TEXT_LOCATION)
+                chase(eventPlayer.bruceTimer, 60, duration=60, ChaseReeval.NONE)
+        elif eventPlayer.tValue[Item.STATE] == 8:
+            CREATE_TEXT("Don't bother me now, I'm working on the wings.", BRUCE_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.outerSmuggler):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outerSmuggler")
-        if eventPlayer.tValue[Item.STATE] == 0:
+        if not eventPlayer.canUtilizeSmuggler:
             if strContains(eventPlayer.inventory[0], "dollars"):
                 CREATE_TEXT("Great! I'll sign you right up.", INSIDE_SMUGGLER_TEXT_LOCATION)
                 del eventPlayer.inventory[0]
                 eventPlayer.money -= SMUGGLER_COST
                 if eventPlayer.money > 0:
                     GIVE_ITEM("{0} dollars".format(eventPlayer.money))
-                eventPlayer.tValue[Item.STATE]++
-                SAVE_STATE(eventPlayer.tValue)
+                eventPlayer.canUtilizeSmuggler = true
             else:
                 CREATE_TEXT("Gotta buy a membership before we can deliver anything.", INSIDE_SMUGGLER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.STATE] == 1:
-            if len(eventPlayer.inventory) == 0:
-                CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
-            elif eventPlayer.smugglerItem:
+        else:
+            if eventPlayer.smugglerItem:
                 CREATE_TEXT("Only one delivery at a time, love.", INSIDE_SMUGGLER_TEXT_LOCATION)
+            elif len(eventPlayer.inventory) == 0:
+                CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it!", INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
     elif SHOULD_INTERACT(eventPlayer.outsideSmuggler):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSmuggler")
-        if eventPlayer.tValue[Item.STATE] == 0:
-            CREATE_TEXT("You gotta buy a membership before we can deliver anything.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.STATE] == 1:
-            if len(eventPlayer.inventory) == 0:
-                CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
-            elif eventPlayer.smugglerItem:
+        if not eventPlayer.canUtilizeSmuggler:
+            CREATE_TEXT("Gotta buy a membership before we can deliver anything.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+        else:
+            if eventPlayer.smugglerItem:
                 CREATE_TEXT("Only one delivery at a time, love.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+            elif len(eventPlayer.inventory) == 0:
+                CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
@@ -2199,8 +2235,6 @@ rule "trigger all npcs":
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
 
     INCREMENT_STATE("outerBruce")
-    INCREMENT_STATE("outerSmuggler")
-    INCREMENT_STATE("outsideSmuggler")
 
 rule "Debug on":
     @Event eachPlayer
@@ -2239,14 +2273,13 @@ rule "trip cam":
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
     eventPlayer.disableHeroHUD()
-    # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+    eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
-    # GIVE_ITEM("Tuned satellite tuner")
-    # satUntunedPlayers[0].append(eventPlayer)
-    # satUntunedPlayers[1].append(eventPlayer)
-    # satUntunedPlayers[2].append(eventPlayer)
-    # satUntunedPlayers[3].append(eventPlayer)
-    FADE_TO_BLACK()
+    GIVE_ITEM("Tuned satellite tuner")
+    satUntunedPlayers[0].append(eventPlayer)
+    satUntunedPlayers[1].append(eventPlayer)
+    satUntunedPlayers[2].append(eventPlayer)
+    satUntunedPlayers[3].append(eventPlayer)
 
 rule "stop trip cam":
     @Event eachPlayer
