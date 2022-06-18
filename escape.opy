@@ -119,6 +119,8 @@ globalvar radioSmokePlayers = []
 globalvar outerMinigamePlayers = []
 globalvar barnHintPlayers = []
 globalvar mapMarkerPlayers = []
+globalvar dvdLogoPlayers = []
+globalvar satControlPlayers = []
 globalvar satUntunedPlayers = [[], [], [], []]
 globalvar satTunedPlayers = [[], [], [], []]
 
@@ -260,13 +262,14 @@ playervar outerBartender
 playervar outerNotSmuggler
 playervar outerWorkbench
 
-playervar outsideSmuggler
-playervar outsideMolePerson
 playervar outsideHose
 playervar outsideSat1
 playervar outsideSat2
 playervar outsideSat3
 playervar outsideSat4
+playervar outsideSatControl
+playervar outsideSmuggler
+playervar outsideMolePerson
 
 
 
@@ -400,6 +403,10 @@ def checkPowerPanel():
 #!define OUTER_MINIGAME_Y_0 11.998
 #!define OUTER_MINIGAME_2D_TO_3D(vect2d) OUTER_MINIGAME_X_0 + (OUTER_MINIGAME_X_MAX - OUTER_MINIGAME_X_0) * vect2d.x / distance(OUTER_MINIGAME_X_0, OUTER_MINIGAME_X_MAX) + vect(0, vect2d.y + OUTER_MINIGAME_Y_0, 0)
 #!define OUTER_MINIGAME_3D_TO_2D(vect3d) vect(distance(OUTER_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - OUTER_MINIGAME_Y_0, 0)
+
+# Converts between coords for the outside satellite control minigame
+#!define OUTSIDE_SAT_CONTROL_ORIGIN vect(-4.106, 13.825, -83.328)
+#!define OUTSIDE_SAT_TO_WORLD(pos) OUTSIDE_SAT_CONTROL_ORIGIN + vect(dotProduct(pos, vect(0.789, 0.120, -0.603)), dotProduct(pos, vect(-0.151, 0.989, 0)), dotProduct(pos, vect(-0.596, -0.091, -0.798)))
 
 # Toggle outer minigame state
 #!define OUTER_MINIGAME_TOGGLE(num) eventPlayer.outerMinigameState[num]++ \
@@ -661,6 +668,12 @@ rule "Global setup":
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
 
+    # sat control
+    createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), 0.05, EffectReeval.VISIBILITY)
+    createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.1, 0)), 0.05, EffectReeval.VISIBILITY)
+    createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), 0.05, EffectReeval.VISIBILITY)
+    createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), 0.05, EffectReeval.VISIBILITY)
+
     # satellite beam
     createBeam(satUntunedPlayers[0], Beam.ECHO_FOCUSING, vect(25.774, 16.251, -90.842), vect(25.774, 16.251, -90.842) + 100 * vect(0.542, 0.416, 0.730), Color.TEAM_2, EffectReeval.VISIBILITY)
     createBeam(satUntunedPlayers[1], Beam.ECHO_FOCUSING, vect(12.000, 17.647, -88.850), vect(12.000, 17.647, -88.850) + 100 * vect(0.529, 0.427, 0.733), Color.TEAM_2, EffectReeval.VISIBILITY)
@@ -900,12 +913,9 @@ def playerInitialState():
 
     eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
     eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
-
     eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
 
     eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
-
-
     eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
     eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
@@ -916,8 +926,9 @@ def playerInitialState():
     eventPlayer.outsideSat2 = ["outsideSat2", 0, vect(12.000, 17.647, -88.850), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
     eventPlayer.outsideSat3 = ["outsideSat3", 0, vect(-1.572, 16.131, -58.995), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
     eventPlayer.outsideSat4 = ["outsideSat4", 0, vect(6.139, 17.041, -44.789), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
+    eventPlayer.outsideSatControl = ["outsideSatControl", 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you need the remote to use it", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
-    eventPlayer.outsideMolePerson = ["outsideMolePerson", 0, vect(-51.97, 6.14, -3.03), 2, null]
+    eventPlayer.outsideMolePerson = ["outsideMolePerson", 0, vect(-50.68, 5.97, -4.12), 2, null]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -984,7 +995,7 @@ def playerInitialState():
         ["outerSmallToolbox1", 0, vect(-11.03, 8.29, -103.06), 0.5, ["small toolbox 1"], null, true],
         ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["toolbox 1"], null, true],
         ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["toolbox 2"], null, true],
-        ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["toolbox 3"], null, true],
+        ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["You find an old remote inside"], "Right handed remote", true],
         ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["radio"]],
         ["outerMic", 0, vect(-30.95, 3.80, -135.05), 0.5, null],
 
@@ -1077,7 +1088,6 @@ def playerInitialState():
         ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["outsideChest3"], null, true],
         ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["outsideChest4"], null, true],
         ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["outsideChest5"], null, true],
-        ["outsideChest6", 0, vect(-50.56, 5.21, -4.09), 1.2, ["outsideChest6"], null, true],
 
         ["outsidePoster1", 0, vect(-30.90, 6.14, -60.22), 0.8, ["poster 1"], null, null, true],
         ["outsidePoster2", 0, vect(-23.46, 6.70, -66.49), 0.8, ["poster 2"], null, null, true],
@@ -1100,12 +1110,13 @@ def playerInitialState():
         eventPlayer.outerNotSmuggler,
         eventPlayer.outerWorkbench,
 
-        eventPlayer.outsideSmuggler,
-        eventPlayer.outsideMolePerson,
         eventPlayer.outsideSat1,
         eventPlayer.outsideSat2,
         eventPlayer.outsideSat3,
         eventPlayer.outsideSat4,
+        eventPlayer.outsideSatControl,
+        eventPlayer.outsideSmuggler,
+        eventPlayer.outsideMolePerson,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -1142,6 +1153,10 @@ def playerInitialState():
 
     barnHintPlayers.remove(eventPlayer)
     barnHintPlayers.append(eventPlayer)
+
+    dvdLogoPlayers.remove(eventPlayer)
+    dvdLogoPlayers.append(eventPlayer)
+    satControlPlayers.remove(eventPlayer)
 
     satUntunedPlayers[0].remove(eventPlayer)
     satUntunedPlayers[1].remove(eventPlayer)
@@ -1304,12 +1319,12 @@ rule "Inner workbench minigame stop":
     @Event eachPlayer
     @Condition eventPlayer.isDoingInnerMinigame and distance(eventPlayer, eventPlayer.innerWorkbench[Item.POINT]) > 3
 
-    innerMinigameInitialState()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
     innerMinigamePlayers.remove(eventPlayer)
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    innerMinigameInitialState()
 
 rule "Outer workbench minigame start":
     @Event eachPlayer
@@ -1356,17 +1371,17 @@ rule "Outer workbench minigame stop":
     @Event eachPlayer
     @Condition eventPlayer.isDoingOuterMinigame and distance(eventPlayer, eventPlayer.outerWorkbench[Item.POINT]) > 3
 
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
     outerMinigamePlayers.remove(eventPlayer)
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
     wait(RACE_CONDITION_DELAY) # prevents flashes
     outerMinigameInitialState()
 
@@ -1393,6 +1408,50 @@ rule "Can go outside check":
     @Condition eventPlayer.hasSunscreen
 
     eventPlayer.canGoOutside = true
+
+# Bruce contact scene
+def doBruceContact():
+    eventPlayer.pauseInteraction = true
+
+    dvdLogoPlayers.remove(eventPlayer)
+    wait(0.5)
+    satControlPlayers.append(eventPlayer)
+
+    eventPlayer.tStart = 0 # beam angle
+    eventPlayer.tEnd = 0.1 # center sphere radius
+
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+    wait(1)
+    chase(eventPlayer.tStart, 1.107, duration=3, ChaseReeval.NONE)
+
+    wait(3)
+    createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), updateEveryTick(eventPlayer.tEnd), EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+    wait(2)
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    satControlPlayers.remove(eventPlayer)
+
+    chase(eventPlayer.tEnd, 0, duration=0.3, ChaseReeval.NONE)
+
+    wait(0.3)
+    popEffectDeleteQueue()
+
+    stopChasingVariable(eventPlayer.tStart)
+    stopChasingVariable(eventPlayer.tEnd)
+
+    eventPlayer.pauseInteraction = false
 
 # Bruce wings fix
 rule "Bruce wings fix":
@@ -1421,6 +1480,7 @@ rule "Switch between heroes":
 
     if eventPlayer.isJunk:
         eventPlayer.isJunk = false
+        smallMessage(eventPlayer, "You are now the other guy")
         wait(RACE_CONDITION_DELAY)
         eventPlayer.junkInventory = eventPlayer.inventory
         eventPlayer.inventory = eventPlayer.hogInventory
@@ -1433,6 +1493,7 @@ rule "Switch between heroes":
         eventPlayer.preloadHero(Hero.ROADHOG)
     else:
         eventPlayer.isHog = false
+        smallMessage(eventPlayer, "You stop being the other guy")
         wait(RACE_CONDITION_DELAY)
         eventPlayer.hogInventory = eventPlayer.inventory
         eventPlayer.inventory = eventPlayer.junkInventory
@@ -1445,9 +1506,6 @@ rule "Switch between heroes":
         eventPlayer.preloadHero(Hero.JUNKRAT)
 
     manageEquips()
-
-    smallMessage(eventPlayer, "You are now the other guy")
-
 
 rule "Scroll inventory forwards":
     @Event eachPlayer
@@ -1807,6 +1865,9 @@ rule "Interact":
                     eventPlayer.smugglerItem = null
                 else:
                     CREATE_TEXT("Sorry, nothing for you", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outsideMolePerson":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_TEXT_LOCATION)
 
     if strContains(eventPlayer.tValue[Item.ID], "Poster"):
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
@@ -1969,6 +2030,8 @@ rule "Apply":
                 CREATE_TEXT("Only one delivery at a time, love.", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
+            elif strContains(eventPlayer.inventory[0], "dollars"):
+                CREATE_TEXT("You already hav a membership", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it!", INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
@@ -2066,6 +2129,18 @@ rule "Apply":
             eventPlayer.satsTuned++
             satUntunedPlayers[3].remove(eventPlayer)
             satTunedPlayers[3].append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outsideSatControl):
+        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSatControl")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            del eventPlayer.inventory[0]
+            eventPlayer.tValue[Item.STATE]++
+            SAVE_STATE(eventPlayer.tValue)
+            INCREMENT_STATE("outerBruce")
+            doBruceContact()
+        elif eventPlayer.inventory[0] == "Right handed remote":
+            smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed")
         else:
             APPLY_ITEM_FAIL()
     else:
@@ -2240,6 +2315,35 @@ rule "Create barn secret wall":
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
+# DVD logo effect
+
+globalvar dvdLogoPos = vect(0.3, 0.5, 0.13)
+globalvar dvdLogoDir = vect(INF, INF, 0)
+
+rule "Create dvd logo":
+    @Event global
+
+    chase(dvdLogoPos, dvdLogoPos + dvdLogoDir, rate=0.5, ChaseReeval.DESTINATION_AND_RATE)
+    createEffect(dvdLogoPlayers, Effect.SPHERE, Color.VIOLET, updateEveryTick(OUTSIDE_SAT_TO_WORLD(dvdLogoPos)), 0.17, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+
+rule "DVD logo bounce x":
+    @Event global
+    @Condition dvdLogoPos.x <= 0.1 or dvdLogoPos.x >= 1.8 - 0.1
+
+    dvdLogoDir = vect(-dvdLogoDir.x, dvdLogoDir.y, dvdLogoDir.z)
+
+rule "DVD logo bounce y":
+    @Event global
+    @Condition dvdLogoPos.y <= 0.1 or dvdLogoPos.y >= 1 - 0.1
+
+    dvdLogoDir = vect(dvdLogoDir.x, -dvdLogoDir.y, dvdLogoDir.z)
+
+rule "DVD logo bounce failsafe":
+    @Event global
+    @Condition dvdLogoPos.x < -1 or dvdLogoPos.x > 2 or dvdLogoPos.y < -1 or dvdLogoPos.y > 2
+
+    dvdLogoPos = vect(0.3, 0.5, 0.13)
+
 # Junkertown entry wall
 
 #!define JUNKERTOWN_ENTRY_WALL_MESSAGE "The Queen isn't too keen on you coming back after what happened last time"
@@ -2339,7 +2443,7 @@ rule "trip cam":
     eventPlayer.disableHeroHUD()
     eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
-    GIVE_ITEM("Tuned satellite tuner")
+    GIVE_ITEM("Left handed remote")
     satUntunedPlayers[0].append(eventPlayer)
     satUntunedPlayers[1].append(eventPlayer)
     satUntunedPlayers[2].append(eventPlayer)
@@ -2398,7 +2502,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outerDoor"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
