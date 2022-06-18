@@ -416,20 +416,26 @@ def checkPowerPanel():
 #!define BARN_MINIGAME_X_0 vect(48.95, 0, -80.60)
 #!define BARN_MINIGAME_X_MAX vect(48.77, 0, -82.33)
 #!define BARN_MINIGAME_Y_0 10.22
-#!define BARN_MINIGAME_2D_TO_3D(vect2d) BARN_MINIGAME_X_0 + (BARN_MINIGAME_X_MAX - BARN_MINIGAME_X_0) * vect2d.x / distance(BARN_MINIGAME_X_0, BARN_MINIGAME_X_MAX) + vect(0, vect2d.y + BARN_MINIGAME_Y_0, 0)
 #!define BARN_MINIGAME_3D_TO_2D(vect3d) vect(distance(BARN_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - BARN_MINIGAME_Y_0, 0)
+
+#!define BARN_X_VEC normalize(BARN_MINIGAME_X_MAX - BARN_MINIGAME_X_0)
+#!define BARN_Z_VEC crossProduct(BARN_X_VEC, vect(0, -1, 0))
+#!define BARN_A vect(BARN_X_VEC.x, 0, BARN_Z_VEC.x)
+#!define BARN_C vect(BARN_X_VEC.z, 0, BARN_Z_VEC.z)
+#!define BARN_MINIGAME_2D_TO_3D(v) BARN_MINIGAME_X_0 + vect(dotProduct(BARN_A, v), BARN_MINIGAME_Y_0 + v.y, dotProduct(BARN_C, v))
 
 # Barn minigame values
 globalvar barnMinigamePoints = [
-    vect(0.7, 0.1, 0),
-    vect(0.4, 0.6, 0),
-    vect(0.4, 0.4, 0),
-    vect(0.4, 0.2, 0),
-    vect(0.6, 0.3, 0),
-    vect(1.0, 0.6, 0),
-    vect(1.0, 0.4, 0),
-    vect(1.0, 0.2, 0),
-    vect(0.8, 0.3, 0),
+    vect(0.85, 0.1, 0.055),
+    vect(0.6, 0.8, 0.055),
+    vect(0.55, 0.6, 0.055),
+    vect(0.8, 0.3, 0.055),
+    vect(0.75, 0.5, 0.055),
+    vect(1.1, 0.8, 0.055),
+    vect(1.15, 0.6, 0.055),
+    vect(0.9, 0.3, 0.055),
+    vect(0.95, 0.5, 0.055),
+    vect(-1000, -1000, 0)
 ]
 
 globalvar barnMinigameConnections = [
@@ -451,16 +457,29 @@ def barnMinigameClick():
     # tPos: index (in state array) of the spot that was clicked
     # tIndex: index (in pos array) of the effect at the point that was clicked
     # tMinigame: index (in state array) of the open spot to move to
+    # tStart: chase variable for moving dot
+    # tEnd: moving dot effect id
 
     eventPlayer.tIndex = eventPlayer.barnMinigamePosState.index(eventPlayer.tPos)
     if eventPlayer.tIndex >= 0:
         eventPlayer.tMinigame = [e for e in barnMinigameConnections[eventPlayer.tPos] if eventPlayer.barnMinigameColorState[e] == 0]
         if len(eventPlayer.tMinigame) > 0:
+
+            eventPlayer.tStart = barnMinigamePoints[eventPlayer.barnMinigamePosState[eventPlayer.tIndex]]
+            createEffect(eventPlayer, Effect.SPHERE, Color.BLACK if eventPlayer.barnMinigameColorState[eventPlayer.tPos] == 1 else Color.BLUE, BARN_MINIGAME_2D_TO_3D(eventPlayer.tStart), 0.05, EffectReeval.POSITION_AND_RADIUS)
+            eventPlayer.tEnd = getLastCreatedEntity()
+            wait(RACE_CONDITION_DELAY)
+            eventPlayer.barnMinigamePosState[eventPlayer.tIndex] = 9
+            chase(eventPlayer.tStart, barnMinigamePoints[eventPlayer.tMinigame[0]], duration=0.3, ChaseReeval.NONE)
+            wait(0.3)
+            destroyEffect(eventPlayer.tEnd)
+            stopChasingVariable(eventPlayer.tStart)
+
+            eventPlayer.barnMinigamePosState[eventPlayer.tIndex] = eventPlayer.tMinigame[0]
             eventPlayer.barnMinigameColorState[eventPlayer.tMinigame[0]] = eventPlayer.barnMinigameColorState[eventPlayer.tPos]
             eventPlayer.barnMinigameColorState[eventPlayer.tPos] = 0
-            eventPlayer.barnMinigamePosState[eventPlayer.tIndex] = eventPlayer.tMinigame[0]
-    else:
-        playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer.getPosition(), 30)
+        else:
+            playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer.getPosition(), 30)
 
 # Converts between coords for the outside satellite control minigame
 #!define OUTSIDE_SAT_CONTROL_ORIGIN vect(-4.106, 13.825, -83.328)
@@ -731,6 +750,9 @@ rule "Global setup":
         for J in range(len(barnMinigameConnections[I])):
             if I < barnMinigameConnections[I][J]:
                 createBeam(barnMinigamePlayers, Beam.GRAPPLE, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[I]), BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[barnMinigameConnections[I][J]]), null, EffectReeval.VISIBILITY)
+
+    createEffect(barnMinigamePlayers, Effect.SPHERE, Color.BLACK, BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8, 0)), 0.05, EffectReeval.VISIBILITY)
+    createInWorldText(barnMinigamePlayers, "skip", BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # sat control
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), 0.05, EffectReeval.VISIBILITY)
@@ -1151,6 +1173,7 @@ def playerInitialState():
         ["barnMinigameDot6", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[6]), 0.05, null],
         ["barnMinigameDot7", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[7]), 0.05, null],
         ["barnMinigameDot8", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[8]), 0.05, null],
+        ["barnMinigameSkip", 0, BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8, 0)), 0.05, null],
 
 
         # larger outside area
@@ -1995,6 +2018,9 @@ rule "Interact":
             elif eventPlayer.tValue[Item.ID] == "barnMinigameDot8":
                 eventPlayer.tPos = 8
                 barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameSkip":
+                eventPlayer.barnMinigameColorState = [0, 2, 2, 2, 2, 1, 1, 1, 1]
+                eventPlayer.barnMinigamePosState = [5, 6, 7, 8, 1, 2, 3, 4]
         elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
             eventPlayer.outsideMapFound = true
             eventPlayer.pauseInteraction = true
@@ -2071,7 +2097,7 @@ rule "Apply":
                 INCREMENT_STATE("tutGate2")
 
                 del eventPlayer.inventory[0]
-                playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 100)
+                playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 30)
                 eventPlayer.tutorialFinished = true
             else:
                 APPLY_ITEM_FAIL()
