@@ -119,6 +119,7 @@ globalvar radioSmokePlayers = []
 globalvar outerMinigamePlayers = []
 globalvar barnHintPlayers = []
 globalvar mapMarkerPlayers = []
+globalvar barnMinigamePlayers = []
 globalvar dvdLogoPlayers = []
 globalvar satControlPlayers = []
 globalvar satUntunedPlayers = [[], [], [], []]
@@ -227,6 +228,11 @@ playervar hasFinishedOuterMinigame
 
 playervar canUtilizeSmuggler
 
+playervar isDoingBarnMinigame
+playervar barnMinigameColorState
+playervar barnMinigamePosState
+playervar hasFinishedBarnMinigame
+
 playervar isMolePersonFriend
 
 playervar bruceTimer
@@ -261,6 +267,8 @@ playervar outerSmuggler
 playervar outerBartender
 playervar outerNotSmuggler
 playervar outerWorkbench
+
+playervar barnWorkbench
 
 playervar outsideHose
 playervar outsideSat1
@@ -403,6 +411,56 @@ def checkPowerPanel():
 #!define OUTER_MINIGAME_Y_0 11.998
 #!define OUTER_MINIGAME_2D_TO_3D(vect2d) OUTER_MINIGAME_X_0 + (OUTER_MINIGAME_X_MAX - OUTER_MINIGAME_X_0) * vect2d.x / distance(OUTER_MINIGAME_X_0, OUTER_MINIGAME_X_MAX) + vect(0, vect2d.y + OUTER_MINIGAME_Y_0, 0)
 #!define OUTER_MINIGAME_3D_TO_2D(vect3d) vect(distance(OUTER_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - OUTER_MINIGAME_Y_0, 0)
+
+# Converts between 2D and 3D coordinate locations for the barn workbench minigame
+#!define BARN_MINIGAME_X_0 vect(48.95, 0, -80.60)
+#!define BARN_MINIGAME_X_MAX vect(48.77, 0, -82.33)
+#!define BARN_MINIGAME_Y_0 10.22
+#!define BARN_MINIGAME_2D_TO_3D(vect2d) BARN_MINIGAME_X_0 + (BARN_MINIGAME_X_MAX - BARN_MINIGAME_X_0) * vect2d.x / distance(BARN_MINIGAME_X_0, BARN_MINIGAME_X_MAX) + vect(0, vect2d.y + BARN_MINIGAME_Y_0, 0)
+#!define BARN_MINIGAME_3D_TO_2D(vect3d) vect(distance(BARN_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - BARN_MINIGAME_Y_0, 0)
+
+# Barn minigame values
+globalvar barnMinigamePoints = [
+    vect(0.7, 0.1, 0),
+    vect(0.4, 0.6, 0),
+    vect(0.4, 0.4, 0),
+    vect(0.4, 0.2, 0),
+    vect(0.6, 0.3, 0),
+    vect(1.0, 0.6, 0),
+    vect(1.0, 0.4, 0),
+    vect(1.0, 0.2, 0),
+    vect(0.8, 0.3, 0),
+]
+
+globalvar barnMinigameConnections = [
+    [3, 7],
+    [2, 8],
+    [1, 3, 4],
+    [0, 2],
+    [2, 5, 8],
+    [4, 6],
+    [5, 7, 8],
+    [0, 6],
+    [1, 4, 6]
+]
+
+# Barn minigame click helper
+# eventPlayer.tPos should be set to the dot index to process
+# player variables tIndex and tMinigame are overwritten
+def barnMinigameClick():
+    # tPos: index (in state array) of the spot that was clicked
+    # tIndex: index (in pos array) of the effect at the point that was clicked
+    # tMinigame: index (in state array) of the open spot to move to
+
+    eventPlayer.tIndex = eventPlayer.barnMinigamePosState.index(eventPlayer.tPos)
+    if eventPlayer.tIndex >= 0:
+        eventPlayer.tMinigame = [e for e in barnMinigameConnections[eventPlayer.tPos] if eventPlayer.barnMinigameColorState[e] == 0]
+        if len(eventPlayer.tMinigame) > 0:
+            eventPlayer.barnMinigameColorState[eventPlayer.tMinigame[0]] = eventPlayer.barnMinigameColorState[eventPlayer.tPos]
+            eventPlayer.barnMinigameColorState[eventPlayer.tPos] = 0
+            eventPlayer.barnMinigamePosState[eventPlayer.tIndex] = eventPlayer.tMinigame[0]
+    else:
+        playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer.getPosition(), 30)
 
 # Converts between coords for the outside satellite control minigame
 #!define OUTSIDE_SAT_CONTROL_ORIGIN vect(-4.106, 13.825, -83.328)
@@ -668,6 +726,12 @@ rule "Global setup":
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
     createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
 
+    # barn workbench puzzle
+    for I in range(len(barnMinigameConnections)):
+        for J in range(len(barnMinigameConnections[I])):
+            if I < barnMinigameConnections[I][J]:
+                createBeam(barnMinigamePlayers, Beam.GRAPPLE, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[I]), BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[barnMinigameConnections[I][J]]), null, EffectReeval.VISIBILITY)
+
     # sat control
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), 0.05, EffectReeval.VISIBILITY)
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.1, 0)), 0.05, EffectReeval.VISIBILITY)
@@ -770,6 +834,11 @@ def outerMinigameInitialState():
     eventPlayer.isDoingOuterMinigame = false
     eventPlayer.outerMinigameState = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     eventPlayer.outerMinigameMovesMade = 0
+
+def barnMinigameInitialState():
+    eventPlayer.isDoingBarnMinigame = false
+    eventPlayer.barnMinigameColorState = [0, 1, 1, 1, 1, 2, 2, 2, 2]
+    eventPlayer.barnMinigamePosState = [1, 2, 3, 4, 5, 6, 7, 8]
 
 def manageEquips():
     equipPlayers[Equip.HAS_ANY].remove(eventPlayer)
@@ -876,6 +945,9 @@ def playerInitialState():
 
     eventPlayer.canUtilizeSmuggler = false
 
+    barnMinigameInitialState()
+    eventPlayer.hasFinishedBarnMinigame = false
+
     eventPlayer.isMolePersonFriend = false
 
     eventPlayer.bruceTimer = 0
@@ -920,6 +992,8 @@ def playerInitialState():
     eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
     eventPlayer.outerNotSmuggler = ["outerNotSmuggler", 0, vect(-35.02, 2.48, -126.33), 1, null]
+
+    eventPlayer.barnWorkbench = ["barnWorkbench", 0, vect(48.86, 10.21, -81.42), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
     eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
     eventPlayer.outsideSat1 = ["outsideSat1", 0, vect(25.774, 16.251, -90.842), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
@@ -1068,6 +1142,16 @@ def playerInitialState():
         ["barnSwitch5", 0, vect(56.48, 10.345, -66.584), 0.05, null],
         ["barnCodePanel", 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]],
 
+        ["barnMinigameDot0", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[0]), 0.05, null],
+        ["barnMinigameDot1", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[1]), 0.05, null],
+        ["barnMinigameDot2", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[2]), 0.05, null],
+        ["barnMinigameDot3", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[3]), 0.05, null],
+        ["barnMinigameDot4", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[4]), 0.05, null],
+        ["barnMinigameDot5", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[5]), 0.05, null],
+        ["barnMinigameDot6", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[6]), 0.05, null],
+        ["barnMinigameDot7", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[7]), 0.05, null],
+        ["barnMinigameDot8", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[8]), 0.05, null],
+
 
         # larger outside area
         eventPlayer.outsideHose, # placed here for priority reasons 
@@ -1109,6 +1193,8 @@ def playerInitialState():
         eventPlayer.outerBartender,
         eventPlayer.outerNotSmuggler,
         eventPlayer.outerWorkbench,
+
+        eventPlayer.barnWorkbench,
 
         eventPlayer.outsideSat1,
         eventPlayer.outsideSat2,
@@ -1153,6 +1239,8 @@ def playerInitialState():
 
     barnHintPlayers.remove(eventPlayer)
     barnHintPlayers.append(eventPlayer)
+
+    barnMinigamePlayers.remove(eventPlayer)
 
     dvdLogoPlayers.remove(eventPlayer)
     dvdLogoPlayers.append(eventPlayer)
@@ -1384,6 +1472,53 @@ rule "Outer workbench minigame stop":
     popEffectDeleteQueue()
     wait(RACE_CONDITION_DELAY) # prevents flashes
     outerMinigameInitialState()
+
+rule "Barn workbench minigame start":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingBarnMinigame
+
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLACK, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[0]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLACK, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[1]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLACK, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[2]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLACK, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[3]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLUE, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[4]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLUE, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[5]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLUE, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[6]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer, Effect.SPHERE, Color.BLUE, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[eventPlayer.barnMinigamePosState[7]]), 0.05, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+rule "Barn workbench minigame success":
+    @Event eachPlayer
+    @Condition all([[0, 2, 2, 2, 2, 1, 1, 1, 1][index] == e for e, index in eventPlayer.barnMinigameColorState])
+
+    eventPlayer.hasFinishedBarnMinigame = true
+    SET_STATE("barnWorkbench", 1)
+    eventPlayer.inventory.remove("Right handed remote")
+    eventPlayer.inventory = "Left handed remote".concat(eventPlayer.inventory)
+    smallMessage(eventPlayer, "You turn the remote over to get a left handed remote")
+
+rule "Barn workbench minigame stop":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingBarnMinigame and distance(eventPlayer, eventPlayer.barnWorkbench[Item.POINT]) > 3
+
+    barnMinigamePlayers.remove(eventPlayer)
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    wait(RACE_CONDITION_DELAY) # prevents flashes
+    barnMinigameInitialState()
 
 # Radio conversation
 def doInnerRadioConversation():
@@ -1832,6 +1967,34 @@ rule "Interact":
                 eventPlayer.equipped.append(Equip.LITTLE_BUDDY)
                 manageEquips()
             eventPlayer.canLeaveBarn = true
+        elif strContains(eventPlayer.tValue[Item.ID], "barnMinigame") and eventPlayer.isDoingBarnMinigame and not eventPlayer.hasFinishedBarnMinigame:
+            if eventPlayer.tValue[Item.ID] == "barnMinigameDot0":
+                eventPlayer.tPos = 0
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot1":
+                eventPlayer.tPos = 1
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot2":
+                eventPlayer.tPos = 2
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot3":
+                eventPlayer.tPos = 3
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot4":
+                eventPlayer.tPos = 4
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot5":
+                eventPlayer.tPos = 5
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot6":
+                eventPlayer.tPos = 6
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot7":
+                eventPlayer.tPos = 7
+                barnMinigameClick()
+            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot8":
+                eventPlayer.tPos = 8
+                barnMinigameClick()
         elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
             eventPlayer.outsideMapFound = true
             eventPlayer.pauseInteraction = true
@@ -1927,7 +2090,6 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.innerBarrel2):
         eventPlayer.tValue = GET_ITEM_ENTRY("innerBarrel2")
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
-            printLog("Item state is {0}, req items {1}".format(eventPlayer.tValue[Item.STATE], len(eventPlayer.innerBarrel2[Item.REQUIRED_ITEM])))
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
             SAVE_STATE(eventPlayer.tValue)
@@ -2031,7 +2193,7 @@ rule "Apply":
             elif len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif strContains(eventPlayer.inventory[0], "dollars"):
-                CREATE_TEXT("You already hav a membership", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You already have a membership", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it!", INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.smugglerItem = eventPlayer.inventory[0]
@@ -2070,6 +2232,14 @@ rule "Apply":
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingOuterMinigame = true
             outerMinigamePlayers.append(eventPlayer)
+        else:
+            APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.barnWorkbench):
+        eventPlayer.tValue = GET_ITEM_ENTRY("barnWorkbench")
+        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
+            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
+            eventPlayer.isDoingBarnMinigame = true
+            barnMinigamePlayers.append(eventPlayer)
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outsideHose):
@@ -2443,7 +2613,7 @@ rule "trip cam":
     eventPlayer.disableHeroHUD()
     eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
-    GIVE_ITEM("Left handed remote")
+    GIVE_ITEM("Right handed remote")
     satUntunedPlayers[0].append(eventPlayer)
     satUntunedPlayers[1].append(eventPlayer)
     satUntunedPlayers[2].append(eventPlayer)
@@ -2502,7 +2672,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "barnMinigame"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -2528,8 +2698,8 @@ rule "Display stats":
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingOuterMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedOuterMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "workbench state: {0}".format(eventPlayer.outerWorkbench[Item.STATE]), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-
+    # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
     hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
