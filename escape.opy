@@ -84,6 +84,8 @@ enum Item:
 #!define INTERACT_DISTANCE 4
 #!define WALL_MESSAGE_TIMEOUT 3
 #!define WALL_CHECK_TIME (0.016 * 2)
+#!define TUTORIAL_GATE_OPEN_TIME 2
+#!define TUTORIAL_GATE_OFFSET 0.52
 #!define POWER_OFF_COLOR Color.RED
 #!define POWER_BROKEN_COLOR Color.BLACK
 #!define ALCOHOL_COST 60
@@ -112,6 +114,7 @@ enum Item:
 
 globalvar introStage1Players = []
 globalvar introStage2Players = []
+globalvar tutorialPlayers = []
 globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
@@ -177,6 +180,8 @@ playervar tEnd
 playervar tPos
 playervar tText
 playervar tMinigame
+playervar tmp1
+playervar tmp2
 
 # Player state
 playervar pauseInteraction
@@ -614,6 +619,24 @@ rule "Global setup":
     hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "Puzzle master {0}".format(abilityIconString(Hero.LUCIO, Button.JUMP)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.IN_A_HURRY], "In a hurry {0}".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)), HudPosition.RIGHT, 5, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+
+    # tutorial gate
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tmp1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04), localPlayer.tmp2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+
+    createEffect(tutorialPlayers, Effect.ZARYA_PARTICLE_BEAM_SOUND, null, localPlayer.getPosition(), (5 - distance(vect(-100.32, 11.44, -90.75), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(tutorialPlayers, Effect.ZARYA_PARTICLE_BEAM_SOUND, null, localPlayer.getPosition(), (5 - distance(vect(-92.97, 11.44, -92.29), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
     # inner wire connection
     createBeam(innerWirePlayers, Beam.GRAPPLE, vect(-106.59, 12.46, -135.78), vect(-107.26, 12.50, -135.87), null, EffectReeval.VISIBILITY)
@@ -1238,8 +1261,10 @@ def playerInitialState():
     manageEquips()
     manageAchievements()
 
+    tutorialPlayers.remove(eventPlayer)
+    tutorialPlayers.append(eventPlayer)
+
     playersInDark.remove(eventPlayer)
-    playersInDark.append(eventPlayer)
 
     innerWirePlayers.remove(eventPlayer)
 
@@ -2107,6 +2132,7 @@ rule "Apply":
                 del eventPlayer.inventory[0]
                 playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 30)
                 eventPlayer.tutorialFinished = true
+                playersInDark.append(eventPlayer)
             else:
                 APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWires):
@@ -2358,76 +2384,37 @@ rule "Apply":
 
 # Tutorial gate
 
-#!define GATE_EFFECT Beam.TORBJORN_TURRET_SIGHT
-#!define GATE_OPEN_TIME 2
-#!define GATE_OFFSET 0.52
-playervar gate1Visibility
-playervar gate1Start = vect(-99.01, 10.93, -91.03)
-playervar gate1End = vect(-101.64, 10.93, -90.46)
-playervar gate2Start = vect(-94.20, 10.93, -92.04)
-playervar gate2End = vect(-91.58, 10.93, -92.60)
+#!define TUTORIAL_GATE_1_END vect(-101.64, 10.93, -90.46)
+#!define TUTORIAL_GATE_2_END vect(-91.58, 10.93, -92.60)
 
 rule "Tutorial gate visual":
     @Event eachPlayer
     @Condition not eventPlayer.isDummy()
 
-    eventPlayer.gate1Visibility = eventPlayer
-
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate1Start, eventPlayer.gate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate1Start + vect(0, GATE_OFFSET, 0) * 1, eventPlayer.gate1End + vect(0, GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate1Start + vect(0, GATE_OFFSET, 0) * 2, eventPlayer.gate1End + vect(0, GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate1Start + vect(0, GATE_OFFSET, 0) * 3, eventPlayer.gate1End + vect(0, GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate1Start + vect(0, GATE_OFFSET, 0) * 4, eventPlayer.gate1End + vect(0, GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate1Start + vect(0, GATE_OFFSET, 0) * 5, eventPlayer.gate1End + vect(0, GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate2Start, eventPlayer.gate2End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate2Start + vect(0, GATE_OFFSET, 0) * 1, eventPlayer.gate2End + vect(0, GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate2Start + vect(0, GATE_OFFSET, 0) * 2, eventPlayer.gate2End + vect(0, GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate2Start + vect(0, GATE_OFFSET, 0) * 3, eventPlayer.gate2End + vect(0, GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate2Start + vect(0, GATE_OFFSET, 0) * 4, eventPlayer.gate2End + vect(0, GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(eventPlayer.gate1Visibility, GATE_EFFECT, eventPlayer.gate2Start + vect(0, GATE_OFFSET, 0) * 5, eventPlayer.gate2End + vect(0, GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-
-    createEffect(eventPlayer.gate1Visibility, Effect.ZARYA_PARTICLE_BEAM_SOUND, null, updateEveryTick(eventPlayer.getPosition()), (5 - distance(vect(-100.32, 11.44, -90.75), updateEveryTick(eventPlayer.getPosition()))) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createEffect(eventPlayer.gate1Visibility, Effect.ZARYA_PARTICLE_BEAM_SOUND, null, updateEveryTick(eventPlayer.getPosition()), (5 - distance(vect(-92.97, 11.44, -92.29), updateEveryTick(eventPlayer.getPosition()))) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    eventPlayer.tmp1 = TUTORIAL_GATE_1_END
+    eventPlayer.tmp2 = TUTORIAL_GATE_2_END
 
 rule "Tutorial gate barrier":
     @Event eachPlayer
     @Condition eventPlayer.isJunk
     @Condition not eventPlayer.tutorialFinished
-    @Condition DIST_TO_WALL(vect(-101.64, 0, -90.46), vect(-91.58, 0, -92.60), updateEveryTick(eventPlayer.getPosition())) < 0.5
 
-    do:
-        eventPlayer.clearStatusEffect(Status.INVINCIBLE)
-        damage(eventPlayer, eventPlayer, 50)
-        eventPlayer.setMoveSpeed(5)
-        eventPlayer.applyImpulse(vect(2.14, 6, 10.06), 8, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION)
-        wait(0.1)
-        eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF)
-        eventPlayer.setHealth(200)
-    while RULE_CONDITION
-    eventPlayer.setMoveSpeed(100)
+    MAKE_DAMAGE_WALL(vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), "Ouch!")
+    MAKE_DAMAGE_WALL(vect(-94.21, 10.19, -92.06), vect(-91.58, 14.05, -92.61), "Ouch!")
 
-    # MAKE_DAMAGE_WALL(vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), "Ouch!")
-    # MAKE_DAMAGE_WALL(vect(-94.21, 10.19, -92.06), vect(-91.58, 14.05, -92.61), "Ouch!")
-
-    # wait(0.016, Wait.ABORT_WHEN_FALSE)
-    # goto RULE_START
-
-    # if DIST_TO_WALL_2(vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), eventPlayer.getPosition()) > 0:
-    #     pass
-
-    # hudHeader(eventPlayer, "dist: {0}".format(DIST_TO_WALL_2(vect(-101.64, 10.19, -90.47), vect(-99.01, 14.05, -91.02), eventPlayer.getPosition())), HudPosition.RIGHT, 300, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
+    goto RULE_START
 
 rule "Remove tutorial gate":
     @Event eachPlayer
     @Condition eventPlayer.tutorialFinished
 
-    chase(eventPlayer.gate1End, eventPlayer.gate1Start, duration=GATE_OPEN_TIME, ChaseReeval.DESTINATION_AND_DURATION)
-    chase(eventPlayer.gate2End, eventPlayer.gate2Start, duration=GATE_OPEN_TIME, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.tmp1, vect(-99.01, 10.93, -91.03), duration=TUTORIAL_GATE_OPEN_TIME, ChaseReeval.NONE)
+    chase(eventPlayer.tmp2, vect(-94.20, 10.93, -92.04), duration=TUTORIAL_GATE_OPEN_TIME, ChaseReeval.NONE)
 
-    wait(GATE_OPEN_TIME)
+    wait(TUTORIAL_GATE_OPEN_TIME)
 
-    eventPlayer.gate1Visibility = null
+    tutorialPlayers.remove(eventPlayer)
 
 # Dark and scary barrier
 
@@ -2436,6 +2423,7 @@ rule "Remove tutorial gate":
 rule "Create lights out barriers":
     @Event eachPlayer
     @Condition eventPlayer.isJunk
+    @Condition eventPlayer.tutorialFinished
     @Condition not eventPlayer.lightsOn
 
     MAKE_WALL(vect(-85.53, 10.44, -97.39), vect(-85, 14.38, -94.87), DARK_AND_SCARY_MESSAGE)
