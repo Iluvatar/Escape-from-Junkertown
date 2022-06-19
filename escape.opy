@@ -1860,7 +1860,8 @@ rule "Interact":
                 CREATE_TEXT("You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerNotSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("Dance for me, monkey.", NOT_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay in cash.", NOT_SMUGGLER_TEXT_LOCATION)
+                INCREMENT_STATE("outerMic")
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("Alright, you've earned your pay.", NOT_SMUGGLER_TEXT_LOCATION)
                 GIVE_ITEM("{0} dollars".format(ALCOHOL_COST + SMUGGLER_COST))
@@ -1944,13 +1945,19 @@ rule "Interact":
                 eventPlayer.outerMinigameMovesMade--
         elif eventPlayer.tValue[Item.ID] == "outerMic":
             if eventPlayer.tValue[Item.STATE] == 0:
+                smallMessage(eventPlayer, "You don't know why you would waste any time on this")
+            elif eventPlayer.tValue[Item.STATE] == 1:
+                eventPlayer.pauseInteraction = true
                 smallMessage(eventPlayer, "You make a couple jokes")
+                wait(3)
+                smallMessage(eventPlayer, "No one laughs")
+                wait(3)
+                smallMessage(eventPlayer, "Maybe that was the point")
+                eventPlayer.pauseInteraction = false
+
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-
-                eventPlayer.tValue = GET_ITEM_ENTRY("outerNotSmuggler")
-                eventPlayer.tValue[Item.STATE]++
-                SAVE_STATE(eventPlayer.tValue)
+                INCREMENT_STATE("outerNotSmuggler")
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
         elif strContains(eventPlayer.tValue[Item.ID], "outerDoor"):
@@ -2250,6 +2257,8 @@ rule "Apply":
                 SAVE_STATE(eventPlayer.tValue)
             else:
                 CREATE_TEXT("I've got nothing left for ya, bud.", BARTENDER_TEXT_LOCATION)
+        elif len(eventPlayer.inventory) == 0:
+            CREATE_TEXT("You expect to drink for free round here?", BARTENDER_TEXT_LOCATION)
         else:
             CREATE_TEXT("Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.outerWorkbench):
