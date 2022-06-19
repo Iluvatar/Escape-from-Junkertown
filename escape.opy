@@ -115,6 +115,7 @@ enum Item:
 globalvar introStage1Players = []
 globalvar introStage2Players = []
 globalvar tutorialPlayers = []
+globalvar tutorialTextPlayers = [[], [], [], []]
 globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
@@ -619,6 +620,12 @@ rule "Global setup":
     hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "Puzzle master {0}".format(abilityIconString(Hero.LUCIO, Button.JUMP)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.IN_A_HURRY], "In a hurry {0}".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)), HudPosition.RIGHT, 5, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+
+    # tutorial text
+    createInWorldText(tutorialTextPlayers[0], "Use {0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[1], "Use {0} to use inventory items on objects".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[2], "Use {0} and {1} to cycle your inventory".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[3], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
     createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tmp1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -1261,6 +1268,11 @@ def playerInitialState():
     manageEquips()
     manageAchievements()
 
+    tutorialTextPlayers[0].remove(eventPlayer)
+    tutorialTextPlayers[0].append(eventPlayer)
+    tutorialTextPlayers[1].remove(eventPlayer)
+    tutorialTextPlayers[2].remove(eventPlayer)
+    tutorialTextPlayers[3].remove(eventPlayer)
     tutorialPlayers.remove(eventPlayer)
     tutorialPlayers.append(eventPlayer)
 
@@ -1579,7 +1591,7 @@ def doInnerRadioConversation():
     playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
     radioSmokePlayers.append(eventPlayer)
     wait(3)
-    smallMessage(eventPlayer, "Press F to be the other guy")
+    smallMessage(eventPlayer, "Press {0} to be the other guy".format(buttonString(Button.INTERACT)))
 
     eventPlayer.canBeTheOtherGuy = true
 
@@ -1789,7 +1801,12 @@ rule "Interact":
                 makeSwitchNoise()
                 checkPowerPanel()
 
-        if eventPlayer.tValue[Item.ID] == "innerPowerBox":
+        if eventPlayer.tValue[Item.ID] == "tutSafe2":
+            tutorialTextPlayers[0].remove(eventPlayer)
+        elif eventPlayer.tValue[Item.ID] == "tutSafe5":
+            tutorialTextPlayers[0].remove(eventPlayer)
+            tutorialTextPlayers[1].append(eventPlayer)
+        elif eventPlayer.tValue[Item.ID] == "innerPowerBox":
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 if eventPlayer.tValue[Item.STATE] == 0:
                     smallMessage(eventPlayer, "This is the power switching box for the whole area")
@@ -2133,6 +2150,8 @@ rule "Apply":
                 playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 30)
                 eventPlayer.tutorialFinished = true
                 playersInDark.append(eventPlayer)
+                tutorialTextPlayers[1].remove(eventPlayer)
+                tutorialTextPlayers[2].append(eventPlayer)
             else:
                 APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWires):
