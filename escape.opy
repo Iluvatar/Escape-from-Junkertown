@@ -83,6 +83,7 @@ enum Item:
 #!define SUNLIGHT_ANGLE 30
 #!define INTERACT_DISTANCE 4
 #!define WALL_MESSAGE_TIMEOUT 3
+#!define WALL_CHECK_TIME (0.016 * 2)
 #!define POWER_OFF_COLOR Color.RED
 #!define POWER_BROKEN_COLOR Color.BLACK
 #!define ALCOHOL_COST 60
@@ -322,7 +323,7 @@ def doWallMessageTimeout():
     eventPlayer.isShowingWallMessage = false
 
 #!define MAKE_WALL(start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
-    eventPlayer.setMoveSpeed(5) \
+    eventPlayer.setMoveSpeed(0) \
     eventPlayer.applyImpulse(vect(-((end) - (start)).z, 0, ((end) - (start)).x), 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
     if eventPlayer.isShowingWallMessage == false: \
         smallMessage(eventPlayer, message) \
@@ -2443,7 +2444,7 @@ rule "Create lights out barriers":
     MAKE_WALL(vect(-99.65, 12.44, -153.76), vect(-102.71, 16, -149.09), DARK_AND_SCARY_MESSAGE)
     MAKE_WALL(vect(-97.29, 12.44, -169.53), vect(-96.75, 16, -166.99), DARK_AND_SCARY_MESSAGE)
 
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 # Sparking wires
@@ -2474,7 +2475,7 @@ rule "Create sunlight barriers":
     MAKE_WALL(vect(-56.23, 14.48, -110.34), vect(-62.38, 17.43, -109.05), SCRAPYARD_OUTSIDE_MESSAGE)
     MAKE_WALL(vect(-68.33, 12.43, -103.68), vect(-73.34, 17.6, -102.63), SCRAPYARD_OUTSIDE_MESSAGE)
 
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 # Junkertown exit wall
@@ -2486,10 +2487,10 @@ rule "Junkertown entry wall":
     @Condition eventPlayer.isJunk
     @Condition eventPlayer.canGoOutside
 
-    MAKE_WALL(vect(-12.67, 6.20, -83.32), vect(-31.22, 16, -86.91), JUNKERTOWN_EXIT_WALL_MESSAGE)
+    MAKE_WALL(vect(-12.67, 6.20, -83.32), vect(-31.41, 16, -85.87), JUNKERTOWN_EXIT_WALL_MESSAGE)
     MAKE_WALL(vect(-41.66, 12.54, -82.73), vect(-44.69, 15.31, -80.84), JUNKERTOWN_EXIT_WALL_MESSAGE)
 
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 # Barn outside wall
@@ -2505,7 +2506,7 @@ rule "Create barn outside wall":
     MAKE_WALL(vect(43.08, 10, -74.13), vect(42.65, 12.75, -78.85), BARN_OUTSIDE_MESSAGE)
     MAKE_WALL(vect(49.50, 10, -91.89), vect(49.17, 13, -95.62), BARN_OUTSIDE_MESSAGE)
     
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 # Barn secret wall
@@ -2517,7 +2518,7 @@ rule "Create barn secret wall":
 
     MAKE_WALL(vect(55.83, 9, -65.80), vect(52.28, 11.81, -65.50), "Enter the code first!")
 
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 # DVD logo effect
@@ -2562,7 +2563,7 @@ rule "Junkertown entry wall":
     MAKE_WALL(vect(-48.99, 9.49, -46.47), vect(-47.91, 13.48, -50.19), JUNKERTOWN_ENTRY_WALL_MESSAGE)
     MAKE_WALL(vect(-28.33, 4.48, -64.23), vect(-25.17, 8.48, -66.02), JUNKERTOWN_ENTRY_WALL_MESSAGE)
 
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 # Mole person hiding text
