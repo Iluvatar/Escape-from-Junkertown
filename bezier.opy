@@ -50,7 +50,8 @@ settings {
 
 #!define POINTER_COLOR Color.WHITE
 #!define MAIN_POINT_COLOR Color.GREEN
-#!define OFF_POINT_COLOR Color.YELLOW
+#!define OFF_POINT_FIRST_COLOR Color.YELLOW
+#!define OFF_POINT_SECOND_COLOR Color.ORANGE
 #!define EDIT_COLOR Color.ORANGE
 #!define PREVIEW_COLOR Color.TURQUOISE
 
@@ -98,19 +99,21 @@ rule "Player join":
     @Event playerJoined
 
     eventPlayer.startForcingHero(Hero.MERCY)
-    createEffect(eventPlayer, Effect.SPHERE, POINTER_COLOR, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance), eventPlayer.pointRadius, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(visibility, Effect.SPHERE, POINTER_COLOR, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance), eventPlayer.pointRadius, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     eventPlayer.pointerEffect = getLastCreatedEntity()
     hudHeader(eventPlayer, "add point: left click", HudPosition.LEFT, 0, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "edit point: right click", HudPosition.LEFT, 1, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "remove last point: r", HudPosition.LEFT, 2, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "preview curve: f + v", HudPosition.LEFT, 3, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "view curve: f + e", HudPosition.LEFT, 4, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "increase duration: f + left click", HudPosition.LEFT, 5, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "decrease duration: f + right click", HudPosition.LEFT, 6, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "all view curve: f + e + shift", HudPosition.LEFT, 5, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "increase duration: f + left click", HudPosition.LEFT, 6, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "decrease duration: f + right click", HudPosition.LEFT, 7, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "segment duration: {0}".format(eventPlayer.bezierDuration), HudPosition.LEFT, 10, Color.PURPLE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg load: {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 10, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak load: {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 11, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "load: {0}".format(getServerLoad()), HudPosition.RIGHT, 12, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
+
+    # hudHeader(eventPlayer, "avg load: {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 10, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "peak load: {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 11, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "load: {0}".format(getServerLoad()), HudPosition.RIGHT, 12, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
 
     wait(1)
 
@@ -172,13 +175,30 @@ def createHandles():
             createBeam(visibility, Beam.GRAPPLE, eventPlayer.points[eventPlayer.I], eventPlayer.points[eventPlayer.I + 1], null, EffectReeval.VISIBILITY)
             eventPlayer.handleEffects.append(getLastCreatedEntity())
 
-# # The index to redo should be stored in eventPlayer.arg
-# def redoCurve():
-#     eventPlayer.points[eventPlayer.arg + 1] = 2 * eventPlayer.points[eventPlayer.arg] - eventPlayer.points[eventPlayer.arg - 1]
-#     eventPlayer.points[eventPlayer.arg + 2] = eventPlayer.points[eventPlayer.arg - 2] + 2 * eventPlayer.points[eventPlayer.arg + 1] - 2 * eventPlayer.points[eventPlayer.arg - 1]
+# The index to redo should be stored in eventPlayer.arg
+def redoCurve():
+    eventPlayer.points[eventPlayer.arg + 1] = 2 * eventPlayer.points[eventPlayer.arg] - eventPlayer.points[eventPlayer.arg - 1]
+    eventPlayer.points[eventPlayer.arg + 2] = eventPlayer.points[eventPlayer.arg - 2] + 2 * eventPlayer.points[eventPlayer.arg + 1] - 2 * eventPlayer.points[eventPlayer.arg - 1]
 
-# def createPoints():
+def redoAllCurves():
+    for eventPlayer.I in range(0, len(eventPlayer.points), 3):
+        if eventPlayer.I != 0:
+            eventPlayer.arg = eventPlayer.I
+            redoCurve()
 
+def createPoints():
+    while len(eventPlayer.pointsEffect) > 0:
+        destroyEffect(eventPlayer.pointsEffect[0])
+        del eventPlayer.pointsEffect[0]
+
+    for eventPlayer.E in range(len(eventPlayer.points)):
+        if eventPlayer.E % 3 == 0:
+            createEffect(visibility, Effect.SPHERE, MAIN_POINT_COLOR, eventPlayer.points[eventPlayer.E], eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+        elif eventPlayer.E % 3 == 1:
+            createEffect(visibility, Effect.SPHERE, OFF_POINT_SECOND_COLOR, eventPlayer.points[eventPlayer.E], eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
+        else:
+            createEffect(visibility, Effect.SPHERE, OFF_POINT_FIRST_COLOR, eventPlayer.points[eventPlayer.E], eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
+        eventPlayer.pointsEffect.append(getLastCreatedEntity())
 
 rule "Add point":
     @Event eachPlayer
@@ -187,24 +207,11 @@ rule "Add point":
 
     eventPlayer.editingPointPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance
 
-    if len(eventPlayer.points) >= 4:
-        eventPlayer.last1Point = eventPlayer.points[len(eventPlayer.points) - 1]
-        eventPlayer.last2Point = eventPlayer.points[len(eventPlayer.points) - 2]
-        eventPlayer.last3Point = eventPlayer.points[len(eventPlayer.points) - 3]
-        eventPlayer.next1Point = eventPlayer.last1Point + (eventPlayer.last1Point - eventPlayer.last2Point)
-        eventPlayer.next2Point = eventPlayer.next1Point + (eventPlayer.last3Point - eventPlayer.last2Point) + (eventPlayer.next1Point - eventPlayer.last2Point)
-        eventPlayer.points.append(eventPlayer.next1Point)
-        eventPlayer.points.append(eventPlayer.next2Point)
-        createEffect(visibility, Effect.SPHERE, OFF_POINT_COLOR, eventPlayer.next1Point, eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
-        eventPlayer.pointsEffect.append(getLastCreatedEntity())
-        createEffect(visibility, Effect.SPHERE, OFF_POINT_COLOR, eventPlayer.next2Point, eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
-        eventPlayer.pointsEffect.append(getLastCreatedEntity())
-
     eventPlayer.points.append(eventPlayer.editingPointPos)
-    createEffect(visibility, Effect.SPHERE, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-    eventPlayer.pointsEffect.append(getLastCreatedEntity())
 
     createHud()
+    redoAllCurves()
+    createPoints()
     createHandles()
 
 rule "Remove last point":
@@ -214,18 +221,20 @@ rule "Remove last point":
 
     if len(eventPlayer.points) > 4:
         del eventPlayer.points[len(eventPlayer.points) - 1]
-        destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
-        del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
+        # destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
+        # del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
         
         del eventPlayer.points[len(eventPlayer.points) - 1]
-        destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
-        del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
+        # destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
+        # del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
 
     del eventPlayer.points[len(eventPlayer.points) - 1]
-    destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
-    del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
+    # destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
+    # del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
 
     createHud()
+    redoAllCurves()
+    createPoints()
     createHandles()
 
 rule "Start edit point":
@@ -260,42 +269,9 @@ rule "End edit point":
     # replace value in points array
     eventPlayer.points[eventPlayer.editingPointIndex] = eventPlayer.editingPointPos
 
-    # replace effect
-    destroyEffect(eventPlayer.pointsEffect[eventPlayer.editingPointIndex])
-    createEffect(visibility, Effect.SPHERE, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-    eventPlayer.pointsEffect[eventPlayer.editingPointIndex] = getLastCreatedEntity()
-
-
-
-    # replace next point
-    if eventPlayer.editingPointIndex >= 3 and eventPlayer.editingPointIndex < len(eventPlayer.points) - 1:
-        eventPlayer.points[eventPlayer.editingPointIndex + 1] = 2 * eventPlayer.points[eventPlayer.editingPointIndex] - eventPlayer.points[eventPlayer.editingPointIndex - 1]
-        destroyEffect(eventPlayer.pointsEffect[eventPlayer.editingPointIndex + 1])
-        createEffect(visibility, Effect.SPHERE, OFF_POINT_COLOR, eventPlayer.points[eventPlayer.editingPointIndex + 1], eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
-        eventPlayer.pointsEffect[eventPlayer.editingPointIndex + 1] = getLastCreatedEntity()
-
-    # replace next next point
-    if eventPlayer.editingPointIndex >= 3 and eventPlayer.editingPointIndex < len(eventPlayer.points) - 1:
-        eventPlayer.points[eventPlayer.editingPointIndex + 2] = eventPlayer.points[eventPlayer.editingPointIndex - 2] + 2 * eventPlayer.points[eventPlayer.editingPointIndex + 1] - 2 * eventPlayer.points[eventPlayer.editingPointIndex - 1]
-        destroyEffect(eventPlayer.pointsEffect[eventPlayer.editingPointIndex + 2])
-        createEffect(visibility, Effect.SPHERE, OFF_POINT_COLOR, eventPlayer.points[eventPlayer.editingPointIndex + 2], eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
-        eventPlayer.pointsEffect[eventPlayer.editingPointIndex + 2] = getLastCreatedEntity()
-
-    # # replace previous interp
-    # if eventPlayer.editingPointIndex > 1:
-    #     eventPlayer.points[eventPlayer.editingPointIndex - 1] = (eventPlayer.points[eventPlayer.editingPointIndex - 2] + eventPlayer.editingPointPos) / 2
-    #     destroyEffect(eventPlayer.pointsEffect[eventPlayer.editingPointIndex - 1])
-    #     createEffect(eventPlayer, Effect.SPHERE, OFF_POINT_COLOR, eventPlayer.points[eventPlayer.editingPointIndex - 1], eventPlayer.pointRadius * 0.5, EffectReeval.NONE)
-    #     eventPlayer.pointsEffect[eventPlayer.editingPointIndex - 1] = getLastCreatedEntity()
-
-    # # replace next interp
-    # if eventPlayer.editingPointIndex < len(eventPlayer.points) - 1 and eventPlayer.editingPointIndex != 0:
-    #     eventPlayer.points[eventPlayer.editingPointIndex + 1] = (eventPlayer.points[eventPlayer.editingPointIndex + 2] + eventPlayer.editingPointPos) / 2
-    #     destroyEffect(eventPlayer.pointsEffect[eventPlayer.editingPointIndex + 1])
-    #     createEffect(eventPlayer, Effect.SPHERE, OFF_POINT_COLOR, eventPlayer.points[eventPlayer.editingPointIndex + 1], eventPlayer.pointRadius * 0.5, EffectReeval.NONE)
-    #     eventPlayer.pointsEffect[eventPlayer.editingPointIndex + 1] = getLastCreatedEntity()
-
     createHud()
+    redoAllCurves()
+    createPoints()
     createHandles()
 
     destroyEffect(eventPlayer.editingPointEffect)
@@ -367,8 +343,6 @@ rule "Do curve camera":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.ABILITY_2)
 
-    # eventPlayer.bezierDuration = 5
-
     visibility.remove(eventPlayer)
 
     eventPlayer.startCamera((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T, eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T, 0)
@@ -382,6 +356,18 @@ rule "Do curve camera":
 
     visibility.append(eventPlayer)
 
+rule "Do curve camera for everyone":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.ABILITY_1)
+
+    getAllPlayers().startCamera((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T, eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T, 0)
+
+    for eventPlayer.I in range(0, len(eventPlayer.points) - 3, 3):
+        eventPlayer.bezier = eventPlayer.points.slice(eventPlayer.I, 4)
+        doBezier()
+        wait(eventPlayer.bezierDuration)
+
+    getAllPlayers().stopCamera()
 
 # rule "make square":
 #     @Event eachPlayer
