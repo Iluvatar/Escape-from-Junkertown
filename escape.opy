@@ -1067,16 +1067,16 @@ def playerInitialState():
         ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["A giant safe filled with gold, perfect for sleeping in"]],
 
         # lights on section
-        ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["The fridge is full of fish heads and half eaten Chinese food"], null, true],
-        ["innerChest1", 0, vect(-114.91, 7.07, -124.08), 1.2, ["Who kept an empty petrol can in here?"], "Empty petrol can", true],
-        ["innerLocker1", 0, vect(-112.76, 7.55, -134.80), 1.2, ["locker 1"], null, true],
-        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["locker 2"], null, true],
-        ["innerLocker3", 0, vect(-112.58, 7.55, -141.24), 1.2, ["locker 3"], null, true],
+        ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
+        ["innerChest1", 0, vect(-114.91, 7.07, -124.08), 1.2, ["There's an empty petrol can inside, just free for the taking"], "Empty petrol can", true],
+        ["innerLocker1", 0, vect(-112.76, 7.55, -134.80), 1.2, ["Whoever's locker this was didn't have the decency to leave easily stolen goods inside"], null, true],
+        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["It's as empty as your head when someone says \"explosion\""], null, true],
+        ["innerLocker3", 0, vect(-112.58, 7.55, -141.24), 1.2, ["The locker is completely devoid of utility"], null, true],
         ["innerLocker4", 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true],
         ["innerLocker5", 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true],
 
-        ["innerBarrel1", 0, vect(-113.43, 7.02, -116.14), 0.5, ["Barrel 1"], null, true],
-        ["innerBarrel3", 0, vect(-105.32, 12.79, -132.71), 0.5, ["Barrel 3"], null, true],
+        ["innerBarrel1", 0, vect(-113.43, 7.02, -116.14), 0.5, ["The barrel is as dry as a day in December"], null, true],
+        ["innerBarrel3", 0, vect(-105.32, 12.79, -132.71), 0.5, ["You see nothing in there except an empty abyss as dark as your soul"], null, true],
 
         ["innerSwitch1", 0, vect(-111.46, 14.145, -137.47), 0.05, null],
         ["innerSwitch2", 0, vect(-111.46, 14.071, -137.47), 0.05, null],
@@ -1093,10 +1093,10 @@ def playerInitialState():
         ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
-        ["innerBrokenMech1", 0, vect(-88.35, 8.26, -142.03), 2, ["This mech seems to be missing a limb. You sympathize with it"]],
-        ["innerBrokenMech2", 0, vect(-75.42, 8.52, -146.11), 2, ["A broken mech 2"]],
-        ["innerMech1", 0, vect(-90.47, 10.09, -177.75), 2, ["A fully working mech 1"]],
-        ["innerMech2", 0, vect(-94.87, 10.11, -178.01), 2, ["A fully working mech 2"]],
+        ["innerBrokenMech1", 0, vect(-88.35, 8.26, -142.03), 2, ["The mech seems to be missing a limb. You sympathize with it"]],
+        ["innerBrokenMech2", 0, vect(-75.42, 8.52, -146.11), 2, ["This mech doesn't even have a saw blade on it"]],
+        ["innerMech1", 0, vect(-90.47, 10.09, -177.75), 2, ["Now *that's* a sawblade"]],
+        ["innerMech2", 0, vect(-94.87, 10.11, -178.01), 2, ["The old king's mech. You've never seen it up close before"]],
 
         ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null],
         ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null],
@@ -1118,30 +1118,30 @@ def playerInitialState():
 
 
         # courtyard area
-        ["outerIceBox", 0, vect(-50.77, 2.49, -126.77), 1, ["ice box"], null, true],
-        ["outerSmallToolbox1", 0, vect(-11.03, 8.29, -103.06), 0.5, ["small toolbox 1"], null, true],
-        ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["toolbox 1"], null, true],
-        ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["toolbox 2"], null, true],
+        ["outerIceBox", 0, vect(-50.77, 2.49, -126.77), 1, ["The harsh look from the bartender keeps you from poking around inside"], null, true],
+        ["outerSmallToolbox1", 0, vect(-11.03, 8.29, -103.06), 0.5, ["The toolbox is far too heavy for its size"], null, true],
+        ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["You wonder what the gross looking needles inside are for"], null, true],
+        ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["You don't know what half these tools do. Okay, all of them"], null, true],
         ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["You find an old remote inside"], "Right handed remote", true],
-        ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["radio"]],
+        ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["This allows incoming connections from outside as long as they're broadcasting on the right frequency"]],
         ["outerMic", 0, vect(-30.95, 3.80, -135.05), 0.5, null],
 
-        ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["cart"]],
+        ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["The cart is stopped in the middle of the road"]],
 
         ["outerPoster1", 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"], null, null, true],
-        ["outerPoster2", 0, vect(-60.39, 14.28, -88.06), 0.5, ["poster2"], null, null, true],
-        ["outerPoster3", 0, vect(-48.70, 8.39, -95.52), 0.8, ["poster3"], null, null, true],
-        ["outerPoster4", 0, vect(-45.22, 8.42, -112.92), 0.5, ["poster4"], null, null, true],
-        ["outerPoster5", 0, vect(-42.93, 8.67, -116.01), 0.5, ["poster5"], null, null, true],
-        ["outerPoster6", 0, vect(-26.17, 14.43, -112.75), 0.5, ["poster6"], null, null, true],
-        ["outerPoster7", 0, vect(-20.13, 8.15, -95.48), 0.7, ["poster7"], null, null, true],
-        ["outerPoster8", 0, vect(-32.28, 7.78, -94.74), 0.5, ["poster8"], null, null, true],
-        ["outerPoster9", 0, vect(-31.35, 7.44, -85.96), 1.1, ["poster9"], null, null, true],
-        ["outerPoster10", 0, vect(-44.65, 6.38, -76.55), 0.7, ["poster10"], null, null, true],
-        ["outerPoster11", 0, vect(-35.80, 5.70, -70.76), 1, ["poster11"], null, null, true],
-        ["outerPoster12", 0, vect(-44.66, 6.73, -60.23), 1.1, ["poster12"], null, null, true],
-        ["outerPoster13", 0, vect(-33.01, 5.96, -63.99), 0.7, ["poster13"], null, null, true],
-        ["outerPoster14", 0, vect(-54.26, 5.98, -47.88), 0.7, ["poster14"], null, null, true],
+        ["outerPoster2", 0, vect(-60.39, 14.28, -88.06), 0.5, ["You don't want to be here anyway"], null, null, true],
+        ["outerPoster3", 0, vect(-48.70, 8.39, -95.52), 0.8, ["It was all just a big misunderstanding"], null, null, true],
+        ["outerPoster4", 0, vect(-45.22, 8.42, -112.92), 0.5, ["The Queen was too attached to that summer shack anyway"], null, null, true],
+        ["outerPoster5", 0, vect(-42.93, 8.67, -116.01), 0.5, ["Really, you were doing her a favor"], null, null, true],
+        ["outerPoster6", 0, vect(-26.17, 14.43, -112.75), 0.5, ["Come on, what's a few explosions between friends"], null, null, true],
+        ["outerPoster7", 0, vect(-20.13, 8.15, -95.48), 0.7, ["The picture has your nose all wrong"], null, null, true],
+        ["outerPoster8", 0, vect(-32.28, 7.78, -94.74), 0.5, ["This is completely unnecessary"], null, null, true],
+        ["outerPoster9", 0, vect(-31.35, 7.44, -85.96), 1.1, ["Don't people deserve a sixth chance?"], null, null, true],
+        ["outerPoster10", 0, vect(-44.65, 6.38, -76.55), 0.7, ["\"Troublemakers\"? The nerve"], null, null, true],
+        ["outerPoster11", 0, vect(-35.80, 5.70, -70.76), 1, ["You feel wounded at such accusations"], null, null, true],
+        ["outerPoster12", 0, vect(-44.66, 6.73, -60.23), 1.1, ["Maybe if you just had a little chat with the Queen"], null, null, true],
+        ["outerPoster13", 0, vect(-33.01, 5.96, -63.99), 0.7, ["There's no need to go to such extremes"], null, null, true],
+        ["outerPoster14", 0, vect(-54.26, 5.98, -47.88), 0.7, ["What's the point of putting a poster all the way over here?"], null, null, true],
 
         ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
 
@@ -1171,18 +1171,18 @@ def playerInitialState():
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
         ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to change the TV channel right now"]],
         ["barnPachimari", 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]],
-        ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, ["bike"]],
-        ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["fuel machine"], null, true],
-        ["barnFridge", 0, vect(66.91, 10.37, -67.64), 1, ["fridge"], null, true],
+        ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, ["This bike is one of the only working vehicles around here"]],
+        ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["This machine helps you survive the irradiated outdoors"], null, true],
+        ["barnFridge", 0, vect(66.91, 10.37, -67.64), 1, ["The fridge is full of half eaten Chinese food"], null, true],
         ["barnTireRack", 0, vect(44.07, 10.12, -88.71), 1.5, ["This rack of hover pads is entirely unremarkable"], null, null, true],
         ["barnPlan", 0, vect(44.03, 11.11, -71.35), 1.5, ["Things didn't to according to plan"], null, null, true],
 
-        ["barnToolbox1", 0, vect(49.62, 10.55, -75.25), 0.75, ["toolbox 1"], null, true],
-        ["barnToolbox2", 0, vect(50.55, 9.42, -75.90), 0.75, ["toolbox 2"], null, true],
-        ["barnSmallToolbox1", 0, vect(49.20, 10.27, -79.17), 0.5, ["small toolbox 1"], null, true],
-        ["barnSafe1", 0, vect(60.60, 10.01, -65.34), 1, ["safe 1"], null, true, true],
+        ["barnToolbox1", 0, vect(49.62, 10.55, -75.25), 0.75, ["The toolbox is filled with a bunch of spare spark plugs"], null, true],
+        ["barnToolbox2", 0, vect(50.55, 9.42, -75.90), 0.75, ["There's a meticulously arranged collection of screwdrivers, but nothing you need right now"], null, true],
+        ["barnSmallToolbox1", 0, vect(49.20, 10.27, -79.17), 0.5, ["This was always your least favorite toolbox"], null, true],
+        ["barnSafe1", 0, vect(60.60, 10.01, -65.34), 1, ["That's private, there's no need to look in there"], null, true, true],
         ["barnSafe2", 0, vect(60.52, 9.50, -63.60), 0.8, ["You pick up your little buddy and place him carefully in your bag"], null, true],
-        ["barnSafe3", 0, vect(56.13, 9.74, -62.70), 0.7, ["safe 3"], null, true, true],
+        ["barnSafe3", 0, vect(56.13, 9.74, -62.70), 0.7, ["This safe is empty, you just put it there for the aesthetic"], null, true, true],
         ["barnEmptyShelf", 0, vect(50.05, 10.56, -63.46), 2, ["Times have been rough lately"], null, true, true],
 
         ["barnPaperClue1", 0, vect(58.30, 9, -93.83), 0.3, null],
@@ -1210,25 +1210,24 @@ def playerInitialState():
         # larger outside area
         eventPlayer.outsideHose, # placed here for priority reasons 
 
-        ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["outsideJunkWorkbench"]],
-        ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["outsideSafe"], null, true],
-        ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["outsideIceBox"], null, true, true],
+        ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
+        ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff "], null, true],
+        ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
         ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]],
-        ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["water tower hose"]],
-        ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["outsideFridge2"], null, true],
-        ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["outsideFridge3"], null, true, true],
-        ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["outsideFridge4"], null, true, true],
-        ["outsideToolbox1", 0, vect(-6.67, 8.55, -77.17), 0.7, ["outsideToolbox1"], null, true],
-        ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["Satellite tuner"], null, true],
-        ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["outsideSmallToolbox"], null, true],
-        ["outsideChest1", 0, vect(19.26, 8.73, -55.36), 1.2, ["outsideChest1"], null, true],
-        ["outsideChest2", 0, vect(-7.98, 8.35, -47.93), 1.2, ["outsideChest2"], null, true],
-        ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["outsideChest3"], null, true],
-        ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["outsideChest4"], null, true],
-        ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["outsideChest5"], null, true],
+        ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["Without electricity, this fridge isn't doing a very good job"], null, true],
+        ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["You can't open the door"], null, true, true],
+        ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["The door won't budge"], null, true, true],
+        ["outsideToolbox1", 0, vect(-6.67, 8.55, -77.17), 0.7, ["There's only some ancient pistons in here"], null, true],
+        ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["You don't need any of the car parts inside since you have a motorcycle"], null, true],
+        ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the remains of someone's lunch"], null, true],
+        ["outsideChest1", 0, vect(19.26, 8.73, -55.36), 1.2, ["Anything in here has been looted a long time ago"], null, true],
+        ["outsideChest2", 0, vect(-7.98, 8.35, -47.93), 1.2, ["It might be useful for standing on, but not much else"], null, true],
+        ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["This chest is trapped under the other one"], null, true],
+        ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["The only things inside are some half dead brambles"], null, true],
+        ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["Nothing up your sleeve, or in the chest"], null, true],
 
-        ["outsidePoster1", 0, vect(-30.90, 6.14, -60.22), 0.8, ["poster 1"], null, null, true],
-        ["outsidePoster2", 0, vect(-23.46, 6.70, -66.49), 0.8, ["poster 2"], null, null, true],
+        ["outsidePoster1", 0, vect(-30.90, 6.14, -60.22), 0.8, ["That idiot is always getting you in trouble"], null, null, true],
+        ["outsidePoster2", 0, vect(-23.46, 6.70, -66.49), 0.8, ["There's not much you need in there, but you'll miss talking to Bruce"], null, null, true],
 
 
         # item apply points
@@ -1256,6 +1255,7 @@ def playerInitialState():
         eventPlayer.outsideSat4,
         eventPlayer.outsideSatControl,
         eventPlayer.outsideSmuggler,
+        # eventPlayer.outsideHose, # placed above for priority reasons 
         eventPlayer.outsideMolePerson,
     ]
 
@@ -1326,8 +1326,8 @@ rule "On player join":
     @Event playerJoined
     @Team 1
 
-    # async(showIntro, AsyncBehavior.NOOP)
-    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    async(showIntro, AsyncBehavior.NOOP)
+    # hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     playerInitialState()
 
@@ -1462,7 +1462,7 @@ rule "Inner workbench minigame success":
     SET_STATE("innerWorkbench", 1)
     eventPlayer.inventory.remove("Fiddly part")
     eventPlayer.inventory = "Reverse polarity fiddly part".concat(eventPlayer.inventory)
-    smallMessage(eventPlayer, "You manager to reverse the polarity of the fiddly part")
+    smallMessage(eventPlayer, "You manage to reverse the polarity of the fiddly part")
 
 rule "Inner workbench minigame stop":
     @Event eachPlayer
@@ -1508,7 +1508,7 @@ rule "Outer workbench minigame success":
     SET_STATE("outerWorkbench", 1)
     eventPlayer.inventory.remove("Red battery")
     eventPlayer.inventory = "Black battery".concat(eventPlayer.inventory)
-    smallMessage(eventPlayer, "You manager to change the color of the battery")
+    smallMessage(eventPlayer, "You manage to change the color of the battery")
 
     if eventPlayer.outerMinigameMovesMade <= 5:
         wait(3) # wait for small message to disappear
@@ -2656,7 +2656,7 @@ rule "trip cam":
     eventPlayer.disableHeroHUD()
     eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
-    GIVE_ITEM("Right handed remote")
+    # GIVE_ITEM("Right handed remote")
     satUntunedPlayers[0].append(eventPlayer)
     satUntunedPlayers[1].append(eventPlayer)
     satUntunedPlayers[2].append(eventPlayer)
@@ -2715,7 +2715,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "barnMinigame"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "_null"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
