@@ -48,6 +48,8 @@ settings {
     }
 }
 
+#!extension playMoreEffects
+
 #!define POINTER_COLOR Color.WHITE
 #!define MAIN_POINT_COLOR Color.GREEN
 #!define OFF_POINT_FIRST_COLOR Color.YELLOW
@@ -55,10 +57,24 @@ settings {
 #!define EDIT_COLOR Color.ORANGE
 #!define PREVIEW_COLOR Color.TURQUOISE
 
+#!define PAUSE_NUM 10
+
 playervar pointerDistance = 3
 playervar pointRadius = 0.2
 
 globalvar visibility = []
+
+playervar points1d
+playervar p1
+playervar p2
+playervar segments1X
+playervar segments2X
+playervar segments1Y
+playervar segments2Y
+playervar segments1Z
+playervar segments2Z
+playervar segments1
+playervar segments2
 
 playervar points = []
 playervar pointsText = []
@@ -67,13 +83,17 @@ playervar handleEffects = []
 playervar isAddingPoints = true
 playervar isEditingPoints = false
 playervar pointerPos
+playervar pointerColor = POINTER_COLOR
 playervar pointerEffect
 playervar editingPointPos
 playervar editingPointIndex
-playervar editingPointEffect
 playervar editingCleanup = false
+playervar previewEntity
+playervar liveRenderDisabled = true
+playervar hasChanged = false
 
-playervar arg
+playervar lastText
+playervar liveRenderText
 
 playervar last1Point
 playervar last2Point
@@ -85,39 +105,124 @@ playervar showPointer = null
 playervar pointerPosition
 
 playervar bezier
-playervar bezierDuration = 5
+playervar bezierDuration = 2
 
 playervar doCamera = false
 playervar isMercyUlting = false
 
-# Add point: left click
-# Edit point: right click
-# Remove last points: R
-# view camera: shift + E
+
+
+def renderHandles():
+    while len(eventPlayer.handleEffects) > 0:
+        destroyEffect(eventPlayer.handleEffects[0])
+        del eventPlayer.handleEffects[0]
+
+    for eventPlayer.I in range(len(eventPlayer.points) - 1):
+        createBeam(visibility, Beam.GRAPPLE, eventPlayer.points[eventPlayer.I], eventPlayer.segments1[eventPlayer.I], null, EffectReeval.VISIBILITY)
+        eventPlayer.handleEffects.append(getLastCreatedEntity())
+        createBeam(visibility, Beam.GRAPPLE, eventPlayer.points[eventPlayer.I + 1], eventPlayer.segments2[eventPlayer.I], null, EffectReeval.VISIBILITY)
+        eventPlayer.handleEffects.append(getLastCreatedEntity())
+
+# uses values from eventPlayer.points1d
+def computeSegments():
+    eventPlayer.N = len(eventPlayer.points1d) - 1
+    eventPlayer.A = [0]
+    eventPlayer.B = [2]
+    eventPlayer.C = [1]
+    eventPlayer.R = [eventPlayer.points1d[0] + 2 * eventPlayer.points1d[1]]
+
+    for eventPlayer.I in range(1, eventPlayer.N - 1):
+        eventPlayer.A.append(1)
+        eventPlayer.B.append(4)
+        eventPlayer.C.append(1)
+        eventPlayer.R.append(4 * eventPlayer.points1d[eventPlayer.I] + 2 * eventPlayer.points1d[eventPlayer.I + 1])
+        if (eventPlayer.I + 1) % PAUSE_NUM == 0:
+            wait(0.1)
+
+    eventPlayer.A.append(2)
+    eventPlayer.B.append(7)
+    eventPlayer.C.append(0)
+    eventPlayer.R.append(8 * eventPlayer.points1d[eventPlayer.N - 1] + eventPlayer.points1d[eventPlayer.N])
+
+    for eventPlayer.I in range(1, eventPlayer.N):
+        eventPlayer.M = eventPlayer.A[eventPlayer.I] / eventPlayer.B[eventPlayer.I - 1]
+        eventPlayer.B[eventPlayer.I] -= eventPlayer.M * eventPlayer.C[eventPlayer.I - 1]
+        eventPlayer.R[eventPlayer.I] -= eventPlayer.M * eventPlayer.R[eventPlayer.I - 1]
+        if (eventPlayer.I + 1) % PAUSE_NUM == 0:
+            wait(0.1)
+
+    eventPlayer.p1 = []
+    eventPlayer.p1[eventPlayer.N - 1] = eventPlayer.R[eventPlayer.N - 1] / eventPlayer.B[eventPlayer.N - 1]
+    for eventPlayer.I in range(eventPlayer.N - 2, -1, -1):
+        eventPlayer.p1[eventPlayer.I] = (eventPlayer.R[eventPlayer.I] - eventPlayer.C[eventPlayer.I] * eventPlayer.p1[eventPlayer.I + 1]) / eventPlayer.B[eventPlayer.I]
+        if (eventPlayer.N - 2 - eventPlayer.I + 1) % PAUSE_NUM == 0:
+            wait(0.1)
+
+    eventPlayer.p2 = []
+    for eventPlayer.I in range(eventPlayer.N - 1):
+        eventPlayer.p2.append(2 * eventPlayer.points1d[eventPlayer.I + 1] - eventPlayer.p1[eventPlayer.I + 1])
+        if (eventPlayer.I + 1) % PAUSE_NUM == 0:
+            wait(0.1)
+    eventPlayer.p2.append((eventPlayer.points1d[eventPlayer.N] + eventPlayer.p1[eventPlayer.N - 1]) / 2)
+
+def computeAllSegments():
+    hudHeader(eventPlayer, "RENDERING", HudPosition.TOP, 1, Color.RED, HudReeval.NONE, SpecVisibility.NEVER)
+    eventPlayer.lastText = getLastCreatedText()
+
+    # compute x components
+    eventPlayer.points1d = [e.x for e in eventPlayer.points]
+    computeSegments()
+    eventPlayer.segments1X = eventPlayer.p1
+    eventPlayer.segments2X = eventPlayer.p2
+
+    # compute y components
+    eventPlayer.points1d = [e.y for e in eventPlayer.points]
+    computeSegments()
+    eventPlayer.segments1Y = eventPlayer.p1
+    eventPlayer.segments2Y = eventPlayer.p2
+
+    # compute z components
+    eventPlayer.points1d = [e.z for e in eventPlayer.points]
+    computeSegments()
+    eventPlayer.segments1Z = eventPlayer.p1
+    eventPlayer.segments2Z = eventPlayer.p2
+
+    eventPlayer.segments1 = [vect(eventPlayer.segments1X[i], eventPlayer.segments1Y[i], eventPlayer.segments1Z[i]) for e, i in eventPlayer.segments1X]
+    eventPlayer.segments2 = [vect(eventPlayer.segments2X[i], eventPlayer.segments2Y[i], eventPlayer.segments2Z[i]) for e, i in eventPlayer.segments2X]
+
+    destroyHudText(eventPlayer.lastText)
+    eventPlayer.hasChanged = false
+
+    renderHandles()
 
 rule "Player join":
     @Event playerJoined
 
     eventPlayer.startForcingHero(Hero.MERCY)
-    createEffect(visibility, Effect.SPHERE, POINTER_COLOR, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance), eventPlayer.pointRadius, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(visibility, Effect.SPHERE, eventPlayer.pointerColor, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance), eventPlayer.pointRadius, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
     eventPlayer.pointerEffect = getLastCreatedEntity()
     hudHeader(eventPlayer, "add point: left click", HudPosition.LEFT, 0, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "edit point: right click", HudPosition.LEFT, 1, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "remove last point: r", HudPosition.LEFT, 2, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "preview curve: f + v", HudPosition.LEFT, 3, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "view curve: f + e", HudPosition.LEFT, 4, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "all view curve: f + e + shift", HudPosition.LEFT, 5, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "increase duration: f + left click", HudPosition.LEFT, 6, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "decrease duration: f + right click", HudPosition.LEFT, 7, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "segment duration: {0}".format(eventPlayer.bezierDuration), HudPosition.LEFT, 10, Color.PURPLE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "remove last point: f + r", HudPosition.LEFT, 2, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "remove all points: shift + f + r", HudPosition.LEFT, 3, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "preview curve: f + v", HudPosition.LEFT, 4, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "view curve: f + e", HudPosition.LEFT, 5, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "all view curve: shift + f + e", HudPosition.LEFT, 6, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "toggle live render: f + space", HudPosition.LEFT, 7, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "decrease duration: f + left click", HudPosition.LEFT, 8, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "increase duration: f + right click", HudPosition.LEFT, 9, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "export points: shift + f + v", HudPosition.LEFT, 10, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "segment duration: {0}".format(eventPlayer.bezierDuration), HudPosition.LEFT, 11, Color.PURPLE, HudReeval.STRING, SpecVisibility.NEVER)
 
-    # hudHeader(eventPlayer, "avg load: {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 10, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "peak load: {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 11, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "load: {0}".format(getServerLoad()), HudPosition.RIGHT, 12, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "{0} points in line".format(len(eventPlayer.points)), HudPosition.RIGHT, 1, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "avg load: {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 10, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "peak load: {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 11, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "load: {0}".format(getServerLoad()), HudPosition.RIGHT, 12, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
 
     wait(1)
 
     visibility.append(eventPlayer)
+    eventPlayer.disableGamemodeHud()
 
 rule "Noclip start":
     @Event eachPlayer
@@ -137,13 +242,13 @@ rule "Mercy ult":
 
     eventPlayer.isMercyUlting = not eventPlayer.isMercyUlting
 
-    if eventPlayer.isMercyUlting:
-        # eventPlayer.setUltCharge(100)
-        # eventPlayer.forceButtonPress(Button.ULTIMATE)
-    else:
-        eventPlayer.startForcingHero(Hero.PHARAH)
-        wait(0.1)
-        eventPlayer.startForcingHero(Hero.MERCY)
+    # if eventPlayer.isMercyUlting:
+    #     # eventPlayer.setUltCharge(100)
+    #     # eventPlayer.forceButtonPress(Button.ULTIMATE)
+    # else:
+    #     eventPlayer.startForcingHero(Hero.PHARAH)
+    #     wait(0.1)
+    #     eventPlayer.startForcingHero(Hero.MERCY)
 
 rule "Mercy ult":
     @Event eachPlayer
@@ -161,45 +266,6 @@ def createHud():
         hudHeader(eventPlayer, "{0}".format(eventPlayer.points[eventPlayer.I]), HudPosition.RIGHT, eventPlayer.I + 1, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
         eventPlayer.pointsText.append(getLastCreatedText())
 
-def createHandles():
-    while len(eventPlayer.handleEffects) > 0:
-        destroyEffect(eventPlayer.handleEffects[0])
-        del eventPlayer.handleEffects[0]
-
-    for eventPlayer.I in range(0, len(eventPlayer.points), 3):
-        if eventPlayer.I - 1 >= 0:
-            createBeam(visibility, Beam.GRAPPLE, eventPlayer.points[eventPlayer.I - 1], eventPlayer.points[eventPlayer.I], null, EffectReeval.VISIBILITY)
-            eventPlayer.handleEffects.append(getLastCreatedEntity())
-
-        if eventPlayer.I + 1 < len(eventPlayer.points):
-            createBeam(visibility, Beam.GRAPPLE, eventPlayer.points[eventPlayer.I], eventPlayer.points[eventPlayer.I + 1], null, EffectReeval.VISIBILITY)
-            eventPlayer.handleEffects.append(getLastCreatedEntity())
-
-# The index to redo should be stored in eventPlayer.arg
-def redoCurve():
-    eventPlayer.points[eventPlayer.arg + 1] = 2 * eventPlayer.points[eventPlayer.arg] - eventPlayer.points[eventPlayer.arg - 1]
-    eventPlayer.points[eventPlayer.arg + 2] = eventPlayer.points[eventPlayer.arg - 2] + 2 * eventPlayer.points[eventPlayer.arg + 1] - 2 * eventPlayer.points[eventPlayer.arg - 1]
-
-def redoAllCurves():
-    for eventPlayer.I in range(0, len(eventPlayer.points), 3):
-        if eventPlayer.I != 0:
-            eventPlayer.arg = eventPlayer.I
-            redoCurve()
-
-def createPoints():
-    while len(eventPlayer.pointsEffect) > 0:
-        destroyEffect(eventPlayer.pointsEffect[0])
-        del eventPlayer.pointsEffect[0]
-
-    for eventPlayer.E in range(len(eventPlayer.points)):
-        if eventPlayer.E % 3 == 0:
-            createEffect(visibility, Effect.SPHERE, MAIN_POINT_COLOR, eventPlayer.points[eventPlayer.E], eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-        elif eventPlayer.E % 3 == 1:
-            createEffect(visibility, Effect.SPHERE, OFF_POINT_SECOND_COLOR, eventPlayer.points[eventPlayer.E], eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
-        else:
-            createEffect(visibility, Effect.SPHERE, OFF_POINT_FIRST_COLOR, eventPlayer.points[eventPlayer.E], eventPlayer.pointRadius * 0.5, EffectReeval.VISIBILITY)
-        eventPlayer.pointsEffect.append(getLastCreatedEntity())
-
 rule "Add point":
     @Event eachPlayer
     @Condition eventPlayer.isAddingPoints and not eventPlayer.isEditingPoints
@@ -208,34 +274,47 @@ rule "Add point":
     eventPlayer.editingPointPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance
 
     eventPlayer.points.append(eventPlayer.editingPointPos)
+    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+    eventPlayer.pointsEffect.append(getLastCreatedEntity())
 
-    createHud()
-    redoAllCurves()
-    createPoints()
-    createHandles()
+    eventPlayer.hasChanged = true
+    if not eventPlayer.liveRenderDisabled:
+        computeAllSegments()
 
 rule "Remove last point":
     @Event eachPlayer
     @Condition eventPlayer.isAddingPoints and not eventPlayer.isEditingPoints
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
-
-    if len(eventPlayer.points) > 4:
-        del eventPlayer.points[len(eventPlayer.points) - 1]
-        # destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
-        # del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
-        
-        del eventPlayer.points[len(eventPlayer.points) - 1]
-        # destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
-        # del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
     del eventPlayer.points[len(eventPlayer.points) - 1]
-    # destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1])
-    # del eventPlayer.pointsEffect[len(eventPlayer.pointsEffect) - 1]
+    destroyEffect(eventPlayer.pointsEffect[len(eventPlayer.points)])
+    del eventPlayer.pointsEffect[len(eventPlayer.points)]
+    destroyEffect(eventPlayer.handleEffects[len(eventPlayer.handleEffects) - 1])
+    del eventPlayer.handleEffects[len(eventPlayer.handleEffects) - 1]
+    destroyEffect(eventPlayer.handleEffects[len(eventPlayer.handleEffects) - 1])
+    del eventPlayer.handleEffects[len(eventPlayer.handleEffects) - 1]
 
-    createHud()
-    redoAllCurves()
-    createPoints()
-    createHandles()
+    eventPlayer.hasChanged = true
+    if not eventPlayer.liveRenderDisabled:
+        computeAllSegments()
+
+rule "Remove all points":
+    @Event eachPlayer
+    @Condition eventPlayer.isAddingPoints and not eventPlayer.isEditingPoints
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.isHoldingButton(Button.ABILITY_1)
+
+    eventPlayer.points = []
+    while len(eventPlayer.pointsEffect) > 0:
+        destroyEffect(eventPlayer.pointsEffect[0])
+        del eventPlayer.pointsEffect[0]
+
+    while len(eventPlayer.handleEffects) > 0:
+        destroyEffect(eventPlayer.handleEffects[0])
+        del eventPlayer.handleEffects[0]
+
+    eventPlayer.hasChanged = true
+    if not eventPlayer.liveRenderDisabled:
+        computeAllSegments()
 
 rule "Start edit point":
     @Event eachPlayer
@@ -250,14 +329,9 @@ rule "Start edit point":
     eventPlayer.editingPointPos = eventPlayer.editingPointPos[0]
     eventPlayer.editingPointIndex = eventPlayer.points.index(eventPlayer.editingPointPos)
 
-    if eventPlayer.editingPointIndex > 3 and eventPlayer.editingPointIndex % 3 != 0:
-        playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer, 30)
-        return
-
     eventPlayer.isEditingPoints = true
 
-    createEffect(eventPlayer, Effect.SPHERE, EDIT_COLOR, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance), eventPlayer.pointRadius, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    eventPlayer.editingPointEffect = getLastCreatedEntity()
+    eventPlayer.pointerColor = EDIT_COLOR
 
 rule "End edit point":
     @Event eachPlayer
@@ -268,13 +342,16 @@ rule "End edit point":
 
     # replace value in points array
     eventPlayer.points[eventPlayer.editingPointIndex] = eventPlayer.editingPointPos
+    destroyEffect(eventPlayer.pointsEffect[eventPlayer.editingPointIndex])
 
-    createHud()
-    redoAllCurves()
-    createPoints()
-    createHandles()
+    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+    eventPlayer.pointsEffect[eventPlayer.editingPointIndex] = getLastCreatedEntity()
 
-    destroyEffect(eventPlayer.editingPointEffect)
+    eventPlayer.hasChanged = true
+    if not eventPlayer.liveRenderDisabled:
+        computeAllSegments()
+
+    eventPlayer.pointerColor = POINTER_COLOR
     eventPlayer.editingCleanup = true
 
 rule "Editing cleanup":
@@ -287,68 +364,77 @@ rule "Editing cleanup":
 
 rule "Inc duration":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.isHoldingButton(Button.INTERACT)
 
     eventPlayer.bezierDuration += 0.1
-    
+
 rule "Dec duration":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and eventPlayer.isHoldingButton(Button.INTERACT)
 
     eventPlayer.bezierDuration -= 0.1
 
+rule "toggle live render":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.JUMP)
+
+    eventPlayer.liveRenderDisabled = not eventPlayer.liveRenderDisabled
+
+    if eventPlayer.liveRenderDisabled:
+        destroyHudText(eventPlayer.liveRenderText)
+    else:
+        hudHeader(eventPlayer, "Live render enabled", HudPosition.TOP, 0, Color.RED, HudReeval.NONE, SpecVisibility.NEVER)
+        eventPlayer.liveRenderText = getLastCreatedText()
+        computeAllSegments()
+
 # uses the four points in eventplayer.bezier, and duration from eventplayer.bezierDuration
 def doBezier():
-    eventPlayer.A = eventPlayer.bezier[0]
-    eventPlayer.B = eventPlayer.bezier[1]
-    eventPlayer.C = eventPlayer.bezier[2]
-    eventPlayer.D = eventPlayer.bezier[3]
-
-    eventPlayer.X = eventPlayer.A
-    eventPlayer.Y = eventPlayer.B
-    eventPlayer.Z = eventPlayer.C
+    eventPlayer.X = eventPlayer.bezier[0]
+    eventPlayer.Y = eventPlayer.bezier[1]
+    eventPlayer.Z = eventPlayer.bezier[2]
     eventPlayer.T = 0
 
-    chase(eventPlayer.X, eventPlayer.B, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
-    chase(eventPlayer.Y, eventPlayer.C, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
-    chase(eventPlayer.Z, eventPlayer.D, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.X, eventPlayer.bezier[1], duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.Y, eventPlayer.bezier[2], duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.Z, eventPlayer.bezier[3], duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
     chase(eventPlayer.T, 1, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
-
-    # X + (Y - X) * S
 
 rule "Do curve preview":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.MELEE)
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.MELEE) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
     # A = X + (Y - X) * T
     # B = Y + (Z - Y) * T
     # point = A + (B - A) * T
     # point = (X + (Y - X) * T) + ((Y + (Z - Y) * T) - (X + (Y - X) * T)) * T
 
-    # eventPlayer.isEditingPoints = false
+    if eventPlayer.hasChanged:
+        computeAllSegments()
 
-    createEffect(visibility, Effect.SPHERE, PREVIEW_COLOR, updateEveryTick((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T), 0.2, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(visibility, Effect.ORB, PREVIEW_COLOR, updateEveryTick((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T), 0.2, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+        eventPlayer.previewEntity = getLastCreatedEntity()
 
-    for eventPlayer.I in range(0, len(eventPlayer.points) - 3, 3):
-        eventPlayer.bezier = eventPlayer.points.slice(eventPlayer.I, 4)
+    for eventPlayer.I in range(len(eventPlayer.points) - 1):
+        eventPlayer.bezier = [eventPlayer.points[eventPlayer.I], eventPlayer.segments1[eventPlayer.I], eventPlayer.segments2[eventPlayer.I], eventPlayer.points[eventPlayer.I + 1]]
         doBezier()
         wait(eventPlayer.bezierDuration)
 
-    destroyEffect(getLastCreatedEntity())
-
-    # eventPlayer.isEditingPoints = true
+    destroyEffect(eventPlayer.previewEntity)
 
 
 rule "Do curve camera":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.ABILITY_2)
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.ABILITY_2) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
+
+    if eventPlayer.hasChanged:
+        computeAllSegments()
 
     visibility.remove(eventPlayer)
 
     eventPlayer.startCamera((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T, eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T, 0)
 
-    for eventPlayer.I in range(0, len(eventPlayer.points) - 3, 3):
-        eventPlayer.bezier = eventPlayer.points.slice(eventPlayer.I, 4)
+    for eventPlayer.I in range(len(eventPlayer.points) - 1):
+        eventPlayer.bezier = [eventPlayer.points[eventPlayer.I], eventPlayer.segments1[eventPlayer.I], eventPlayer.segments2[eventPlayer.I], eventPlayer.points[eventPlayer.I + 1]]
         doBezier()
         wait(eventPlayer.bezierDuration)
 
@@ -360,49 +446,33 @@ rule "Do curve camera for everyone":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.ABILITY_1)
 
+    if eventPlayer.hasChanged:
+        computeAllSegments()
+
+    visibility = []
+
     getAllPlayers().startCamera((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T, eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T, 0)
 
-    for eventPlayer.I in range(0, len(eventPlayer.points) - 3, 3):
-        eventPlayer.bezier = eventPlayer.points.slice(eventPlayer.I, 4)
+    for eventPlayer.I in range(len(eventPlayer.points) - 1):
+        eventPlayer.bezier = [eventPlayer.points[eventPlayer.I], eventPlayer.segments1[eventPlayer.I], eventPlayer.segments2[eventPlayer.I], eventPlayer.points[eventPlayer.I + 1]]
         doBezier()
         wait(eventPlayer.bezierDuration)
 
     getAllPlayers().stopCamera()
 
-# rule "make square":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.ABILITY_2)
+    visibility = getAllPlayers()
 
-#     eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
-#     wait(0.25)
-#     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
+rule "Export elements":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.isHoldingButton(Button.ABILITY_1)
 
-#     eventPlayer.teleport(eventPlayer.getPosition() + vect(0, 0, 10))
-#     wait(0.25)
-#     eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
-#     wait(0.25)
-#     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
+    computeAllSegments()
 
-#     eventPlayer.teleport(eventPlayer.getPosition() + vect(20, 0, 0))
-#     wait(0.25)
-#     eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
-#     wait(0.25)
-#     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
+    printLog("----------------")
+    for eventPlayer.I in range(len(eventPlayer.points) - 1):
+        printLog("vect{0}".format(eventPlayer.points[eventPlayer.I]))
+        printLog("vect{0}".format(eventPlayer.segments1[eventPlayer.I]))
+        printLog("vect{0}".format(eventPlayer.segments2[eventPlayer.I]))
+    printLog("vect{0}".format(eventPlayer.points[len(eventPlayer.points) -1 ]))
 
-#     eventPlayer.teleport(eventPlayer.getPosition() + vect(0, 0, -20))
-#     wait(0.25)
-#     eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
-#     wait(0.25)
-#     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
-
-#     eventPlayer.teleport(eventPlayer.getPosition() + vect(-20, 0, 0))
-#     wait(0.25)
-#     eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
-#     wait(0.25)
-#     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
-
-#     eventPlayer.teleport(eventPlayer.getPosition() + vect(0, 0, 20))
-#     wait(0.25)
-#     eventPlayer.startForcingButton(Button.PRIMARY_FIRE)
-#     wait(0.25)
-#     eventPlayer.stopForcingButton(Button.PRIMARY_FIRE)
+    smallMessage(eventPlayer, "Export complete")
