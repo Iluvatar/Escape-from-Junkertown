@@ -63,6 +63,7 @@ playervar pointerDistance = 3
 playervar pointRadius = 0.2
 
 globalvar visibility = []
+globalvar textVisibility = []
 
 playervar points1d
 playervar p1
@@ -195,34 +196,49 @@ def computeAllSegments():
 
     renderHandles()
 
+rule "Create help text":
+    hudHeader(textVisibility, "add point: left click", HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "add point at eye position: shift + left click", HudPosition.LEFT, 1, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "edit point: right click", HudPosition.LEFT, 2, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "remove last point: f + r", HudPosition.LEFT, 3, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "remove all points: shift + f + r", HudPosition.LEFT, 4, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "preview curve: f + v", HudPosition.LEFT, 5, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "view curve: f + e", HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "all view curve: shift + f + e", HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "toggle live render: f + space", HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "decrease duration: f + left click", HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "increase duration: f + right click", HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "export points: shift + f + v", HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "toggle text: shift + ctrl + space", HudPosition.LEFT, 12, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+
+    hudHeader(getAllPlayers(), "avg load: {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 10, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(getAllPlayers(), "peak load: {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 11, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(getAllPlayers(), "load: {0}".format(getServerLoad()), HudPosition.RIGHT, 12, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+
 rule "Player join":
     @Event playerJoined
 
     eventPlayer.startForcingHero(Hero.MERCY)
     createEffect(visibility, Effect.SPHERE, eventPlayer.pointerColor, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance), eventPlayer.pointRadius, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
     eventPlayer.pointerEffect = getLastCreatedEntity()
-    hudHeader(eventPlayer, "add point: left click", HudPosition.LEFT, 0, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "edit point: right click", HudPosition.LEFT, 1, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "remove last point: f + r", HudPosition.LEFT, 2, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "remove all points: shift + f + r", HudPosition.LEFT, 3, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "preview curve: f + v", HudPosition.LEFT, 4, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "view curve: f + e", HudPosition.LEFT, 5, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "all view curve: shift + f + e", HudPosition.LEFT, 6, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "toggle live render: f + space", HudPosition.LEFT, 7, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "decrease duration: f + left click", HudPosition.LEFT, 8, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "increase duration: f + right click", HudPosition.LEFT, 9, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "export points: shift + f + v", HudPosition.LEFT, 10, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "segment duration: {0}".format(eventPlayer.bezierDuration), HudPosition.LEFT, 11, Color.PURPLE, HudReeval.STRING, SpecVisibility.NEVER)
 
+    textVisibility.append(eventPlayer)
+    hudHeader(eventPlayer, "segment duration: {0}".format(eventPlayer.bezierDuration), HudPosition.LEFT, 20, Color.PURPLE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "{0} points in line".format(len(eventPlayer.points)), HudPosition.RIGHT, 1, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg load: {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 10, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak load: {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 11, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "load: {0}".format(getServerLoad()), HudPosition.RIGHT, 12, Color.ORANGE, HudReeval.STRING, SpecVisibility.NEVER)
 
     wait(1)
 
     visibility.append(eventPlayer)
     eventPlayer.disableGamemodeHud()
+
+rule "Toggle text":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.JUMP)
+
+    if eventPlayer in textVisibility:
+        textVisibility.remove(eventPlayer)
+    else:
+        textVisibility.append(eventPlayer)
 
 rule "Noclip start":
     @Event eachPlayer
@@ -266,12 +282,27 @@ def createHud():
         hudHeader(eventPlayer, "{0}".format(eventPlayer.points[eventPlayer.I]), HudPosition.RIGHT, eventPlayer.I + 1, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
         eventPlayer.pointsText.append(getLastCreatedText())
 
-rule "Add point":
+rule "Add point at cursor":
     @Event eachPlayer
     @Condition eventPlayer.isAddingPoints and not eventPlayer.isEditingPoints
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
     eventPlayer.editingPointPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance
+
+    eventPlayer.points.append(eventPlayer.editingPointPos)
+    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+    eventPlayer.pointsEffect.append(getLastCreatedEntity())
+
+    eventPlayer.hasChanged = true
+    if not eventPlayer.liveRenderDisabled:
+        computeAllSegments()
+
+rule "Add point at eye position":
+    @Event eachPlayer
+    @Condition eventPlayer.isAddingPoints and not eventPlayer.isEditingPoints
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and eventPlayer.isHoldingButton(Button.ABILITY_1) and not eventPlayer.isHoldingButton(Button.INTERACT)
+
+    eventPlayer.editingPointPos = eventPlayer.getEyePosition()
 
     eventPlayer.points.append(eventPlayer.editingPointPos)
     createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)

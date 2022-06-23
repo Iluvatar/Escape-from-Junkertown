@@ -115,6 +115,7 @@ enum Item:
 globalvar introStage1Players = []
 globalvar introStage2Players = []
 globalvar tutorialPlayers = []
+globalvar graphicsQualityPlayers = []
 globalvar tutorialTextPlayers = [[], [], [], []]
 globalvar playersInDark = []
 globalvar innerWirePlayers = []
@@ -286,20 +287,16 @@ playervar outsideSatControl
 playervar outsideSmuggler
 playervar outsideMolePerson
 
+# Other
+playervar tutorialGate1End
+playervar tutorialGate2End
+
+playervar bezier
+playervar bezierDuration
+
 
 
 # UTILITIES
-
-# function hacks
-#!define ARG_STACK_PEEK() eventPlayer.argStack.last()
-def ARG_STACK_POP():
-    del eventPlayer.argStack[len(eventPlayer.argStack) - 1]
-#!define PUSH_ARGS_1(arg1) eventPlayer.argStack.append(arg1)
-#!define PUSH_ARGS_2(arg1, arg2) eventPlayer.argStack.append(arg1) \
-eventPlayer.argStack.append(arg2)
-#!define PUSH_ARGS_3(arg1, arg2, arg3) eventPlayer.argStack.append(arg1) \
-eventPlayer.argStack.append(arg2) \
-eventPlayer.argStack.append(arg3)
 
 # 2d arrays can't be modified directly, so we have to pull out a row, modify it, then reinsert it
 
@@ -366,6 +363,26 @@ def popTextDeleteQueue():
 #!define CREATE_TEXT(text, location) popTextDeleteQueue() \
 createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
+
+# Moves playervars X, Y, and Z along the bezier defined by bezier[0:4] for the duration in bezierDuration
+def doBezier():
+    eventPlayer.A = eventPlayer.bezier[0]
+    eventPlayer.B = eventPlayer.bezier[1]
+    eventPlayer.C = eventPlayer.bezier[2]
+    eventPlayer.D = eventPlayer.bezier[3]
+
+    eventPlayer.X = eventPlayer.A
+    eventPlayer.Y = eventPlayer.B
+    eventPlayer.Z = eventPlayer.C
+    eventPlayer.T = 0
+
+    chase(eventPlayer.X, eventPlayer.B, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.Y, eventPlayer.C, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.Z, eventPlayer.D, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+    chase(eventPlayer.T, 1, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+
+#!define BEZIER_POSITION ((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T)
+#!define BEZIER_FACING (eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T)
 
 # Used to turn the whole screen black (doesn't actually fade)
 #!define BLACK_SCREEN_POS vect(34, 6, -88)
@@ -571,7 +588,7 @@ rule "Spawn NPCs":
     barnNpc.setInvisibility(Invis.ALL)
     barnNpc.disablePlayerCollision()
     barnNpc.setUltCharge(100)
-    barnNpc.forceButtonPress(Button.ULTIMATE)
+    # barnNpc.forceButtonPress(Button.ULTIMATE)
     barnNpc.teleport(BARN_NPC_HIDE_LOCATION)
 
     createDummy(Hero.TORBJORN, Team.2, -1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
@@ -622,25 +639,27 @@ rule "Global setup":
     hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # tutorial text
+    hudSubtext(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 0, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[0], "Use {0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[1], "Use {0} to use inventory items on objects".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[2], "Use {0} and {1} to cycle your inventory".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[3], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tmp1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, localPlayer.tmp1 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tutorialGate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, localPlayer.tutorialGate1End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, localPlayer.tutorialGate1End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, localPlayer.tutorialGate1End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, localPlayer.tutorialGate1End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, localPlayer.tutorialGate1End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04), localPlayer.tmp2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, localPlayer.tmp2 + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04), localPlayer.tutorialGate2End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, localPlayer.tutorialGate2End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 1, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, localPlayer.tutorialGate2End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 2, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, localPlayer.tutorialGate2End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 3, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, localPlayer.tutorialGate2End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 4, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-94.20, 10.93, -92.04) + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, localPlayer.tutorialGate2End + vect(0, TUTORIAL_GATE_OFFSET, 0) * 5, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
     createEffect(tutorialPlayers, Effect.ZARYA_PARTICLE_BEAM_SOUND, null, localPlayer.getPosition(), (5 - distance(vect(-100.32, 11.44, -90.75), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createEffect(tutorialPlayers, Effect.ZARYA_PARTICLE_BEAM_SOUND, null, localPlayer.getPosition(), (5 - distance(vect(-92.97, 11.44, -92.29), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -802,6 +821,11 @@ rule "Global setup":
     createBeam(satTunedPlayers[2], Beam.TORBJORN_TURRET_SIGHT, vect(-1.572, 16.131, -58.995), vect(-1.572, 16.131, -58.995) + 100 * vect(0.693, 0.460, -0.555), Color.TEAM_1, EffectReeval.VISIBILITY)
     createBeam(satTunedPlayers[3], Beam.TORBJORN_TURRET_SIGHT, vect(6.139, 17.041, -44.789), vect(6.139, 17.041, -44.789) + 100 * vect(-0.551, 0.428, 0.716), Color.TEAM_1, EffectReeval.VISIBILITY)
 
+def onIntroDone():
+    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    wait(3)
+    graphicsQualityPlayers.append(eventPlayer)
+
 def showIntro():
     wait(1)
     eventPlayer.disableHeroHUD()
@@ -825,14 +849,15 @@ def showIntro():
     # Stage 2, following cart path
     smallMessage(eventPlayer, "But something went wrong")
 
-    eventPlayer.tStart = vect(7.12, 8.28, -69.01)
-    eventPlayer.tEnd = vect(13.34, 8.38, -56.17)
-    eventPlayer.tIndex = 0
-
-    chase(eventPlayer.tStart, vect(13.34, 8.38, -56.17), duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-    chase(eventPlayer.tEnd, vect(-4.86, 7.87, -44.03), duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-    chase(eventPlayer.tIndex, 1, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-    eventPlayer.startCamera(eventPlayer.tStart + (eventPlayer.tEnd - eventPlayer.tStart) * eventPlayer.tIndex, eventPlayer.tEnd, 0)
+    eventPlayer.bezier = [
+        vect(7.12, 8.28, -69.01),
+        vect(13.34, 8.38, -56.17),
+        vect(13.34, 8.38, -56.17),
+        vect(-4.86, 7.87, -44.03)
+    ]
+    eventPlayer.bezierDuration = 3.3
+    doBezier()
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
 
     wait(3.3)
 
@@ -874,7 +899,7 @@ def showIntro():
     eventPlayer.clearStatusEffect(Status.ROOTED)
     eventPlayer.setInvisibility(Invis.NONE)
 
-    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    onIntroDone()
 
 def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
@@ -1133,15 +1158,16 @@ def playerInitialState():
         ["outerPoster3", 0, vect(-48.70, 8.39, -95.52), 0.8, ["It was all just a big misunderstanding"], null, null, true],
         ["outerPoster4", 0, vect(-45.22, 8.42, -112.92), 0.5, ["The Queen was too attached to that summer shack anyway"], null, null, true],
         ["outerPoster5", 0, vect(-42.93, 8.67, -116.01), 0.5, ["Really, you were doing her a favor"], null, null, true],
-        ["outerPoster6", 0, vect(-26.17, 14.43, -112.75), 0.5, ["Come on, what's a few explosions between friends"], null, null, true],
-        ["outerPoster7", 0, vect(-20.13, 8.15, -95.48), 0.7, ["The picture has your nose all wrong"], null, null, true],
-        ["outerPoster8", 0, vect(-32.28, 7.78, -94.74), 0.5, ["This is completely unnecessary"], null, null, true],
-        ["outerPoster9", 0, vect(-31.35, 7.44, -85.96), 1.1, ["Don't people deserve a sixth chance?"], null, null, true],
-        ["outerPoster10", 0, vect(-44.65, 6.38, -76.55), 0.7, ["\"Troublemakers\"? The nerve"], null, null, true],
-        ["outerPoster11", 0, vect(-35.80, 5.70, -70.76), 1, ["You feel wounded at such accusations"], null, null, true],
-        ["outerPoster12", 0, vect(-44.66, 6.73, -60.23), 1.1, ["Maybe if you just had a little chat with the Queen"], null, null, true],
-        ["outerPoster13", 0, vect(-33.01, 5.96, -63.99), 0.7, ["There's no need to go to such extremes"], null, null, true],
-        ["outerPoster14", 0, vect(-54.26, 5.98, -47.88), 0.7, ["What's the point of putting a poster all the way over here?"], null, null, true],
+        ["outerPoster6", 0, vect(-41.97, 14.58, -120.91), 0.5, ["The picture has your nose all wrong"], null, null, true],
+        ["outerPoster7", 0, vect(-26.17, 14.43, -112.75), 0.5, ["Come on, what's a few explosions between friends"], null, null, true],
+        ["outerPoster8", 0, vect(-20.13, 8.15, -95.48), 0.7, ["And you thought this used to be a respectable establishment"], null, null, true],
+        ["outerPoster9", 0, vect(-32.28, 7.78, -94.74), 0.5, ["This is completely unnecessary"], null, null, true],
+        ["outerPoster10", 0, vect(-31.35, 7.44, -85.96), 1.1, ["Don't people deserve a sixth chance?"], null, null, true],
+        ["outerPoster11", 0, vect(-44.65, 6.38, -76.55), 0.7, ["\"Troublemakers\"? The nerve"], null, null, true],
+        ["outerPoster12", 0, vect(-35.80, 5.70, -70.76), 1, ["You feel wounded at such accusations"], null, null, true],
+        ["outerPoster13", 0, vect(-44.66, 6.73, -60.23), 1.1, ["Maybe if you just had a little chat with the Queen"], null, null, true],
+        ["outerPoster14", 0, vect(-33.01, 5.96, -63.99), 0.7, ["There's no need to go to such extremes"], null, null, true],
+        ["outerPoster15", 0, vect(-54.26, 5.98, -47.88), 0.7, ["What's the point of putting a poster all the way over here?"], null, null, true],
 
         ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
 
@@ -1265,6 +1291,10 @@ def playerInitialState():
     introStage1Players.remove(eventPlayer)
     introStage2Players.remove(eventPlayer)
 
+    # tutorial gate setup
+    eventPlayer.tutorialGate1End = vect(-101.64, 10.93, -90.46)
+    eventPlayer.tutorialGate2End = vect(-91.58, 10.93, -92.60)
+
     manageEquips()
     manageAchievements()
 
@@ -1275,6 +1305,7 @@ def playerInitialState():
     tutorialTextPlayers[3].remove(eventPlayer)
     tutorialPlayers.remove(eventPlayer)
     tutorialPlayers.append(eventPlayer)
+    graphicsQualityPlayers.remove(eventPlayer)
 
     playersInDark.remove(eventPlayer)
 
@@ -1327,7 +1358,6 @@ rule "On player join":
     @Team 1
 
     async(showIntro, AsyncBehavior.NOOP)
-    # hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 100, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     playerInitialState()
 
@@ -1337,6 +1367,8 @@ rule "On player join":
     # eventPlayer.disableScoreboard()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
+
+    # onIntroDone()
 
 
 
@@ -1407,7 +1439,7 @@ rule "Hide npc text":
 
 rule "Poster achievement":
     @Event eachPlayer
-    @Condition len(eventPlayer.postersFound) == 16
+    @Condition len(eventPlayer.postersFound) == 17
 
     bigMessage(eventPlayer, "Achievement get! Most wanted: find all the posters of you")
     eventPlayer.achievements.append(Achievement.MOST_WANTED)
@@ -2403,16 +2435,6 @@ rule "Apply":
 
 # Tutorial gate
 
-#!define TUTORIAL_GATE_1_END vect(-101.64, 10.93, -90.46)
-#!define TUTORIAL_GATE_2_END vect(-91.58, 10.93, -92.60)
-
-rule "Tutorial gate visual":
-    @Event eachPlayer
-    @Condition not eventPlayer.isDummy()
-
-    eventPlayer.tmp1 = TUTORIAL_GATE_1_END
-    eventPlayer.tmp2 = TUTORIAL_GATE_2_END
-
 rule "Tutorial gate barrier":
     @Event eachPlayer
     @Condition eventPlayer.isJunk
@@ -2428,12 +2450,13 @@ rule "Remove tutorial gate":
     @Event eachPlayer
     @Condition eventPlayer.tutorialFinished
 
-    chase(eventPlayer.tmp1, vect(-99.01, 10.93, -91.03), duration=TUTORIAL_GATE_OPEN_TIME, ChaseReeval.NONE)
-    chase(eventPlayer.tmp2, vect(-94.20, 10.93, -92.04), duration=TUTORIAL_GATE_OPEN_TIME, ChaseReeval.NONE)
+    chase(eventPlayer.tutorialGate1End, vect(-99.01, 10.93, -91.03), duration=TUTORIAL_GATE_OPEN_TIME, ChaseReeval.NONE)
+    chase(eventPlayer.tutorialGate2End, vect(-94.20, 10.93, -92.04), duration=TUTORIAL_GATE_OPEN_TIME, ChaseReeval.NONE)
 
     wait(TUTORIAL_GATE_OPEN_TIME)
 
     tutorialPlayers.remove(eventPlayer)
+    graphicsQualityPlayers.remove(eventPlayer)
 
 # Dark and scary barrier
 
@@ -2715,7 +2738,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "_null"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
