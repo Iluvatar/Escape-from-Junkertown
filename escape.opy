@@ -1082,21 +1082,21 @@ def playerInitialState():
     eventPlayer.tutGate1 = ["tutGate1", 0, vect(-100.32, 11.44, -90.75), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], ["How does a key open a laser gate? You aren't one to think about it too hard"]]
     eventPlayer.tutGate2 = ["tutGate2", 0, vect(-92.97, 11.44, -92.29), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], null]
 
-    eventPlayer.innerWires = ["innerWires", 0, vect(-106.91, 12.44, -135.82), 0.4, ["The wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
+    eventPlayer.innerWires = ["innerWires", 0, vect(-106.91, 12.44, -135.82), 0.4, ["The unconnected wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
     eventPlayer.innerBarrel2 = ["innerBarrel2", 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
-    eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator hums with a dim energy"], null, null, null, null, ["Fuel filled petrol can"], ["You pour the petrol into the generator"]]
+    eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator needs fuel to run", "The generator hums with a dim energy"], null, null, null, null, ["Fuel filled petrol can", "Fuel filled petrol can"], ["You pour the petrol into the generator", "You pour the petrol into the generator"]]
 
     eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
-    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
+    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, null, null, null, null, null, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
     eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
 
-    eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
+    eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, null, null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
     eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
     eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
     eventPlayer.outerNotSmuggler = ["outerNotSmuggler", 0, vect(-35.02, 2.48, -126.33), 1, null]
 
-    eventPlayer.barnWorkbench = ["barnWorkbench", 0, vect(48.86, 10.21, -81.42), 1, ["A workbench with a number of tools left on it", "The workbench has outlived its usefulness"], null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
+    eventPlayer.barnWorkbench = ["barnWorkbench", 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
     eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
     eventPlayer.outsideSat1 = ["outsideSat1", 0, vect(25.774, 16.251, -90.842), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
@@ -1120,26 +1120,27 @@ def playerInitialState():
         ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
         ["innerChest1", 0, vect(-114.91, 7.07, -124.08), 1.2, ["There's an empty petrol can inside, just free for the taking"], "Empty petrol can", true],
         ["innerLocker1", 0, vect(-112.76, 7.55, -134.80), 1.2, ["Whoever's locker this was didn't have the decency to leave easily stolen goods inside"], null, true],
-        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["It's as empty as your head when someone says \"explosion\""], null, true],
+        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["It's as empty as your head when someone mentions explosions"], null, true],
         ["innerLocker3", 0, vect(-112.58, 7.55, -141.24), 1.2, ["The locker is completely devoid of utility"], null, true],
         ["innerLocker4", 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true],
         ["innerLocker5", 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true],
+        ["innerPowerDistributor", 0, vect(-110.71, 13.19, -136.03), 0.8, ["This power distribution unit sends power from the generator to the panel above"]],
 
         ["innerBarrel1", 0, vect(-113.43, 7.02, -116.14), 0.5, ["The barrel is as dry as a day in December"], null, true],
-        ["innerBarrel3", 0, vect(-105.32, 12.79, -132.71), 0.5, ["You see nothing in there except an empty abyss as dark as your soul"], null, true],
+        ["innerBarrel3", 0, vect(-105.32, 12.79, -132.71), 0.5, ["It's as empty as the depths of your soul"], null, true],
 
         ["innerSwitch1", 0, vect(-111.46, 14.145, -137.47), 0.05, null],
         ["innerSwitch2", 0, vect(-111.46, 14.071, -137.47), 0.05, null],
         ["innerSwitch3", 0, vect(-111.46, 13.994, -137.47), 0.05, null],
         ["innerSwitch4", 0, vect(-111.46, 13.914, -137.47), 0.05, null],
         ["innerSwitch5", 0, vect(-111.46, 13.835, -137.47), 0.05, null],
-        ["innerPowerBox", 0, vect(-111.73, 14.04, -137.34), 0.5, null],
+        ["innerPowerBox", 0, vect(-111.73, 14.04, -137.34), 0.5, ["This is the power switching box for the whole area", "Maybe if you get the generator running you can turn the lights on", "There's no power going to the box"]],
 
         # larger inner section
         ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
-        ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["There's a red battery inside"], "Red battery", true],
-        ["innerToolbox1", 0, vect(-103.25, 8.92, -182.63), 0.75, ["There's a note: \"Threw the key in the vent. As long as the vents are running, no one should be able to grab it.\""], null, true],
+        ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
+        ["innerToolbox1", 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in the air vent. As long as the valves are open, no one should be able to grab it.\""], null, true],
         ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
@@ -1154,9 +1155,9 @@ def playerInitialState():
 
         ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tattered sunglasses hidden in the corner", "You've already scoured this area"]],
 
-        ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, ["You twist the valve shut", "The valve is already closed"]],
-        ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, ["You twist the valve shut", "The valve is already closed"]],
-        ["innerValve3", 0, vect(-53.58, 9.91, -122.34), 0.5, ["You twist the valve shut", "The valve is already closed"]],
+        ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, [null, "The valve is already closed"]],
+        ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, [null, "The valve is already closed"]],
+        ["innerValve3", 0, vect(-53.58, 9.91, -122.34), 0.5, [null, "The valve is already closed"]],
 
         ["innerVent1", 0, vect(-108.61, 10.46, -108.17), 1, ["You don't see anything in here"]],
         ["innerVent2", 0, vect(-84.87, 11.34, -186.75), 1, ["You don't see anything in here"]],
@@ -1562,7 +1563,7 @@ rule "Outer workbench minigame success":
     eventPlayer.hasFinishedOuterMinigame = true
     SET_STATE("outerWorkbench", 1)
     eventPlayer.inventory.remove("Red battery")
-    eventPlayer.inventory = "Black battery".concat(eventPlayer.inventory)
+    eventPlayer.inventory = "Black painted battery".concat(eventPlayer.inventory)
     smallMessage(eventPlayer, "You manage to change the color of the battery")
 
     if eventPlayer.outerMinigameMovesMade <= 5:
@@ -1806,7 +1807,8 @@ rule "Interact":
 
     if eventPlayer.tValue[Item.STATE] < len(eventPlayer.tValue[Item.MESSAGE]):
         eventPlayer.tText = eventPlayer.tValue[Item.MESSAGE][eventPlayer.tValue[Item.STATE]]
-        smallMessage(eventPlayer, eventPlayer.tText)
+        if eventPlayer.tText:
+            smallMessage(eventPlayer, eventPlayer.tText)
 
         if eventPlayer.tValue[Item.ITEM_NAME]:
             if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
@@ -1865,20 +1867,22 @@ rule "Interact":
             eventPlayer.inventory.append("Rusty key")
         elif eventPlayer.tValue[Item.ID] == "innerPowerBox":
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
-                if eventPlayer.tValue[Item.STATE] == 0:
-                    smallMessage(eventPlayer, "This is the power switching box for the whole area")
+                if eventPlayer.tValue[Item.STATE] < 2:
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-                elif eventPlayer.tValue[Item.STATE] == 1:
-                    smallMessage(eventPlayer, "Maybe if you get the generator running you can turn the lights on")
-                    eventPlayer.tValue[Item.STATE]++
-                    eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-                else:
-                    smallMessage(eventPlayer, "There's no power going to the box")
             elif not eventPlayer.powerSwitched:
-                smallMessage(eventPlayer, "One of the panels is broken, just like everything else in this place")
+                smallMessage(eventPlayer, "There's power, but one of the panels is broken, just like everything else in this place")
             else:
                 smallMessage(eventPlayer, "The pretty green lights make you giddy")
+        elif eventPlayer.tValue[Item.ID] == "innerGenerator":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                eventPlayer.tValue[Item.STATE]++
+                eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+        elif eventPlayer.tValue[Item.ID] == "innerWorkbench" and not eventPlayer.isDoingInnerMinigame:
+            if eventPlayer.tValue[Item.STATE] == 0:
+                smallMessage(eventPlayer, "The workbench has a label that says \"polarity reversificator\" on it")
+            else:
+                smallMessage(eventPlayer, "The workbench has outlived its usefulness")
         elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl1 = true
             chase(eventPlayer.innerMinigameValue1, INF, rate=1, ChaseReeval.NONE)
@@ -1906,6 +1910,10 @@ rule "Interact":
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             eventPlayer.numVentsClosed++
             playEffect(eventPlayer, DynamicEffect.DOOMFIST_RISING_UPPERCUT_IMPACT_SOUND, null, eventPlayer.tValue[Item.POINT], 100)
+            if eventPlayer.numVentsClosed < 3:
+                smallMessage(eventPlayer, "You twist the valve shut and hear the airflow decrease")
+            else:
+                smallMessage(eventPlayer, "You twist the valve shut and hear the air stop entirely")
         elif eventPlayer.tValue[Item.ID] == "innerVent3":
             if eventPlayer.tValue[Item.STATE] == 0:
                 if eventPlayer.numVentsClosed == 3:
@@ -1970,6 +1978,11 @@ rule "Interact":
                 SAVE_STATE(eventPlayer.tValue)
             else:
                 CREATE_TEXT("Hey, I already paid you.", NOT_SMUGGLER_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outerWorkbench" and not eventPlayer.isDoingOuterMinigame:
+            if eventPlayer.tValue[Item.STATE] == 0:
+                smallMessage(eventPlayer, "The workbench has a number of paints left on it")
+            else:
+                smallMessage(eventPlayer, "The workbench has outlived its usefulness")
         elif strContains(eventPlayer.tValue[Item.ID], "outerMinigame") and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
             eventPlayer.outerMinigameMovesMade++
             if eventPlayer.tValue[Item.ID] == "outerMinigameDot1":
@@ -2097,6 +2110,11 @@ rule "Interact":
                 eventPlayer.equipped.append(Equip.LITTLE_BUDDY)
                 manageEquips()
             eventPlayer.canLeaveBarn = true
+        elif eventPlayer.tValue[Item.ID] == "barnWorkbench" and not eventPlayer.isDoingBarnMinigame:
+            if eventPlayer.tValue[Item.STATE] == 0:
+                smallMessage(eventPlayer, "The workbench features a prominently placed mirror")
+            else:
+                smallMessage(eventPlayer, "The workbench has outlived its usefulness")
         elif strContains(eventPlayer.tValue[Item.ID], "barnMinigame") and eventPlayer.isDoingBarnMinigame and not eventPlayer.hasFinishedBarnMinigame:
             if eventPlayer.tValue[Item.ID] == "barnMinigameDot0":
                 eventPlayer.tPos = 0
@@ -2243,7 +2261,7 @@ rule "Apply":
         eventPlayer.tValue = GET_ITEM_ENTRY("innerGenerator")
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
-            eventPlayer.tValue[Item.STATE]++
+            eventPlayer.tValue[Item.STATE] = 2
             SAVE_STATE(eventPlayer.tValue)
 
             del eventPlayer.inventory[0]
@@ -2290,7 +2308,7 @@ rule "Apply":
         if eventPlayer.tValue[Item.STATE] == 0 or eventPlayer.tValue[Item.STATE] > 8:
             CREATE_TEXT("I have enough junk in here without that cluttering the place up.", BRUCE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.STATE] < 8:
-            if eventPlayer.inventory[0] == "Black battery":
+            if eventPlayer.inventory[0] == "Black painted battery":
                 del eventPlayer.inventory[0]
                 CREATE_TEXT("Hmph, I guess this will have to do.", BRUCE_TEXT_LOCATION)
                 eventPlayer.tValue[Item.STATE]++
@@ -2516,7 +2534,10 @@ rule "Create sparks for generator wires":
 
 # Sunlight barrier
 
-#!define SCRAPYARD_OUTSIDE_MESSAGE "The sun is too bright for your sensitive complexion"
+#!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_BOTH "The sun is too bright for your delicate eyes and sensitive complexion"
+#!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_GLASSES "The sun is too bright for your delicate eyes"
+#!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_SUNSCREEN "The sun is too bright for your sensitive complexion"
+#!define SCRAPYARD_OUTSIDE_MESSAGE (SCRAPYARD_OUTSIDE_MESSAGE_NEED_BOTH if not eventPlayer.hasSunglasses and not eventPlayer.hasSunscreen else SCRAPYARD_OUTSIDE_MESSAGE_NEED_GLASSES if not eventPlayer.hasSunglasses else SCRAPYARD_OUTSIDE_MESSAGE_NEED_SUNSCREEN)
 
 rule "Create sunlight barriers":
     @Event eachPlayer
@@ -2764,7 +2785,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "_null"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "inner"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
