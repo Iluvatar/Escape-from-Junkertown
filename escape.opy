@@ -83,7 +83,7 @@ enum Item:
 #!define SUNLIGHT_ANGLE 30
 #!define INTERACT_DISTANCE 4
 #!define WALL_MESSAGE_TIMEOUT 3
-#!define WALL_CHECK_TIME (0.016 * 2)
+#!define WALL_CHECK_TIME (0.016 * 4)
 #!define TUTORIAL_GATE_OPEN_TIME 2
 #!define TUTORIAL_GATE_OFFSET 0.52
 #!define POWER_OFF_COLOR Color.RED
@@ -210,7 +210,6 @@ playervar equipped
 playervar smugglerItem
 playervar money
 playervar achievements
-playervar inSunlight
 
 # Game state
 playervar tutorialFinished
@@ -319,9 +318,7 @@ eventPlayer.itemPoints[eventPlayer.tIndex] = item
 #!define DIST_2D(v1, v2) distance(vect((v1).x, 0, (v1).z), vect((v2).x, 0, (v2).z))
 
 # distance from pos to the vertical plane defined by start and end vectors
-#!define DIST_TO_WALL(start, end, pos) (sinDeg(angleBetweenVectors(vect(end.x - start.x, 0, end.z - start.z), vect(pos.x - start.x, 0, pos.z - start.z))) * DIST_2D(start, pos))
-
-#!define DIST_TO_WALL_2(start, end, pos) dotProduct(normalize(vect(-((end) - (start)).z, 0, ((end) - (start)).x)), start - pos)
+#!define DIST_TO_WALL(start, end, pos) dotProduct(normalize(vect(-((end) - (start)).z, 0, ((end) - (start)).x)), pos - start)
 
 # MAKE_WALL creates a vertical wall from start to end, pushing 90 degrees clockwise to the (end - start) vector
 # when hit, displays the message, but with a timeout of WALL_MESSAGE_TIMEOUT
@@ -333,12 +330,12 @@ def doWallMessageTimeout():
     wait(WALL_MESSAGE_TIMEOUT)
     eventPlayer.isShowingWallMessage = false
 
-#!define MAKE_WALL(start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
+#!define MAKE_WALL(start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 0.9: \
     eventPlayer.setMoveSpeed(0) \
-    eventPlayer.applyImpulse(vect(-((end) - (start)).z, 0, ((end) - (start)).x), 2, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
+    eventPlayer.teleport(eventPlayer.getPosition() + normalize(vect(-((end) - (start)).z, 0, ((end) - (start)).x)) * (1 - DIST_TO_WALL(start, end, eventPlayer.getPosition()))) \
     if eventPlayer.isShowingWallMessage == false: \
         smallMessage(eventPlayer, message) \
-        async(doWallMessageTimeout(), AsyncBehavior.RESTART) \
+        async(doWallMessageTimeout(), AsyncBehavior.NOOP) \
     eventPlayer.setMoveSpeed(100)
 
 #!define MAKE_DAMAGE_WALL(start, end, message) if DIST_2D(((start) + (end)) / 2, eventPlayer.getPosition()) < distance(start, end) / 2 and eventPlayer.getPosition().y >= start.y and eventPlayer.getPosition().y <= end.y and DIST_TO_WALL(start, end, eventPlayer.getPosition()) < 1: \
@@ -991,7 +988,7 @@ def playerInitialState():
     eventPlayer.pauseInteraction = false
 
     eventPlayer.junkPos = vect(-95.58, 12.17, -86.79)
-    eventPlayer.junkFacing = vect(1, 0, 0)
+    eventPlayer.junkFacing = vect(0.21, 0.08, 0.97)
 
     eventPlayer.hogPos = vect(68.39, 13.91, -86.84)
     eventPlayer.hogFacing = vect(0.86, -0.51, 0)
@@ -1012,8 +1009,6 @@ def playerInitialState():
     eventPlayer.money = 0
 
     eventPlayer.achievements = []
-
-    eventPlayer.inSunlight = false
 
     # Game state
     eventPlayer.tutorialFinished = false
@@ -1115,11 +1110,11 @@ def playerInitialState():
     eventPlayer.itemPoints = [
         # tutorial room
         ["tutSafe1", 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
-        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["Wait, all the gold in here is fake?"], "Fake gold coin", true],
-        ["tutSafe3", 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of gold and can't be opened"], null, true],
+        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["Wait, is this gold even real?"], "Fake gold coin", true],
+        ["tutSafe3", 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of coins and can't be opened"], null, true],
         ["tutSafe4", 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true],
-        ["tutSafe5", 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], "Rusty key", true],
-        ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["A giant safe filled with gold, perfect for sleeping in"]],
+        ["tutSafe5", 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], null, true],
+        ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["All the gold in here is fake! Well that changes things"]],
 
         # lights on section
         ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
@@ -1402,7 +1397,18 @@ rule "On player join":
 
 
 
-# PASSIVE ONGOING    
+# PASSIVE ONGOING
+
+rule "Set spawns":
+    @Event playerDied
+
+    eventPlayer.resurrect()
+    if eventPlayer.isJunk:
+        eventPlayer.teleport(vect(-95.58, 12.17, -86.79))
+        eventPlayer.setFacing(vect(0.21, 0.08, 0.97), Relativity.TO_WORLD)
+    else:
+        eventPlayer.teleport(vect(59.23, 9, -77.60))
+        eventPlayer.setFacing(vect(-1, 0, 0), Relativity.TO_WORLD)
 
 rule "Update junk position and direction":
     @Event eachPlayer
@@ -1436,19 +1442,6 @@ rule "Walk through spawn protections disable":
     @Condition not NEXT_TO(vect(-55.57, 9, -82.41)) and not NEXT_TO(vect(-66.38, 11, -80.21))
 
     eventPlayer.enableEnvironmentCollision()
-
-rule "Update is in sunlight":
-    @Event eachPlayer
-
-    eventPlayer.inSunlight = (isInLoS(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + vect(0, 100, 0), BarrierLos.PASS_THROUGH_BARRIERS) or \
-        isInLoS(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + vect(SUNLIGHT_ANGLE, 100, SUNLIGHT_ANGLE), BarrierLos.PASS_THROUGH_BARRIERS) or \
-        isInLoS(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + vect(SUNLIGHT_ANGLE, 100, -SUNLIGHT_ANGLE), BarrierLos.PASS_THROUGH_BARRIERS) or \
-        isInLoS(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + vect(-SUNLIGHT_ANGLE, 100, SUNLIGHT_ANGLE), BarrierLos.PASS_THROUGH_BARRIERS) or \
-        isInLoS(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + vect(-SUNLIGHT_ANGLE, 100, -SUNLIGHT_ANGLE), BarrierLos.PASS_THROUGH_BARRIERS)) and \
-        not (eventPlayer.getEyePosition().x < -53 and eventPlayer.getEyePosition().z < -113)
-
-    wait()
-    goto RULE_START
 
 # requires that all ncps are at least 10m apart
 rule "Hide npc text":
@@ -1869,6 +1862,7 @@ rule "Interact":
             tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
             tutorialTextPlayers[TutorialText.INV_CYCLE].append(eventPlayer)
             tutorialTextPlayers[TutorialText.APPLY_ITEM].append(eventPlayer)
+            eventPlayer.inventory.append("Rusty key")
         elif eventPlayer.tValue[Item.ID] == "innerPowerBox":
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 if eventPlayer.tValue[Item.STATE] == 0:
@@ -2500,7 +2494,7 @@ rule "Create lights out barriers":
     @Condition eventPlayer.tutorialFinished
     @Condition not eventPlayer.lightsOn
 
-    MAKE_WALL(vect(-85.53, 10.44, -97.39), vect(-85, 14.38, -94.87), DARK_AND_SCARY_MESSAGE)
+    MAKE_WALL(vect(-85.53, 8, -97.39), vect(-85, 14.38, -94.87), DARK_AND_SCARY_MESSAGE)
     MAKE_WALL(vect(-104.47, 5.37, -128.85), vect(-99.85, 12.44, -107.17), DARK_AND_SCARY_MESSAGE)
     MAKE_WALL(vect(-103.34, 6.04, -140.02), vect(-102.20, 16.33, -134.55), DARK_AND_SCARY_MESSAGE)
     MAKE_WALL(vect(-99.65, 12.44, -153.76), vect(-102.71, 16, -149.09), DARK_AND_SCARY_MESSAGE)
@@ -2747,7 +2741,7 @@ rule "Point helper":
     eventPlayer.canBeTheOtherGuy = true
 
     if eventPlayer.pointHelperState == 0:
-        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition() * 1000)), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
         eventPlayer.pointHelperHud = getLastCreatedText()
         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
         eventPlayer.pointHelperEffect = getLastCreatedEntity()
@@ -2770,7 +2764,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "_null"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -2788,9 +2782,8 @@ rule "Noclip off":
 rule "Display stats":
     @Event eachPlayer
 
-    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
@@ -2799,7 +2792,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
-    # hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
