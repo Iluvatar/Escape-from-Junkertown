@@ -64,6 +64,7 @@ playervar pointRadius = 0.2
 
 globalvar visibility = []
 globalvar textVisibility = []
+globalvar textVisibilityHolder
 
 playervar points1d
 playervar p1
@@ -209,7 +210,8 @@ rule "Create help text":
     hudHeader(textVisibility, "decrease duration: f + left click", HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     hudHeader(textVisibility, "increase duration: f + right click", HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     hudHeader(textVisibility, "export points: shift + f + v", HudPosition.LEFT, 11, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
-    hudHeader(textVisibility, "toggle text: shift + ctrl + space", HudPosition.LEFT, 12, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "restart: ctrl + r", HudPosition.LEFT, 12, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudHeader(textVisibility, "toggle text: shift + ctrl + space", HudPosition.LEFT, 13, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
     hudHeader(getAllPlayers(), "avg load: {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 10, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     hudHeader(getAllPlayers(), "peak load: {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 11, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
@@ -285,24 +287,12 @@ def createHud():
 rule "Add point at cursor":
     @Event eachPlayer
     @Condition eventPlayer.isAddingPoints and not eventPlayer.isEditingPoints
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.isHoldingButton(Button.INTERACT)
 
-    eventPlayer.editingPointPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance
-
-    eventPlayer.points.append(eventPlayer.editingPointPos)
-    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-    eventPlayer.pointsEffect.append(getLastCreatedEntity())
-
-    eventPlayer.hasChanged = true
-    if not eventPlayer.liveRenderDisabled:
-        computeAllSegments()
-
-rule "Add point at eye position":
-    @Event eachPlayer
-    @Condition eventPlayer.isAddingPoints and not eventPlayer.isEditingPoints
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and eventPlayer.isHoldingButton(Button.ABILITY_1) and not eventPlayer.isHoldingButton(Button.INTERACT)
-
-    eventPlayer.editingPointPos = eventPlayer.getEyePosition()
+    if eventPlayer.isHoldingButton(Button.ABILITY_1):
+        eventPlayer.editingPointPos = eventPlayer.getEyePosition()
+    else:
+        eventPlayer.editingPointPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance
 
     eventPlayer.points.append(eventPlayer.editingPointPos)
     createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, eventPlayer.editingPointPos, eventPlayer.pointRadius, EffectReeval.VISIBILITY)
@@ -369,7 +359,10 @@ rule "End edit point":
     @Condition eventPlayer.isAddingPoints and eventPlayer.isEditingPoints
     @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
 
-    eventPlayer.editingPointPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance
+    if eventPlayer.isHoldingButton(Button.ABILITY_1):
+        eventPlayer.editingPointPos = eventPlayer.getEyePosition()
+    else:
+        eventPlayer.editingPointPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * eventPlayer.pointerDistance
 
     # replace value in points array
     eventPlayer.points[eventPlayer.editingPointIndex] = eventPlayer.editingPointPos
@@ -461,6 +454,7 @@ rule "Do curve camera":
         computeAllSegments()
 
     visibility.remove(eventPlayer)
+    textVisibility.remove(eventPlayer)
 
     eventPlayer.startCamera((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T, eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T, 0)
 
@@ -472,6 +466,7 @@ rule "Do curve camera":
     eventPlayer.stopCamera()
 
     visibility.append(eventPlayer)
+    textVisibility.append(eventPlayer)
 
 rule "Do curve camera for everyone":
     @Event eachPlayer
@@ -481,6 +476,8 @@ rule "Do curve camera for everyone":
         computeAllSegments()
 
     visibility = []
+    textVisibilityHolder = textVisibility
+    textVisibility = []
 
     getAllPlayers().startCamera((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T, eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T, 0)
 
@@ -492,6 +489,7 @@ rule "Do curve camera for everyone":
     getAllPlayers().stopCamera()
 
     visibility = getAllPlayers()
+    textVisibility = textVisibilityHolder
 
 rule "Export elements":
     @Event eachPlayer
@@ -507,3 +505,9 @@ rule "Export elements":
     printLog("vect{0}".format(eventPlayer.points[len(eventPlayer.points) -1 ]))
 
     smallMessage(eventPlayer, "Export complete")
+
+rule "Restart":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.RELOAD)
+
+    restartMatch()
