@@ -116,7 +116,6 @@ globalvar introStage1Players = []
 globalvar introStage2Players = []
 globalvar tutorialPlayers = []
 globalvar graphicsQualityPlayers = []
-globalvar tutorialTextPlayers = [[], [], [], []]
 globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
@@ -130,6 +129,15 @@ globalvar dvdLogoPlayers = []
 globalvar satControlPlayers = []
 globalvar satUntunedPlayers = [[], [], [], []]
 globalvar satTunedPlayers = [[], [], [], []]
+
+# tutorial text
+enum TutorialText:
+    INTERACT,
+    INV_CYCLE,
+    APPLY_ITEM,
+    HINTS
+
+globalvar tutorialTextPlayers = [[], [], [], [], []]
 
 # equippables
 enum Equip:
@@ -641,10 +649,10 @@ rule "Global setup":
     # tutorial text
     hudSubtext(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 0, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[0], "Use {0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[1], "Use {0} to use inventory items on objects".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[2], "Use {0} and {1} to cycle your inventory".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[3], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on objects".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
     createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tutorialGate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -849,17 +857,39 @@ def showIntro():
     # Stage 2, following cart path
     smallMessage(eventPlayer, "But something went wrong")
 
+
+    # vect(7.60, 8.28, -68.38)
+    # vect(8.22, 8.32, -64.54)
+    # vect(8.84, 8.36, -60.69)
+    # vect(6.69, 8.28, -56.59)
+    # vect(4.54, 8.20, -52.48)
+    # vect(-0.38, 8.00, -48.11)
+    # vect(-5.31, 7.79, -43.75)
+
+
     eventPlayer.bezier = [
-        vect(7.12, 8.28, -69.01),
-        vect(13.34, 8.38, -56.17),
-        vect(13.34, 8.38, -56.17),
-        vect(-4.86, 7.87, -44.03)
+        vect(7.60, 8.28, -68.38),
+        vect(8.22, 8.32, -64.54),
+        vect(8.84, 8.36, -60.69),
+        vect(6.69, 8.28, -56.59),
     ]
-    eventPlayer.bezierDuration = 3.3
+    eventPlayer.bezierDuration = 1.65
     doBezier()
     eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
 
-    wait(3.3)
+    wait(1.65)
+
+    eventPlayer.bezier = [
+        vect(6.69, 8.28, -56.59),
+        vect(4.54, 8.20, -52.48),
+        vect(-0.38, 8.00, -48.11),
+        vect(-5.31, 7.79, -43.75),
+    ]
+    eventPlayer.bezierDuration = 1.65
+    doBezier()
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+
+    wait(1.65)
 
     stopChasingVariable(eventPlayer.tStart)
     stopChasingVariable(eventPlayer.tEnd)
@@ -1085,7 +1115,7 @@ def playerInitialState():
     eventPlayer.itemPoints = [
         # tutorial room
         ["tutSafe1", 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
-        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["This safe is rusted shut, despite having gold hinges"], null, true],
+        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["Wait, all the gold in here is fake?"], "Fake gold coin", true],
         ["tutSafe3", 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of gold and can't be opened"], null, true],
         ["tutSafe4", 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true],
         ["tutSafe5", 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], "Rusty key", true],
@@ -1298,11 +1328,11 @@ def playerInitialState():
     manageEquips()
     manageAchievements()
 
-    tutorialTextPlayers[0].remove(eventPlayer)
-    tutorialTextPlayers[0].append(eventPlayer)
-    tutorialTextPlayers[1].remove(eventPlayer)
-    tutorialTextPlayers[2].remove(eventPlayer)
-    tutorialTextPlayers[3].remove(eventPlayer)
+    tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
+    tutorialTextPlayers[TutorialText.INTERACT].append(eventPlayer)
+    tutorialTextPlayers[TutorialText.INV_CYCLE].remove(eventPlayer)
+    tutorialTextPlayers[TutorialText.APPLY_ITEM].remove(eventPlayer)
+    tutorialTextPlayers[TutorialText.HINTS].remove(eventPlayer)
     tutorialPlayers.remove(eventPlayer)
     tutorialPlayers.append(eventPlayer)
     graphicsQualityPlayers.remove(eventPlayer)
@@ -1357,7 +1387,7 @@ rule "On player join":
     @Event playerJoined
     @Team 1
 
-    async(showIntro, AsyncBehavior.NOOP)
+    # async(showIntro, AsyncBehavior.NOOP)
 
     playerInitialState()
 
@@ -1368,7 +1398,7 @@ rule "On player join":
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
 
-    # onIntroDone()
+    onIntroDone()
 
 
 
@@ -1834,10 +1864,11 @@ rule "Interact":
                 checkPowerPanel()
 
         if eventPlayer.tValue[Item.ID] == "tutSafe2":
-            tutorialTextPlayers[0].remove(eventPlayer)
+            tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
         elif eventPlayer.tValue[Item.ID] == "tutSafe5":
-            tutorialTextPlayers[0].remove(eventPlayer)
-            tutorialTextPlayers[1].append(eventPlayer)
+            tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
+            tutorialTextPlayers[TutorialText.INV_CYCLE].append(eventPlayer)
+            tutorialTextPlayers[TutorialText.APPLY_ITEM].append(eventPlayer)
         elif eventPlayer.tValue[Item.ID] == "innerPowerBox":
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 if eventPlayer.tValue[Item.STATE] == 0:
@@ -2182,8 +2213,9 @@ rule "Apply":
                 playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 30)
                 eventPlayer.tutorialFinished = true
                 playersInDark.append(eventPlayer)
-                tutorialTextPlayers[1].remove(eventPlayer)
-                tutorialTextPlayers[2].append(eventPlayer)
+                tutorialTextPlayers[TutorialText.INV_CYCLE].remove(eventPlayer)
+                tutorialTextPlayers[TutorialText.APPLY_ITEM].remove(eventPlayer)
+                tutorialTextPlayers[TutorialText.HINTS].append(eventPlayer)
             else:
                 APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWires):
@@ -2756,9 +2788,9 @@ rule "Noclip off":
 rule "Display stats":
     @Event eachPlayer
 
-    hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "is outside: {0}".format(eventPlayer.inSunlight), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
@@ -2767,7 +2799,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
-    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
