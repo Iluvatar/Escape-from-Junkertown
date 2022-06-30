@@ -145,6 +145,7 @@ enum Equip:
     LITTLE_BUDDY,
     SUNSCREEN,
     SUNGLASES,
+    DISGUISE,
     WINGS
 
 globalvar equipPlayers = [[], [], [], [], []]
@@ -688,8 +689,9 @@ def doInnerRadioConversation():
     eventPlayer.startCamera(HOG_CAM_POS, HOG_CAM_FACE, 0)
 
     wait(1.5)
+    CREATE_COLORED_TEXT("I dunno, but I'm trapped in here!", HOG_TEXT_POS, JUNK_COLOR)
     CREATE_COLORED_TEXT("Ｍａｙｂｅ　ａｎ　ＥＸＰＬＯＳＩＯＮ　ｗｏｕｌｄ　ｈｅｌｐ！", HOG_TEXT_POS, JUNK_COLOR)
-    
+
 
     wait(4)
     eventPlayer.stopCamera()
@@ -845,7 +847,8 @@ rule "Global setup":
     hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.ABILITY_2)), HudPosition.LEFT, 3, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.SUNGLASES], "{0} Sunglasses".format(abilityIconString(Hero.WINSTON, Button.ULTIMATE)), HudPosition.LEFT, 4, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(equipPlayers[Equip.WINGS], "{0} Mechanical wings".format(abilityIconString(Hero.MERCY, Button.ULTIMATE)), HudPosition.LEFT, 5, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.DISGUISE], "{0} Hilarious Disguise".format(abilityIconString(Hero.LUCIO, Button.ULTIMATE)), HudPosition.LEFT, 5, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.WINGS], "{0} Mechanical wings".format(abilityIconString(Hero.MERCY, Button.ULTIMATE)), HudPosition.LEFT, 6, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # achievement hud text
     hudHeader(achievementPlayers[Achievement.HAS_ANY], "Achievements", HudPosition.RIGHT, 1, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
@@ -1060,6 +1063,7 @@ def manageEquips():
     equipPlayers[Equip.LITTLE_BUDDY].remove(eventPlayer)
     equipPlayers[Equip.SUNSCREEN].remove(eventPlayer)
     equipPlayers[Equip.SUNGLASES].remove(eventPlayer)
+    equipPlayers[Equip.DISGUISE].remove(eventPlayer)
     equipPlayers[Equip.WINGS].remove(eventPlayer)
 
     if len(eventPlayer.equipped) > 0:
@@ -1070,6 +1074,8 @@ def manageEquips():
         equipPlayers[Equip.SUNSCREEN].append(eventPlayer)
     if Equip.SUNGLASES in eventPlayer.equipped:
         equipPlayers[Equip.SUNGLASES].append(eventPlayer)
+    if Equip.DISGUISE in eventPlayer.equipped:
+        equipPlayers[Equip.DISGUISE].append(eventPlayer)
     if Equip.WINGS in eventPlayer.equipped:
         equipPlayers[Equip.WINGS].append(eventPlayer)
 
@@ -1210,10 +1216,6 @@ def playerInitialState():
     eventPlayer.barnWorkbench = ["barnWorkbench", 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
     eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
-    eventPlayer.outsideSat1 = ["outsideSat1", 0, vect(25.774, 16.251, -90.842), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
-    eventPlayer.outsideSat2 = ["outsideSat2", 0, vect(12.000, 17.647, -88.850), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
-    eventPlayer.outsideSat3 = ["outsideSat3", 0, vect(-1.572, 16.131, -58.995), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
-    eventPlayer.outsideSat4 = ["outsideSat4", 0, vect(6.139, 17.041, -44.789), 1, ["The dish isn't tuned", "The dish is tuned"], null, null, null, null, ["Tuned satellite tuner"], ["You tune the antenna"]]
     eventPlayer.outsideSatControl = ["outsideSatControl", 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you need the remote to use it", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outsideMolePerson = ["outsideMolePerson", 0, vect(-50.68, 5.97, -4.12), 2, null]
@@ -1221,11 +1223,11 @@ def playerInitialState():
     eventPlayer.itemPoints = [
         # tutorial room
         ["tutSafe1", 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
-        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["Wait, is this gold even real?"], "Fake gold coin", true],
+        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["There's an odd looking coin in here"], "Odd looking coin", true],
         ["tutSafe3", 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of coins and can't be opened"], null, true],
         ["tutSafe4", 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true],
         ["tutSafe5", 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], null, true],
-        ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["All the gold in here is fake! Well that changes things"]],
+        ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["Is this... how you were brought in here?"]],
 
         # lights on section
         ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
@@ -1282,7 +1284,7 @@ def playerInitialState():
         # courtyard area
         ["outerIceBox", 0, vect(-50.77, 2.49, -126.77), 1, ["The harsh look from the bartender keeps you from poking around inside"], null, true],
         ["outerSmallToolbox1", 0, vect(-11.03, 8.29, -103.06), 0.5, ["The toolbox is far too heavy for its size"], null, true],
-        ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["You wonder what the gross looking needles inside are for"], null, true],
+        ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["This looks like a... frog mask? You may as well put it on"], null, true],
         ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["You don't know what half these tools do. Okay, all of them"], null, true],
         ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["You find an old remote inside"], "Right handed remote", true],
         ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["This allows incoming connections from outside as long as they're broadcasting on the right frequency"]],
@@ -2000,6 +2002,7 @@ rule "Interact":
                     manageEquips()
                 else:
                     CREATE_TEXT("You're going to have to find a high place to use your wings. I've heard there\nare secret tunnels that lead up to the dome. The bartender might know more.", BRUCE_TEXT_LOCATION)
+                SET_STATE("outerBartender", 2)
         elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
             if not eventPlayer.canUtilizeSmuggler:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), INSIDE_SMUGGLER_TEXT_LOCATION)
@@ -2014,13 +2017,15 @@ rule "Interact":
                     CREATE_TEXT("Sorry, nothing for you", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerBartender":
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("Drinks round here cost {0} bucks. But just for you,\nI'll make an exception and only charge you {1}.".format(ALCOHOL_COST / 2, ALCOHOL_COST), BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("Drinks round here cost {0} bucks. But just for you,\nI'll make an exception and only charge ya {1}.".format(ALCOHOL_COST / 2, ALCOHOL_COST), BARTENDER_TEXT_LOCATION)
+            elif eventPlayer.tValue[Item.STATE] == 1:
+                CREATE_TEXT("You've cleaned me right out of liquor.", BARTENDER_TEXT_LOCATION)
             else:
-                CREATE_TEXT("You've cleaned me right out of hard liquor.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the tattoo parlor. They don't take too kindly to stangers though.", BARTENDER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerNotSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay in cash.", NOT_SMUGGLER_TEXT_LOCATION)
-                INCREMENT_STATE("outerMic")
+                SET_STATE("outerMic", 1)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("Alright, you've earned your pay.", NOT_SMUGGLER_TEXT_LOCATION)
                 GIVE_ITEM("{0} dollars".format(ALCOHOL_COST + SMUGGLER_COST))
@@ -2029,6 +2034,12 @@ rule "Interact":
                 SAVE_STATE(eventPlayer.tValue)
             else:
                 CREATE_TEXT("Hey, I already paid you.", NOT_SMUGGLER_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outerToolbox1":
+            if eventPlayer.tValue[Item.STATE] == 0:
+                eventPlayer.equipped.append(Equip.DISGUISE)
+                eventPlayer.tValue[Item.STATE]++
+                SAVE_STATE(eventPlayer.tValue)
+                manageEquips()
         elif eventPlayer.tValue[Item.ID] == "outerWorkbench" and not eventPlayer.isDoingOuterMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "The workbench has a number of paints left on it")
@@ -2111,17 +2122,20 @@ rule "Interact":
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "You don't know why you would waste any time on this")
             elif eventPlayer.tValue[Item.STATE] == 1:
-                freeze()
-                smallMessage(eventPlayer, "You make a couple jokes")
-                wait(3)
-                smallMessage(eventPlayer, "No one laughs")
-                wait(3)
-                smallMessage(eventPlayer, "Maybe that was the point")
-                unfreeze()
+                if Equip.DISGUISE in eventPlayer.equipped:
+                    freeze()
+                    smallMessage(eventPlayer, "You walk up on stage and everyone starts laughing")
+                    wait(3)
+                    smallMessage(eventPlayer, "But you haven't even told any jokes yet?")
+                    wait(3)
+                    unfreeze()
 
-                eventPlayer.tValue[Item.STATE]++
-                eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-                INCREMENT_STATE("outerNotSmuggler")
+                    eventPlayer.equipped.remove(Equip.DISGUISE)
+                    eventPlayer.tValue[Item.STATE]++
+                    eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+                    SET_STATE("outerNotSmuggler", 1)
+                else:
+                    smallMessage(eventPlayer, "You couldn't possible be funny without a hilarious disguise")
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
         elif strContains(eventPlayer.tValue[Item.ID], "outerDoor"):
