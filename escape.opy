@@ -127,8 +127,8 @@ globalvar mapMarkerPlayers = []
 globalvar barnMinigamePlayers = []
 globalvar dvdLogoPlayers = []
 globalvar satControlPlayers = []
-globalvar satUntunedPlayers = [[], [], [], []]
-globalvar satTunedPlayers = [[], [], [], []]
+globalvar insideMailTextPlayers = []
+globalvar outsideMailTextPlayers = []
 
 # tutorial text
 enum TutorialText:
@@ -208,7 +208,8 @@ playervar inventory
 playervar junkEquipped
 playervar hogEquipped
 playervar equipped
-playervar smugglerItem
+playervar insideSmugglerItem
+playervar outsideSmugglerItem
 playervar money
 playervar achievements
 
@@ -1030,16 +1031,9 @@ rule "Global setup":
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), 0.05, EffectReeval.VISIBILITY)
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), 0.05, EffectReeval.VISIBILITY)
 
-    # satellite beam
-    createBeam(satUntunedPlayers[0], Beam.ECHO_FOCUSING, vect(25.774, 16.251, -90.842), vect(25.774, 16.251, -90.842) + 100 * vect(0.542, 0.416, 0.730), Color.TEAM_2, EffectReeval.VISIBILITY)
-    createBeam(satUntunedPlayers[1], Beam.ECHO_FOCUSING, vect(12.000, 17.647, -88.850), vect(12.000, 17.647, -88.850) + 100 * vect(0.529, 0.427, 0.733), Color.TEAM_2, EffectReeval.VISIBILITY)
-    createBeam(satUntunedPlayers[2], Beam.ECHO_FOCUSING, vect(-1.572, 16.131, -58.995), vect(-1.572, 16.131, -58.995) + 100 * vect(0.693, 0.460, -0.555), Color.TEAM_2, EffectReeval.VISIBILITY)
-    createBeam(satUntunedPlayers[3], Beam.ECHO_FOCUSING, vect(6.139, 17.041, -44.789), vect(6.139, 17.041, -44.789) + 100 * vect(-0.551, 0.428, 0.716), Color.TEAM_2, EffectReeval.VISIBILITY)
-
-    createBeam(satTunedPlayers[0], Beam.TORBJORN_TURRET_SIGHT, vect(25.774, 16.251, -90.842), vect(25.774, 16.251, -90.842) + 100 * vect(0.542, 0.416, 0.730), Color.TEAM_1, EffectReeval.VISIBILITY)
-    createBeam(satTunedPlayers[1], Beam.TORBJORN_TURRET_SIGHT, vect(12.000, 17.647, -88.850), vect(12.000, 17.647, -88.850) + 100 * vect(0.529, 0.427, 0.733), Color.TEAM_1, EffectReeval.VISIBILITY)
-    createBeam(satTunedPlayers[2], Beam.TORBJORN_TURRET_SIGHT, vect(-1.572, 16.131, -58.995), vect(-1.572, 16.131, -58.995) + 100 * vect(0.693, 0.460, -0.555), Color.TEAM_1, EffectReeval.VISIBILITY)
-    createBeam(satTunedPlayers[3], Beam.TORBJORN_TURRET_SIGHT, vect(6.139, 17.041, -44.789), vect(6.139, 17.041, -44.789) + 100 * vect(-0.551, 0.428, 0.716), Color.TEAM_1, EffectReeval.VISIBILITY)
+    # smuggler mail txt
+    createInWorldText(insideMailTextPlayers, "You've got mail!", INSIDE_SMUGGLER_TEXT_LOCATION - vect(0, 0.1, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(outsideMailTextPlayers, "You've got mail!", OUTSIDE_SMUGGLER_TEXT_LOCATION - vect(0, 0.1, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
 def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
@@ -1121,7 +1115,8 @@ def playerInitialState():
     eventPlayer.hogEquipped = []
     eventPlayer.equipped = []
 
-    eventPlayer.smugglerItem = null
+    eventPlayer.insideSmugglerItem = null
+    eventPlayer.outsideSmugglerItem = null
 
     eventPlayer.money = 0
 
@@ -1376,7 +1371,7 @@ def playerInitialState():
         eventPlayer.outsideHose, # placed here for priority reasons 
 
         ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
-        ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff "], null, true],
+        ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
         ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
         ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]],
         ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["Without electricity, this fridge isn't doing a very good job"], null, true],
@@ -1477,14 +1472,8 @@ def playerInitialState():
     dvdLogoPlayers.append(eventPlayer)
     satControlPlayers.remove(eventPlayer)
 
-    satUntunedPlayers[0].remove(eventPlayer)
-    satUntunedPlayers[1].remove(eventPlayer)
-    satUntunedPlayers[2].remove(eventPlayer)
-    satUntunedPlayers[3].remove(eventPlayer)
-    satTunedPlayers[0].remove(eventPlayer)
-    satTunedPlayers[1].remove(eventPlayer)
-    satTunedPlayers[2].remove(eventPlayer)
-    satTunedPlayers[3].remove(eventPlayer)
+    insideMailTextPlayers.remove(eventPlayer)
+    outsideMailTextPlayers.remove(eventPlayer)
 
     eventPlayer.startForcingHero(Hero.JUNKRAT)
     eventPlayer.teleport(eventPlayer.junkPos)
@@ -2005,14 +1994,15 @@ rule "Interact":
                 SET_STATE("outerBartender", 2)
         elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
             if not eventPlayer.canUtilizeSmuggler:
-                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nAnd we'll even deliver stuff from others to you!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
-                if eventPlayer.smugglerItem:
+                if eventPlayer.insideSmugglerItem:
+                    insideMailTextPlayers.remove(eventPlayer)
                     CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
-                    eventPlayer.tText = eventPlayer.smugglerItem
+                    eventPlayer.tText = eventPlayer.insideSmugglerItem
                     smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
-                    GIVE_ITEM(eventPlayer.smugglerItem)
-                    eventPlayer.smugglerItem = null
+                    GIVE_ITEM(eventPlayer.insideSmugglerItem)
+                    eventPlayer.insideSmugglerItem = null
                 else:
                     CREATE_TEXT("Sorry, nothing for you", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerBartender":
@@ -2021,7 +2011,7 @@ rule "Interact":
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("You've cleaned me right out of liquor.", BARTENDER_TEXT_LOCATION)
             else:
-                CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the tattoo parlor. They don't take too kindly to stangers though.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the tattoo parlor. They don't take too kindly to strangers though.", BARTENDER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerNotSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay in cash.", NOT_SMUGGLER_TEXT_LOCATION)
@@ -2131,11 +2121,12 @@ rule "Interact":
                     unfreeze()
 
                     eventPlayer.equipped.remove(Equip.DISGUISE)
+                    manageEquips()
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
                     SET_STATE("outerNotSmuggler", 1)
                 else:
-                    smallMessage(eventPlayer, "You couldn't possible be funny without a hilarious disguise")
+                    smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious disguise")
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
         elif strContains(eventPlayer.tValue[Item.ID], "outerDoor"):
@@ -2232,14 +2223,15 @@ rule "Interact":
             unfreeze()
         elif eventPlayer.tValue[Item.ID] == "outsideSmuggler":
             if not eventPlayer.canUtilizeSmuggler:
-                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nAnd we'll even deliver stuff from others to you!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), OUTSIDE_SMUGGLER_TEXT_LOCATION)
             else:
-                if eventPlayer.smugglerItem:
+                if eventPlayer.outsideSmugglerItem:
+                    outsideMailTextPlayers.remove(eventPlayer)
                     CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
-                    eventPlayer.tText = eventPlayer.smugglerItem
+                    eventPlayer.tText = eventPlayer.outsideSmugglerItem
                     smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
-                    GIVE_ITEM(eventPlayer.smugglerItem)
-                    eventPlayer.smugglerItem = null
+                    GIVE_ITEM(eventPlayer.outsideSmugglerItem)
+                    eventPlayer.outsideSmugglerItem = null
                 else:
                     CREATE_TEXT("Sorry, nothing for you", OUTSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outsideMolePerson":
@@ -2369,7 +2361,10 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.outerBruce):
         eventPlayer.tValue = GET_ITEM_ENTRY("outerBruce")
         if eventPlayer.tValue[Item.STATE] == 0 or eventPlayer.tValue[Item.STATE] > 8:
-            CREATE_TEXT("I have enough junk in here without that cluttering the place up.", BRUCE_TEXT_LOCATION)
+            if strContains(eventPlayer.inventory[0], "dollars"):
+                CREATE_TEXT("I don't take bribes, son.", BRUCE_TEXT_LOCATION)
+            else:
+                CREATE_TEXT("I have enough junk in here without that cluttering the place up.", BRUCE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.STATE] < 8:
             if eventPlayer.inventory[0] == "Black painted battery":
                 del eventPlayer.inventory[0]
@@ -2404,30 +2399,46 @@ rule "Apply":
                     GIVE_ITEM("{0} dollars".format(eventPlayer.money))
                 eventPlayer.canUtilizeSmuggler = true
             else:
-                CREATE_TEXT("Gotta buy a membership before we can deliver anything.", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Gotta buy a membership before we can deliver anything, love.", INSIDE_SMUGGLER_TEXT_LOCATION)
         else:
-            if eventPlayer.smugglerItem:
+            if eventPlayer.insideSmugglerItem:
+                insideMailTextPlayers.remove(eventPlayer)
+                CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
+                eventPlayer.tText = eventPlayer.insideSmugglerItem
+                smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                GIVE_ITEM(eventPlayer.insideSmugglerItem)
+                eventPlayer.insideSmugglerItem = null
+            elif eventPlayer.outsideSmugglerItem:
                 CREATE_TEXT("Only one delivery at a time, love.", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif strContains(eventPlayer.inventory[0], "dollars"):
-                CREATE_TEXT("You already have a membership", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You already have a membership.", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
-                CREATE_TEXT("You got it!", INSIDE_SMUGGLER_TEXT_LOCATION)
-                eventPlayer.smugglerItem = eventPlayer.inventory[0]
+                CREATE_TEXT("You got it! We'll have the {0} outside the walls for you in a jiffy.".format(eventPlayer.inventory[0]), INSIDE_SMUGGLER_TEXT_LOCATION)
+                eventPlayer.outsideSmugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
+                outsideMailTextPlayers.append(eventPlayer)
     elif SHOULD_INTERACT(eventPlayer.outsideSmuggler):
         if not eventPlayer.canUtilizeSmuggler:
             CREATE_TEXT("Gotta buy a membership before we can deliver anything.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
         else:
-            if eventPlayer.smugglerItem:
+            if eventPlayer.outsideSmugglerItem:
+                outsideMailTextPlayers.remove(eventPlayer)
+                CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                eventPlayer.tText = eventPlayer.outsideSmugglerItem
+                smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                GIVE_ITEM(eventPlayer.outsideSmugglerItem)
+                eventPlayer.outsideSmugglerItem = null
+            elif eventPlayer.insideSmugglerItem:
                 CREATE_TEXT("Only one delivery at a time, love.", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             elif len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             else:
-                CREATE_TEXT("You got it!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
-                eventPlayer.smugglerItem = eventPlayer.inventory[0]
+                CREATE_TEXT("You got it! We'll have the {0} inside the walls for you in a jiffy.".format(eventPlayer.inventory[0]), OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                eventPlayer.insideSmugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
+                insideMailTextPlayers.append(eventPlayer)
     elif SHOULD_INTERACT(eventPlayer.outerBartender):
         eventPlayer.tValue = GET_ITEM_ENTRY("outerBartender")
         if strContains(eventPlayer.inventory[0], "dollars"):
@@ -2475,50 +2486,6 @@ rule "Apply":
             pushEffectDeleteQueue()
             wait(2)
             popEffectDeleteQueue()
-        else:
-            APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer.outsideSat1):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat1")
-        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
-            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
-            eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer.tValue)
-            eventPlayer.satsTuned++
-            satUntunedPlayers[0].remove(eventPlayer)
-            satTunedPlayers[0].append(eventPlayer)
-        else:
-            APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer.outsideSat2):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat2")
-        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
-            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
-            eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer.tValue)
-            eventPlayer.satsTuned++
-            satUntunedPlayers[1].remove(eventPlayer)
-            satTunedPlayers[1].append(eventPlayer)
-        else:
-            APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer.outsideSat3):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat3")
-        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
-            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
-            eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer.tValue)
-            eventPlayer.satsTuned++
-            satUntunedPlayers[2].remove(eventPlayer)
-            satTunedPlayers[2].append(eventPlayer)
-        else:
-            APPLY_ITEM_FAIL()
-    elif SHOULD_INTERACT(eventPlayer.outsideSat4):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSat4")
-        if SHOULD_APPLY_ITEM(eventPlayer.tValue):
-            APPLY_ITEM_SUCCESS(eventPlayer.tValue)
-            eventPlayer.tValue[Item.STATE]++
-            SAVE_STATE(eventPlayer.tValue)
-            eventPlayer.satsTuned++
-            satUntunedPlayers[3].remove(eventPlayer)
-            satTunedPlayers[3].append(eventPlayer)
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outsideSatControl):
@@ -2790,10 +2757,6 @@ rule "trip cam":
     eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
     # GIVE_ITEM("Right handed remote")
-    satUntunedPlayers[0].append(eventPlayer)
-    satUntunedPlayers[1].append(eventPlayer)
-    satUntunedPlayers[2].append(eventPlayer)
-    satUntunedPlayers[3].append(eventPlayer)
 
 rule "stop trip cam":
     @Event eachPlayer
