@@ -174,6 +174,28 @@ globalvar barnNpc
 
 # other
 globalvar outerMinigameColors = [Color.RED, Color.BLACK]
+globalvar moleCoinRiddle = [
+    "Retrieve the gold device...",
+    "from where we cannot go...",
+    "the horde of golden ice...",
+    "then secrets we'll bestow."
+]
+
+globalvar moleLeaderRiddle = [
+    "You hold the treasure in your hand...",
+    "from where we cannot go...",
+    "Now show it to our leader and...",
+    "prepare the rest to know.", # change
+
+    # "The door to seek is one of these",
+    # "but not the first or last", "and ends with digit odd", "but sums to more than four", "but digits don't repeat",
+    # "the digits don't repeat themselves", "it's neither square nor triangle shaped",
+    # "and has no place to wipe your feet", "and has no mat upon the floor"
+    "The door to seek is one of these...",
+    "but digits don't repeat...",
+    "it's neither square nor triangle shaped...",
+    "and has no place to wipe your feet."
+]
 
 
 # PLAYER VARIABLES
@@ -251,6 +273,7 @@ playervar barnMinigamePosState
 playervar hasFinishedBarnMinigame
 
 playervar isMolePersonFriend
+playervar molePersonRiddleLine
 
 playervar bruceTimer
 
@@ -284,6 +307,11 @@ playervar outerSmuggler
 playervar outerBartender
 playervar outerNotSmuggler
 playervar outerWorkbench
+playervar outerDoor21
+playervar outerDoor22
+playervar outerDoor23
+playervar outerDoor24
+playervar outerDoor25
 
 playervar barnWorkbench
 
@@ -1164,6 +1192,7 @@ def playerInitialState():
     eventPlayer.hasFinishedBarnMinigame = false
 
     eventPlayer.isMolePersonFriend = false
+    eventPlayer.molePersonRiddleLine = 0
 
     eventPlayer.bruceTimer = 0
 
@@ -1207,6 +1236,11 @@ def playerInitialState():
     eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
     eventPlayer.outerNotSmuggler = ["outerNotSmuggler", 0, vect(-35.02, 2.48, -126.33), 1, null]
+    eventPlayer.outerDoor21 = ["outerDoor21", 0, vect(-50.47, 13.63, -84.74), 1.1, null]
+    eventPlayer.outerDoor22 = ["outerDoor22", 0, vect(-54.41, 13.63, -84.09), 1.1, null]
+    eventPlayer.outerDoor23 = ["outerDoor23", 0, vect(-59.72, 13.63, -85.31), 1.1, null]
+    eventPlayer.outerDoor24 = ["outerDoor24", 0, vect(-48.46, 13.63, -90.79), 1.1, null]
+    eventPlayer.outerDoor25 = ["outerDoor25", 0, vect(-42.10, 14.63, -94.75), 1.1, null]
 
     eventPlayer.barnWorkbench = ["barnWorkbench", 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
@@ -1320,12 +1354,6 @@ def playerInitialState():
         ["outerMinigameRotate3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.08, null],
         ["outerMinigameSkip", 0, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, null],
 
-        ["outerDoor21", 0, vect(-50.47, 13.63, -84.74), 1.1, null],
-        ["outerDoor22", 0, vect(-54.41, 13.63, -84.09), 1.1, null],
-        ["outerDoor23", 0, vect(-59.72, 13.63, -85.31), 1.1, null],
-        ["outerDoor24", 0, vect(-48.46, 13.63, -90.79), 1.1, null],
-        ["outerDoor25", 0, vect(-42.10, 14.63, -94.75), 1.1, null],
-
 
         # barn area
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
@@ -1379,7 +1407,7 @@ def playerInitialState():
         ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["The door won't budge"], null, true, true],
         ["outsideToolbox1", 0, vect(-6.67, 8.55, -77.17), 0.7, ["There's only some ancient pistons in here"], null, true],
         ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["You don't need any of the car parts inside since you have a motorcycle"], null, true],
-        ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the remains of someone's lunch"], null, true],
+        ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the moldy remains of someone's lunch"], null, true],
         ["outsideChest1", 0, vect(19.26, 8.73, -55.36), 1.2, ["Anything in here has been looted a long time ago"], null, true],
         ["outsideChest2", 0, vect(-7.98, 8.35, -47.93), 1.2, ["It might be useful for standing on, but not much else"], null, true],
         ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["This chest is trapped under the other one"], null, true],
@@ -1406,6 +1434,11 @@ def playerInitialState():
         eventPlayer.outerBartender,
         eventPlayer.outerNotSmuggler,
         eventPlayer.outerWorkbench,
+        eventPlayer.outerDoor21,
+        eventPlayer.outerDoor22,
+        eventPlayer.outerDoor23,
+        eventPlayer.outerDoor24,
+        eventPlayer.outerDoor25,
 
         eventPlayer.barnWorkbench,
 
@@ -1902,6 +1935,7 @@ rule "Interact":
 
         if eventPlayer.tValue[Item.ID] == "tutSafe2":
             tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
+            eventPlayer.molePersonRiddleLine = 0
         elif eventPlayer.tValue[Item.ID] == "tutSafe5":
             tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
             tutorialTextPlayers[TutorialText.INV_CYCLE].append(eventPlayer)
@@ -2011,7 +2045,7 @@ rule "Interact":
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("You've cleaned me right out of liquor.", BARTENDER_TEXT_LOCATION)
             else:
-                CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the tattoo parlor. They don't take too kindly to strangers though.", BARTENDER_TEXT_LOCATION)
+                CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the Chinese place. They all tend to talk in riddles though.", BARTENDER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerNotSmuggler":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay in cash.", NOT_SMUGGLER_TEXT_LOCATION)
@@ -2131,10 +2165,14 @@ rule "Interact":
                 smallMessage(eventPlayer, "You're done with comedy for today")
         elif strContains(eventPlayer.tValue[Item.ID], "outerDoor"):
             if Equip.WINGS not in eventPlayer.equipped:
-                CREATE_TEXT("'ere, 'oo are you?", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
+                CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
             else:
-                if eventPlayer.tValue[Item.ID] == "outerDoor21":
-                    pass
+                if "Odd looking coin" in eventPlayer.inventory:
+                    CREATE_COLORED_TEXT(moleLeaderRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
+                    eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleLeaderRiddle)
+                else:
+                    CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
+                    eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -2465,6 +2503,47 @@ rule "Apply":
             outerMinigamePlayers.append(eventPlayer)
         else:
             APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outerDoor21):
+        if Equip.WINGS in eventPlayer.equipped:
+            if eventPlayer.inventory[0] == "Odd looking coin":
+                CREATE_TEXT("This needs to be shown to our leader", DOOR_21_TEXT_LOCATION)
+            else:
+                CREATE_TEXT("This is not what we desire", DOOR_21_TEXT_LOCATION)
+        else:
+            CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_21_TEXT_LOCATION)
+    elif SHOULD_INTERACT(eventPlayer.outerDoor22):
+        if Equip.WINGS in eventPlayer.equipped:
+            if eventPlayer.inventory[0] == "Odd looking coin":
+                CREATE_TEXT("This needs to be shown to our leader", DOOR_22_TEXT_LOCATION)
+            else:
+                CREATE_TEXT("This is not what we desire", DOOR_22_TEXT_LOCATION)
+        else:
+            CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_22_TEXT_LOCATION)
+    elif SHOULD_INTERACT(eventPlayer.outerDoor23):
+        if Equip.WINGS in eventPlayer.equipped:
+            if eventPlayer.inventory[0] == "Odd looking coin":
+                CREATE_TEXT("This needs to be shown to our leader", DOOR_23_TEXT_LOCATION)
+            else:
+                CREATE_TEXT("This is not what we desire", DOOR_23_TEXT_LOCATION)
+        else:
+            CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_23_TEXT_LOCATION)
+    elif SHOULD_INTERACT(eventPlayer.outerDoor24):
+        if Equip.WINGS in eventPlayer.equipped:
+            if eventPlayer.inventory[0] == "Odd looking coin":
+                # Do leadery things here
+                CREATE_TEXT("Ah yes, you have found it", DOOR_24_TEXT_LOCATION)
+            else:
+                CREATE_TEXT("This is not what we desire", DOOR_24_TEXT_LOCATION)
+        else:
+            CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_24_TEXT_LOCATION)
+    elif SHOULD_INTERACT(eventPlayer.outerDoor25):
+        if Equip.WINGS in eventPlayer.equipped:
+            if eventPlayer.inventory[0] == "Odd looking coin":
+                CREATE_TEXT("This needs to be shown to our leader", DOOR_25_TEXT_LOCATION)
+            else:
+                CREATE_TEXT("This is not what we desire", DOOR_25_TEXT_LOCATION)
+        else:
+            CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_25_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.barnWorkbench):
         eventPlayer.tValue = GET_ITEM_ENTRY("barnWorkbench")
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
@@ -2757,6 +2836,8 @@ rule "trip cam":
     eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
     # GIVE_ITEM("Right handed remote")
+    eventPlayer.equipped.append(Equip.WINGS)
+    manageEquips()
 
 rule "stop trip cam":
     @Event eachPlayer
