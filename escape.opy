@@ -365,9 +365,11 @@ def popTextDeleteQueue():
     del eventPlayer.textDeleteQueue[0]
 
 # Creates in world text for the event player
-#!define CREATE_TEXT(text, location) popTextDeleteQueue() \
-createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
+#!define CREATE_COLORED_TEXT(text, location, color) popTextDeleteQueue() \
+createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NONE, color, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
+
+#!define CREATE_TEXT(text, location) CREATE_COLORED_TEXT(text, location, Color.WHITE)
 
 # Moves playervars X, Y, and Z along the bezier defined by bezier[0:4] for the duration in bezierDuration
 def doBezier():
@@ -407,6 +409,15 @@ SAVE_STATE(eventPlayer.tValue)
 #!define SET_STATE(id, value) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
 eventPlayer.tValue[Item.STATE] = value \
 SAVE_STATE(eventPlayer.tValue)
+
+# Freezes and unfreezes the player
+def freeze():
+    eventPlayer.pauseInteraction = true
+    eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
+
+def unfreeze():
+    eventPlayer.pauseInteraction = false
+    eventPlayer.clearStatusEffect(Status.ROOTED)
 
 # Opens the barn secret area
 def openSecretDoor():
@@ -538,6 +549,207 @@ def makeSwitchNoise():
     pushEffectDeleteQueue()
     wait(0.3)
     popEffectDeleteQueue()
+
+
+
+# CUTSCENES
+
+def onIntroDone():
+    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    wait(3)
+    graphicsQualityPlayers.append(eventPlayer)
+
+def showIntro():
+    wait(1)
+    eventPlayer.disableHeroHUD()
+    eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
+    eventPlayer.setInvisibility(Invis.ALL)
+    introStage1Players.append(eventPlayer)
+
+    FADE_TO_BLACK()
+
+    wait(3.5)
+
+    # Stage 1, view of plan
+    eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
+    eventPlayer.startCamera(eventPlayer.tPos, vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
+    chase(eventPlayer.tPos, vect(45.98, 11.12, -71.48) - vect(-1, -0.01, 0.10) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(3.3)
+
+    stopChasingVariable(eventPlayer.tPos)
+
+    # Stage 2, following cart path
+    smallMessage(eventPlayer, "But something went wrong")
+
+
+    # vect(7.60, 8.28, -68.38)
+    # vect(8.22, 8.32, -64.54)
+    # vect(8.84, 8.36, -60.69)
+    # vect(6.69, 8.28, -56.59)
+    # vect(4.54, 8.20, -52.48)
+    # vect(-0.38, 8.00, -48.11)
+    # vect(-5.31, 7.79, -43.75)
+
+
+    eventPlayer.bezier = [
+        vect(7.60, 8.28, -68.38),
+        vect(8.22, 8.32, -64.54),
+        vect(8.84, 8.36, -60.69),
+        vect(6.69, 8.28, -56.59),
+    ]
+    eventPlayer.bezierDuration = 1.65
+    doBezier()
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+
+    wait(1.65)
+
+    eventPlayer.bezier = [
+        vect(6.69, 8.28, -56.59),
+        vect(4.54, 8.20, -52.48),
+        vect(-0.38, 8.00, -48.11),
+        vect(-5.31, 7.79, -43.75),
+    ]
+    eventPlayer.bezierDuration = 1.65
+    doBezier()
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+
+    wait(1.65)
+
+    stopChasingVariable(eventPlayer.tStart)
+    stopChasingVariable(eventPlayer.tEnd)
+    stopChasingVariable(eventPlayer.tIndex)
+
+    # Stage 3, view of posters
+    eventPlayer.tPos = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
+    eventPlayer.startCamera(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
+    chase(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(3.3)
+
+    stopChasingVariable(eventPlayer.tPos)
+
+    # Stage 4
+    introStage1Players.remove(eventPlayer)
+
+    eventPlayer.tPos = vect(26.97, 21.97, 47.25)
+    eventPlayer.startCamera(eventPlayer.tPos, vect(-35.24, 11.71, -55.88), 0)
+    chase(eventPlayer.tPos, vect(-33.71, 11.70, -53.29), duration=2.80, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(4.6)
+
+    stopChasingVariable(eventPlayer.tPos)
+
+    # Title view
+    introStage2Players.append(eventPlayer)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, vect(-35.24, 12.71, -55.88), 10)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, vect(-35.24, 12.71, -55.88), 80)
+
+    wait(4)
+
+    introStage2Players.remove(eventPlayer)
+
+    eventPlayer.stopCamera()
+    eventPlayer.enableHeroHud()
+    eventPlayer.clearStatusEffect(Status.ROOTED)
+    eventPlayer.setInvisibility(Invis.NONE)
+
+    onIntroDone()
+
+#!define JUNK_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
+#!define HOG_CAM_POS vect(68.39, 15.54, -86.84)
+#!define HOG_CAM_FACE vect(68.39, 15.54, -86.84) + vect(0.86, -0.51, 0)
+#!define HOG_TEXT_POS vect(69.46, 15.15 + 0.15, -86.83)
+#!define JUNK_COLOR rgb(236, 190, 82)
+#!define HOG_COLOR rgb(179, 139, 80)
+
+def doInnerRadioConversation():
+    freeze()
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.innerRadio[Item.POINT]), 60, Relativity.TO_PLAYER, FacingReeval.NONE)
+
+    wait(1)
+    CREATE_TEXT("*krssshksht*", JUNK_TEXT_POS)
+    createEffect(eventPlayer, Effect.MERCY_DAMAGE_BOOSTED_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100, EffectReeval.NONE)
+    pushEffectDeleteQueue()
+
+    wait(1)
+    popEffectDeleteQueue()
+
+    wait(0.5)
+    eventPlayer.communicate(Comms.NEED_HELP)
+
+    wait(2)
+    CREATE_COLORED_TEXT(". . .", JUNK_TEXT_POS, HOG_COLOR)
+
+    wait(3)
+    CREATE_COLORED_TEXT("What did you get yourself into this time", JUNK_TEXT_POS, HOG_COLOR)
+
+    wait(3)
+    eventPlayer.startCamera(HOG_CAM_POS, HOG_CAM_FACE, 0)
+
+    wait(1.5)
+    CREATE_COLORED_TEXT("Ｍａｙｂｅ　ａｎ　ＥＸＰＬＯＳＩＯＮ　ｗｏｕｌｄ　ｈｅｌｐ！", HOG_TEXT_POS, JUNK_COLOR)
+    
+
+    wait(4)
+    eventPlayer.stopCamera()
+    popTextDeleteQueue()
+    wait(1)
+
+    smallMessage(eventPlayer, "Thing go boom")
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, eventPlayer.innerRadio[Item.POINT], 100)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
+    radioSmokePlayers.append(eventPlayer)
+    wait(3)
+    smallMessage(eventPlayer, "Press {0} to be the other guy".format(buttonString(Button.INTERACT)))
+
+    eventPlayer.canBeTheOtherGuy = true
+
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doBruceContact():
+    eventPlayer.pauseInteraction = true
+
+    dvdLogoPlayers.remove(eventPlayer)
+    wait(0.5)
+    satControlPlayers.append(eventPlayer)
+
+    eventPlayer.tStart = 0 # beam angle
+    eventPlayer.tEnd = 0.1 # center sphere radius
+
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+    wait(1)
+    chase(eventPlayer.tStart, 1.107, duration=3, ChaseReeval.NONE)
+
+    wait(3)
+    createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), updateEveryTick(eventPlayer.tEnd), EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+    wait(2)
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    satControlPlayers.remove(eventPlayer)
+
+    chase(eventPlayer.tEnd, 0, duration=0.3, ChaseReeval.NONE)
+
+    wait(0.3)
+    popEffectDeleteQueue()
+
+    stopChasingVariable(eventPlayer.tStart)
+    stopChasingVariable(eventPlayer.tEnd)
+
+    eventPlayer.pauseInteraction = false
 
 
 
@@ -826,108 +1038,6 @@ rule "Global setup":
     createBeam(satTunedPlayers[2], Beam.TORBJORN_TURRET_SIGHT, vect(-1.572, 16.131, -58.995), vect(-1.572, 16.131, -58.995) + 100 * vect(0.693, 0.460, -0.555), Color.TEAM_1, EffectReeval.VISIBILITY)
     createBeam(satTunedPlayers[3], Beam.TORBJORN_TURRET_SIGHT, vect(6.139, 17.041, -44.789), vect(6.139, 17.041, -44.789) + 100 * vect(-0.551, 0.428, 0.716), Color.TEAM_1, EffectReeval.VISIBILITY)
 
-def onIntroDone():
-    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    wait(3)
-    graphicsQualityPlayers.append(eventPlayer)
-
-def showIntro():
-    wait(1)
-    eventPlayer.disableHeroHUD()
-    eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
-    eventPlayer.setInvisibility(Invis.ALL)
-    introStage1Players.append(eventPlayer)
-
-    FADE_TO_BLACK()
-
-    wait(3.5)
-
-    # Stage 1, view of plan
-    eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
-    eventPlayer.startCamera(eventPlayer.tPos, vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
-    chase(eventPlayer.tPos, vect(45.98, 11.12, -71.48) - vect(-1, -0.01, 0.10) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-
-    wait(3.3)
-
-    stopChasingVariable(eventPlayer.tPos)
-
-    # Stage 2, following cart path
-    smallMessage(eventPlayer, "But something went wrong")
-
-
-    # vect(7.60, 8.28, -68.38)
-    # vect(8.22, 8.32, -64.54)
-    # vect(8.84, 8.36, -60.69)
-    # vect(6.69, 8.28, -56.59)
-    # vect(4.54, 8.20, -52.48)
-    # vect(-0.38, 8.00, -48.11)
-    # vect(-5.31, 7.79, -43.75)
-
-
-    eventPlayer.bezier = [
-        vect(7.60, 8.28, -68.38),
-        vect(8.22, 8.32, -64.54),
-        vect(8.84, 8.36, -60.69),
-        vect(6.69, 8.28, -56.59),
-    ]
-    eventPlayer.bezierDuration = 1.65
-    doBezier()
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-
-    wait(1.65)
-
-    eventPlayer.bezier = [
-        vect(6.69, 8.28, -56.59),
-        vect(4.54, 8.20, -52.48),
-        vect(-0.38, 8.00, -48.11),
-        vect(-5.31, 7.79, -43.75),
-    ]
-    eventPlayer.bezierDuration = 1.65
-    doBezier()
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-
-    wait(1.65)
-
-    stopChasingVariable(eventPlayer.tStart)
-    stopChasingVariable(eventPlayer.tEnd)
-    stopChasingVariable(eventPlayer.tIndex)
-
-    # Stage 3, view of posters
-    eventPlayer.tPos = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
-    eventPlayer.startCamera(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
-    chase(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-
-    wait(3.3)
-
-    stopChasingVariable(eventPlayer.tPos)
-
-    # Stage 4
-    introStage1Players.remove(eventPlayer)
-
-    eventPlayer.tPos = vect(26.97, 21.97, 47.25)
-    eventPlayer.startCamera(eventPlayer.tPos, vect(-35.24, 11.71, -55.88), 0)
-    chase(eventPlayer.tPos, vect(-33.71, 11.70, -53.29), duration=2.80, ChaseReeval.DESTINATION_AND_DURATION)
-
-    wait(4.6)
-
-    stopChasingVariable(eventPlayer.tPos)
-
-    # Title view
-    introStage2Players.append(eventPlayer)
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, vect(-35.24, 12.71, -55.88), 10)
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, vect(-35.24, 12.71, -55.88), 80)
-
-    wait(4)
-
-    introStage2Players.remove(eventPlayer)
-
-    eventPlayer.stopCamera()
-    eventPlayer.enableHeroHud()
-    eventPlayer.clearStatusEffect(Status.ROOTED)
-    eventPlayer.setInvisibility(Invis.NONE)
-
-    onIntroDone()
-
 def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
     eventPlayer.isHoldingInnerMinigameControl1 = false
@@ -986,6 +1096,7 @@ def manageAchievements():
 def playerInitialState():
     # Player state
     eventPlayer.pauseInteraction = false
+    eventPlayer.clearStatusEffect(Status.ROOTED)
 
     eventPlayer.junkPos = vect(-95.58, 12.17, -86.79)
     eventPlayer.junkFacing = vect(0.21, 0.08, 0.97)
@@ -1637,22 +1748,6 @@ rule "Barn workbench minigame stop":
     wait(RACE_CONDITION_DELAY) # prevents flashes
     barnMinigameInitialState()
 
-# Radio conversation
-def doInnerRadioConversation():
-    eventPlayer.pauseInteraction = true
-    smallMessage(eventPlayer, "You say something")
-    wait(4)
-    smallMessage(eventPlayer, "Thing go boom")
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, eventPlayer.innerRadio[Item.POINT], 100)
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
-    radioSmokePlayers.append(eventPlayer)
-    wait(3)
-    smallMessage(eventPlayer, "Press {0} to be the other guy".format(buttonString(Button.INTERACT)))
-
-    eventPlayer.canBeTheOtherGuy = true
-
-    eventPlayer.pauseInteraction = false
-
 # Can go outside
 rule "Can go outside check":
     @Event eachPlayer
@@ -1660,50 +1755,6 @@ rule "Can go outside check":
     @Condition eventPlayer.hasSunscreen
 
     eventPlayer.canGoOutside = true
-
-# Bruce contact scene
-def doBruceContact():
-    eventPlayer.pauseInteraction = true
-
-    dvdLogoPlayers.remove(eventPlayer)
-    wait(0.5)
-    satControlPlayers.append(eventPlayer)
-
-    eventPlayer.tStart = 0 # beam angle
-    eventPlayer.tEnd = 0.1 # center sphere radius
-
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-
-    wait(1)
-    chase(eventPlayer.tStart, 1.107, duration=3, ChaseReeval.NONE)
-
-    wait(3)
-    createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), updateEveryTick(eventPlayer.tEnd), EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-
-    wait(2)
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    satControlPlayers.remove(eventPlayer)
-
-    chase(eventPlayer.tEnd, 0, duration=0.3, ChaseReeval.NONE)
-
-    wait(0.3)
-    popEffectDeleteQueue()
-
-    stopChasingVariable(eventPlayer.tStart)
-    stopChasingVariable(eventPlayer.tEnd)
-
-    eventPlayer.pauseInteraction = false
 
 # Bruce wings fix
 rule "Bruce wings fix":
@@ -2060,13 +2111,13 @@ rule "Interact":
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "You don't know why you would waste any time on this")
             elif eventPlayer.tValue[Item.STATE] == 1:
-                eventPlayer.pauseInteraction = true
+                freeze()
                 smallMessage(eventPlayer, "You make a couple jokes")
                 wait(3)
                 smallMessage(eventPlayer, "No one laughs")
                 wait(3)
                 smallMessage(eventPlayer, "Maybe that was the point")
-                eventPlayer.pauseInteraction = false
+                unfreeze()
 
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
@@ -2148,8 +2199,7 @@ rule "Interact":
                 eventPlayer.barnMinigamePosState = [5, 6, 7, 8, 1, 2, 3, 4]
         elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
             eventPlayer.outsideMapFound = true
-            eventPlayer.pauseInteraction = true
-            eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
+            freeze()
             eventPlayer.disableHeroHUD()
             mapMarkerPlayers.append(eventPlayer)
             eventPlayer.startCamera(vect(-81.29, 50.24, -143.14), vect(-81.29, 50.24, -143.14) + vect(-0.00682, -0.9994, -0.03402), 0)
@@ -2165,8 +2215,7 @@ rule "Interact":
             eventPlayer.enableHeroHud()
             mapMarkerPlayers.remove(eventPlayer)
             eventPlayer.stopCamera()
-            eventPlayer.clearStatusEffect(Status.ROOTED)
-            eventPlayer.pauseInteraction = false
+            unfreeze()
         elif eventPlayer.tValue[Item.ID] == "outsideSmuggler":
             if not eventPlayer.canUtilizeSmuggler:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), OUTSIDE_SMUGGLER_TEXT_LOCATION)
@@ -2285,9 +2334,9 @@ rule "Apply":
         if eventPlayer.inventory[0] == "Fiddly part":
             smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios.\n                        Maybe you can switch this one at a workbench")
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
-            doInnerRadioConversation()
-            INCREMENT_STATE("innerRadio")
             eventPlayer.inventory.remove("Reverse polarity fiddly part")
+            INCREMENT_STATE("innerRadio")
+            doInnerRadioConversation()
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerToolbox2):
