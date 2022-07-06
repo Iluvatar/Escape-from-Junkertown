@@ -782,6 +782,22 @@ def doBruceContact():
 
     eventPlayer.pauseInteraction = false
 
+def doMoleLeaderInteraction():
+    freeze()
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), DOOR_24_TEXT_LOCATION), 10, Relativity.TO_WORLD, FacingReeval.NONE)
+
+    CREATE_TEXT("Ah, you have found the Anathema Device.", DOOR_24_TEXT_LOCATION)
+
+    # "We need this to help unite the Mole People."
+    # "But we can't get it outside the walls ourselves."
+    # "Which is why we need you."
+
+    # "Bring this to our agent outside."
+    # "They're in hiding though, so you may need to chase them around."
+
+
+    eventPlayer.stopFacing()
+    unfreeze()
 
 
 # SETUP
