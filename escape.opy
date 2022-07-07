@@ -91,6 +91,8 @@ enum Item:
 #!define ALCOHOL_COST 60
 #!define SMUGGLER_COST 100
 
+#!define MOLE_PERSON_DEVICE_NAME "Anathema Device"
+
 #!define BARN_NPC_HIDE_LOCATION vect(51, 9.15, -57)
 #!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.6, -104.95)
 #!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 13.48 + 1.6, -88.07)
@@ -104,7 +106,10 @@ enum Item:
 #!define DOOR_24_TEXT_LOCATION vect(-48.46, 13.63 + 0.6, -90.79)
 #!define DOOR_25_TEXT_LOCATION vect(-42.10, 14.63 + 0.6, -94.75)
 
-#!define MOLE_PERSON_TEXT_LOCATION vect(-51.97, 6.14 + 0.6, -3.03)
+#!define MOLE_PERSON_ROOM_TEXT_LOCATION vect(-51.97, 6.14 + 0.6, -3.03)
+#!define MOLE_PERSON_OUTHOUSE_TEXT_LOCATION vect(31.32, 10.46, -48.16)
+#!define MOLE_PERSON_CAR_TEXT_LOCATION vect(-12.12, 6.35, -33.15)
+#!define MOLE_PERSON_CLIFF_TEXT_LOCATION vect(-2.96, 8.95, -100.44)
 
 #!define OUTER_MINIGAME_BALL_SIZE 0.05
 
@@ -272,8 +277,9 @@ playervar barnMinigameColorState
 playervar barnMinigamePosState
 playervar hasFinishedBarnMinigame
 
-playervar isMolePersonFriend
 playervar molePersonRiddleLine
+playervar molePersonInteractStage
+playervar moleDeviceDelivered
 
 playervar bruceTimer
 
@@ -322,7 +328,10 @@ playervar outsideSat3
 playervar outsideSat4
 playervar outsideSatControl
 playervar outsideSmuggler
-playervar outsideMolePerson
+playervar outsideMolePersonRoom
+playervar outsideMolePersonOuthouse
+playervar outsideMolePersonCar
+playervar outsideMolePersonCliff
 
 # Other
 playervar tutorialGate1End
@@ -784,20 +793,79 @@ def doBruceContact():
 
 def doMoleLeaderInteraction():
     freeze()
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), DOOR_24_TEXT_LOCATION), 10, Relativity.TO_WORLD, FacingReeval.NONE)
 
-    CREATE_TEXT("Ah, you have found the Anathema Device.", DOOR_24_TEXT_LOCATION)
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+    CREATE_TEXT("Ah, you have found the {0}.".format(MOLE_PERSON_DEVICE_NAME), DOOR_24_TEXT_LOCATION)
+    wait(3)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_21_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("We need this to help unite the Mole People.", DOOR_21_TEXT_LOCATION)
+    wait(3)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("But we can't get it outside the walls ourselves.".format(MOLE_PERSON_DEVICE_NAME), DOOR_23_TEXT_LOCATION)
+    wait(3)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("And we'd rather not expose ourselves.", DOOR_25_TEXT_LOCATION)
+    wait(3)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("Which is why we need you.".format(MOLE_PERSON_DEVICE_NAME), DOOR_24_TEXT_LOCATION)
+    wait(3)
 
     # "We need this to help unite the Mole People."
     # "But we can't get it outside the walls ourselves."
     # "Which is why we need you."
 
     # "Bring this to our agent outside."
-    # "They're in hiding though, so you may need to chase them around."
+    # "They're in hiding though, so you may need to track them down."
+
+    # "Start by looking in the old room built into the town walls."
+    # "If they aren't there, look behind the old outhouse."
+    # "Check under the stacked cars."
+    # "Go to the cliff overlooking the drainage pipes."
 
 
     eventPlayer.stopFacing()
     unfreeze()
+
+def doMoleAgentInteraction():
+    freeze()
+
+    CREATE_TEXT("Eep! Is that what I think it is?", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3)
+
+    CREATE_TEXT("I never thought I'd see it... squiz", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3)
+
+    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\n", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3)
+
+    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\nMaybe that's why they send me out here.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3)
+
+    CREATE_TEXT("*Sigh*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(2)
+
+    CREATE_TEXT("It's nothing you need to worry about though.\nThanks for getting the device out of Junkertown.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(6)
+
+    CREATE_TEXT("I'll let the others know you've delivered it.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3)
+
+
+    eventPlayer.moleDeviceDelivered = true
+    eventPlayer.inventory.remove(MOLE_PERSON_DEVICE_NAME)
+    unfreeze()
+
 
 
 # SETUP
@@ -1207,8 +1275,9 @@ def playerInitialState():
     barnMinigameInitialState()
     eventPlayer.hasFinishedBarnMinigame = false
 
-    eventPlayer.isMolePersonFriend = false
     eventPlayer.molePersonRiddleLine = 0
+    eventPlayer.molePersonInteractStage = 0
+    eventPlayer.moleDeviceDelivered = false
 
     eventPlayer.bruceTimer = 0
 
@@ -1263,7 +1332,10 @@ def playerInitialState():
     eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
     eventPlayer.outsideSatControl = ["outsideSatControl", 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you need the remote to use it", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
-    eventPlayer.outsideMolePerson = ["outsideMolePerson", 0, vect(-50.68, 5.97, -4.12), 2, null]
+    eventPlayer.outsideMolePersonRoom = ["outsideMolePersonRoom", 0, vect(-50.68, 5.97, -4.12), 2, null]
+    eventPlayer.outsideMolePersonOuthouse = ["outsideMolePersonOuthouse", 0, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION, 2, null]
+    eventPlayer.outsideMolePersonCar = ["outsideMolePersonCar", 0, MOLE_PERSON_CAR_TEXT_LOCATION, 2, null]
+    eventPlayer.outsideMolePersonCliff = ["outsideMolePersonCliff", 0, MOLE_PERSON_CLIFF_TEXT_LOCATION, 2, null]
 
     eventPlayer.itemPoints = [
         # tutorial room
@@ -1465,7 +1537,10 @@ def playerInitialState():
         eventPlayer.outsideSatControl,
         eventPlayer.outsideSmuggler,
         # eventPlayer.outsideHose, # placed above for priority reasons 
-        eventPlayer.outsideMolePerson,
+        eventPlayer.outsideMolePersonRoom,
+        eventPlayer.outsideMolePersonOuthouse,
+        eventPlayer.outsideMolePersonCar,
+        eventPlayer.outsideMolePersonCliff,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -1604,7 +1679,10 @@ rule "Hide npc text":
     @Condition distance(eventPlayer, BARTENDER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, NOT_SMUGGLER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, vect(-49.37, 13.63, -86.90)) > 12 or eventPlayer.getPosition().y < 12.40
-    @Condition distance(eventPlayer, MOLE_PERSON_TEXT_LOCATION) > 16
+    @Condition distance(eventPlayer, MOLE_PERSON_ROOM_TEXT_LOCATION) > 16
+    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) > 16
+    @Condition distance(eventPlayer, MOLE_PERSON_CAR_TEXT_LOCATION) > 16
+    @Condition distance(eventPlayer, MOLE_PERSON_CLIFF_TEXT_LOCATION) > 16
 
     popTextDeleteQueue()
 
@@ -1953,10 +2031,13 @@ rule "Interact":
             tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
             eventPlayer.molePersonRiddleLine = 0
         elif eventPlayer.tValue[Item.ID] == "tutSafe5":
-            tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
-            tutorialTextPlayers[TutorialText.INV_CYCLE].append(eventPlayer)
-            tutorialTextPlayers[TutorialText.APPLY_ITEM].append(eventPlayer)
-            eventPlayer.inventory.append("Rusty key")
+            if eventPlayer.tValue[Item.STATE] == 0:
+                tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
+                tutorialTextPlayers[TutorialText.INV_CYCLE].append(eventPlayer)
+                tutorialTextPlayers[TutorialText.APPLY_ITEM].append(eventPlayer)
+                eventPlayer.inventory.append("Rusty key")
+                eventPlayer.tValue[Item.STATE]++
+                eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
         elif eventPlayer.tValue[Item.ID] == "innerPowerBox":
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 if eventPlayer.tValue[Item.STATE] < 2:
@@ -2288,9 +2369,18 @@ rule "Interact":
                     eventPlayer.outsideSmugglerItem = null
                 else:
                     CREATE_TEXT("Sorry, nothing for you", OUTSIDE_SMUGGLER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outsideMolePerson":
-            if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonRoom":
+            if eventPlayer.molePersonInteractStage == 0:
+                CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_ROOM_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonOuthouse":
+            if eventPlayer.molePersonInteractStage == 1:
+                CREATE_TEXT("Uhh, \"cacaw! cacaw!\"", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCar":
+            if eventPlayer.molePersonInteractStage == 2:
+                CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_CAR_TEXT_LOCATION)
+        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCliff":
+            if eventPlayer.molePersonInteractStage == 3:
+                CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
 
     if strContains(eventPlayer.tValue[Item.ID], "Poster"):
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
@@ -2546,8 +2636,7 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.outerDoor24):
         if Equip.WINGS in eventPlayer.equipped:
             if eventPlayer.inventory[0] == "Odd looking coin":
-                # Do leadery things here
-                CREATE_TEXT("Ah yes, you have found it", DOOR_24_TEXT_LOCATION)
+                doMoleLeaderInteraction()
             else:
                 CREATE_TEXT("This is not what we desire", DOOR_24_TEXT_LOCATION)
         else:
@@ -2595,6 +2684,26 @@ rule "Apply":
             smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed")
         else:
             APPLY_ITEM_FAIL()
+    elif SHOULD_INTERACT(eventPlayer.outsideMolePersonRoom):
+        if eventPlayer.molePersonInteractStage == 0 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+            eventPlayer.molePersonInteractStage++
+            popTextDeleteQueue()
+            smallMessage(eventPlayer, "They've already run away")
+    elif SHOULD_INTERACT(eventPlayer.outsideMolePersonOuthouse):
+        if eventPlayer.molePersonInteractStage == 1 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+            eventPlayer.molePersonInteractStage++
+            popTextDeleteQueue()
+            smallMessage(eventPlayer, "They've already run away")
+    elif SHOULD_INTERACT(eventPlayer.outsideMolePersonCar):
+        if eventPlayer.molePersonInteractStage == 2 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+            eventPlayer.molePersonInteractStage++
+            popTextDeleteQueue()
+            smallMessage(eventPlayer, "They've already run away")
+    elif SHOULD_INTERACT(eventPlayer.outsideMolePersonCliff):
+        if eventPlayer.molePersonInteractStage == 3 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+            eventPlayer.molePersonInteractStage++
+            popTextDeleteQueue()
+            doMoleAgentInteraction()
     else:
         pass
         
@@ -2770,19 +2879,71 @@ rule "Junkertown entry wall":
 
 # Mole person hiding text
 
-rule "Mole person shuffle text":
+# room
+rule "Mole person room shuffle text":
     @Event eachPlayer
-    @Condition not eventPlayer.isMolePersonFriend
-    @Condition distance(eventPlayer, MOLE_PERSON_TEXT_LOCATION) < 16
+    @Condition eventPlayer.molePersonInteractStage == 0
+    @Condition distance(eventPlayer, MOLE_PERSON_ROOM_TEXT_LOCATION) < 16
 
-    CREATE_TEXT("*shuffle shuffle*", MOLE_PERSON_TEXT_LOCATION)
+    CREATE_TEXT("*shuffle shuffle*", MOLE_PERSON_ROOM_TEXT_LOCATION)
 
-rule "Mole person away text":
+rule "Mole person room away text":
     @Event eachPlayer
-    @Condition not eventPlayer.isMolePersonFriend
-    @Condition distance(eventPlayer, MOLE_PERSON_TEXT_LOCATION) < 10
+    @Condition eventPlayer.molePersonInteractStage == 0
+    @Condition distance(eventPlayer, MOLE_PERSON_ROOM_TEXT_LOCATION) < 10
 
-    CREATE_TEXT("*mole away!*", MOLE_PERSON_TEXT_LOCATION)
+    CREATE_TEXT("*mole away!*", MOLE_PERSON_ROOM_TEXT_LOCATION)
+    wait(0.5)
+    popTextDeleteQueue()
+
+# outhouse
+rule "Mole person outhouse shuffle text":
+    @Event eachPlayer
+    @Condition eventPlayer.molePersonInteractStage == 1
+    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) < 16
+
+    CREATE_TEXT("*shuffle shuffle*", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
+
+rule "Mole person outhouse away text":
+    @Event eachPlayer
+    @Condition eventPlayer.molePersonInteractStage == 1
+    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) < 10
+
+    CREATE_TEXT("*mole away!*", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
+    wait(0.5)
+    popTextDeleteQueue()
+
+# car
+rule "Mole person car shuffle text":
+    @Event eachPlayer
+    @Condition eventPlayer.molePersonInteractStage == 2
+    @Condition distance(eventPlayer, MOLE_PERSON_CAR_TEXT_LOCATION) < 16
+
+    CREATE_TEXT("*shuffle shuffle*", MOLE_PERSON_CAR_TEXT_LOCATION)
+
+rule "Mole person car away text":
+    @Event eachPlayer
+    @Condition eventPlayer.molePersonInteractStage == 2
+    @Condition distance(eventPlayer, MOLE_PERSON_CAR_TEXT_LOCATION) < 10
+
+    CREATE_TEXT("*mole away!*", MOLE_PERSON_CAR_TEXT_LOCATION)
+    wait(0.5)
+    popTextDeleteQueue()
+
+# cliff
+rule "Mole person cliff shuffle text":
+    @Event eachPlayer
+    @Condition eventPlayer.molePersonInteractStage == 3
+    @Condition distance(eventPlayer, MOLE_PERSON_CLIFF_TEXT_LOCATION) < 16
+
+    CREATE_TEXT("*shuffle shuffle*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+
+rule "Mole person cliff away text":
+    @Event eachPlayer
+    @Condition eventPlayer.molePersonInteractStage == 3
+    @Condition distance(eventPlayer, MOLE_PERSON_CLIFF_TEXT_LOCATION) < 10
+
+    CREATE_TEXT("*mole away!*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(0.5)
     popTextDeleteQueue()
 
@@ -2854,6 +3015,7 @@ rule "trip cam":
     # GIVE_ITEM("Right handed remote")
     eventPlayer.equipped.append(Equip.WINGS)
     manageEquips()
+    eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
 
 rule "stop trip cam":
     @Event eachPlayer
@@ -2908,7 +3070,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "inner"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -2931,8 +3093,8 @@ rule "Display stats":
 
     # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "doing minigame: {0}".format(eventPlayer.isDoingOuterMinigame), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "done minigame: {0}".format(eventPlayer.hasFinishedOuterMinigame), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "A: {0}".format(A), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "B: {0}".format(B), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
