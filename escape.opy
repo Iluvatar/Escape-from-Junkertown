@@ -218,8 +218,6 @@ playervar tEnd
 playervar tPos
 playervar tText
 playervar tMinigame
-playervar tmp1
-playervar tmp2
 
 # Player state
 playervar pauseInteraction
@@ -279,7 +277,6 @@ playervar hasFinishedBarnMinigame
 
 playervar molePersonRiddleLine
 playervar molePersonInteractStage
-playervar moleDeviceDelivered
 
 playervar bruceTimer
 
@@ -426,6 +423,17 @@ def doBezier():
     chase(eventPlayer.Y, eventPlayer.C, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
     chase(eventPlayer.Z, eventPlayer.D, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
     chase(eventPlayer.T, 1, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
+
+# Does bezier for all entries in eventPlayer.bezier
+# is destructive
+def doBezierArray():
+    while len(eventPlayer.bezier) >= 4:
+        doBezier()
+        wait(eventPlayer.bezierDuration)
+        del eventPlayer.bezier[0]
+        del eventPlayer.bezier[0]
+        del eventPlayer.bezier[0]
+
 
 #!define BEZIER_POSITION ((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T)
 #!define BEZIER_FACING (eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T)
@@ -808,7 +816,7 @@ def doMoleLeaderInteraction():
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("But we can't get it outside the walls ourselves.".format(MOLE_PERSON_DEVICE_NAME), DOOR_23_TEXT_LOCATION)
+    CREATE_TEXT("But we can't get it outside the walls ourselves.", DOOR_23_TEXT_LOCATION)
     wait(3)
 
     stopChasingVariable(eventPlayer.tPos)
@@ -818,8 +826,10 @@ def doMoleLeaderInteraction():
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("Which is why we need you.".format(MOLE_PERSON_DEVICE_NAME), DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("Which is why we need you.", DOOR_24_TEXT_LOCATION)
     wait(3)
+
+    stopChasingVariable(eventPlayer.tPos)
 
     # "We need this to help unite the Mole People."
     # "But we can't get it outside the walls ourselves."
@@ -849,8 +859,8 @@ def doMoleAgentInteraction():
     CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\n", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(3)
 
-    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\nMaybe that's why they send me out here.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(3)
+    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\nMaybe that's why they sent me out here.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(5)
 
     CREATE_TEXT("*Sigh*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(2)
@@ -859,12 +869,116 @@ def doMoleAgentInteraction():
     wait(6)
 
     CREATE_TEXT("I'll let the others know you've delivered it.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(3)
+    wait(4)
+
+    popTextDeleteQueue()
+
+    eventPlayer.tPos = MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 1, 0)
+    createBeam(eventPlayer, Beam.ECHO_FOCUSING, MOLE_PERSON_CLIFF_TEXT_LOCATION, eventPlayer.tPos, Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    wait(2)
+    chase(eventPlayer.tPos, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), rate=10, ChaseReeval.NONE)
+
+    wait(4)
+
+    popEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.TORBJORN_TURRET_SIGHT, MOLE_PERSON_CLIFF_TEXT_LOCATION, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), Color.TEAM_1, EffectReeval.NONE)
+    pushEffectDeleteQueue()
+
+    wait(5)
 
 
-    eventPlayer.moleDeviceDelivered = true
-    eventPlayer.inventory.remove(MOLE_PERSON_DEVICE_NAME)
+
     unfreeze()
+
+def doEndingCutscene():
+    eventPlayer.disableHeroHUD()
+
+    eventPlayer.bezier = [
+        vect(-37.02, 33.22, -123.09),
+        vect(-38.33, 33.22, -121.57),
+        vect(-39.65, 33.22, -120.05),
+        vect(-41.69, 33.22, -118.41),
+        vect(-43.72, 33.22, -116.78),
+        vect(-46.47, 33.22, -115.02),
+        vect(-49.22, 33.22, -113.27),
+    ]
+    eventPlayer.bezierDuration = 3
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+    doBezierArray()
+
+    eventPlayer.tPos = BEZIER_POSITION
+    eventPlayer.tEnd = eventPlayer.tPos + vect(-0.84, 0, 0.54)
+
+    eventPlayer.startCamera(eventPlayer.tPos, eventPlayer.tEnd, 0)
+    chase(eventPlayer.tEnd, eventPlayer.tPos + vect(0, 10, -1), duration=2, ChaseReeval.NONE)
+    wait(3)
+    stopChasingVariable(eventPlayer.tEnd)
+
+    eventPlayer.bezier = [
+        vect(-49.22, 33.22, -113.27),
+        vect(-48.90, 35.67, -112.70),
+        vect(-48.58, 38.12, -112.13),
+        vect(-48.46, 40.97, -111.93),
+        vect(-48.35, 43.82, -111.72),
+        vect(-48.44, 47.06, -111.87),
+        vect(-48.53, 49.74, -112.06),
+    ]
+    eventPlayer.bezierDuration = 3
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_POSITION + vect(0.99, 0, -0.16), 10)
+    doBezierArray()
+
+    eventPlayer.bezier = [
+        vect(-48.53, 49.74, -112.06),
+        vect(-48.62, 52.42, -112.25),
+        vect(-48.71, 54.53, -112.47),
+        vect(-49.03, 56.91, -113.07),
+        vect(-49.34, 59.29, -113.66),
+        vect(-49.88, 61.94, -114.64),
+        vect(-50.43, 64.20, -115.66),
+    ]
+    eventPlayer.bezierDuration = 3
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 3)
+    doBezierArray()
+
+    wait(2)
+
+    eventPlayer.bezier = [
+        vect(-48.03, 65.26, -116.94),
+        vect(-47.62, 61.24, -110.82),
+        vect(-47.22, 57.21, -104.71),
+        vect(-42.88, 53.43, -99.76),
+        vect(-38.54, 49.65, -94.81),
+        vect(-30.27, 46.12, -91.03),
+        vect(-19.10, 41.99, -93.56),
+        vect(-7.94, 37.87, -96.08),
+        vect(6.11, 33.16, -104.90),
+        vect(23.30, 29.13, -109.77),
+        vect(40.49, 25.09, -114.64),
+        vect(60.81, 21.74, -115.56),
+        vect(72.50, 19.39, -110.53),
+        vect(84.19, 17.05, -105.50),
+        vect(87.24, 15.72, -94.52),
+        vect(97.07, 13.29, -81.67),
+        vect(106.90, 10.86, -68.81),
+        vect(123.52, 7.35, -54.09),
+        vect(140.66, 4.80, -56.95),
+        vect(157.80, 2.25, -59.81),
+        vect(175.47, 0.67, -80.25),
+        vect(193.15, -0.91, -100.69),
+    ]
+    eventPlayer.bezierDuration = 2
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+    doBezierArray()
+
+    wait(2)
+
+    FADE_TO_BLACK()
+    wait(3)
+    eventPlayer.stopCamera()
+
+def doCredits():
+    FADE_TO_BLACK()
 
 
 
@@ -1277,7 +1391,6 @@ def playerInitialState():
 
     eventPlayer.molePersonRiddleLine = 0
     eventPlayer.molePersonInteractStage = 0
-    eventPlayer.moleDeviceDelivered = false
 
     eventPlayer.bruceTimer = 0
 
@@ -2267,6 +2380,8 @@ rule "Interact":
                 if "Odd looking coin" in eventPlayer.inventory:
                     CREATE_COLORED_TEXT(moleLeaderRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleLeaderRiddle)
+                elif eventPlayer.molePersonInteractStage == 4:
+                    doEndingCutscene()
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
@@ -2377,7 +2492,7 @@ rule "Interact":
                 CREATE_TEXT("Uhh, \"cacaw! cacaw!\"", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCar":
             if eventPlayer.molePersonInteractStage == 2:
-                CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_CAR_TEXT_LOCATION)
+                CREATE_TEXT("*Intense silence*", MOLE_PERSON_CAR_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCliff":
             if eventPlayer.molePersonInteractStage == 3:
                 CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
@@ -2703,6 +2818,7 @@ rule "Apply":
         if eventPlayer.molePersonInteractStage == 3 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
             eventPlayer.molePersonInteractStage++
             popTextDeleteQueue()
+            eventPlayer.inventory.remove(MOLE_PERSON_DEVICE_NAME)
             doMoleAgentInteraction()
     else:
         pass
@@ -3007,7 +3123,7 @@ rule "setup":
 
 rule "trip cam":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
     eventPlayer.disableHeroHUD()
     eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
@@ -3023,6 +3139,14 @@ rule "stop trip cam":
 
     eventPlayer.enableHeroHud()
     eventPlayer.stopCamera()
+
+rule "end game state":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.isHoldingButton(Button.ABILITY_1)
+    
+    eventPlayer.molePersonInteractStage = 4
+    eventPlayer.equipped.append(Equip.WINGS)
+    manageEquips()
 
 rule "Mercy infinite ult":
     @Event eachPlayer
@@ -3093,7 +3217,7 @@ rule "Display stats":
 
     # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "A: {0}".format(A), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "b facing: {0}".format(normalize(BEZIER_POSITION - BEZIER_FACING)), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "B: {0}".format(B), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
