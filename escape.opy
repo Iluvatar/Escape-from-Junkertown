@@ -119,6 +119,7 @@ enum Item:
 
 globalvar introStage1Players = []
 globalvar introStage2Players = []
+globalvar inventoryPlayers = []
 globalvar tutorialPlayers = []
 globalvar graphicsQualityPlayers = []
 globalvar playersInDark = []
@@ -208,8 +209,6 @@ globalvar moleLeaderRiddle = [
 playervar effectDeleteQueue = []
 playervar textDeleteQueue = []
 
-playervar argStack = []
-
 # General temp variables
 playervar tIndex
 playervar tValue
@@ -280,7 +279,7 @@ playervar molePersonInteractStage
 
 playervar bruceTimer
 
-playervar satsTuned
+playervar hasFinishedGame
 
 # achievements
 playervar postersFound
@@ -392,6 +391,10 @@ def popEffectDeleteQueue():
     destroyEffect(eventPlayer.effectDeleteQueue[0])
     del eventPlayer.effectDeleteQueue[0]
 
+def popAllEffectDeleteQueue():
+    while len(eventPlayer.effectDeleteQueue) > 0:
+        popEffectDeleteQueue()
+
 # Push and pop text using the text deletion queue
 def pushTextDeleteQueue():
     eventPlayer.textDeleteQueue.append(getLastCreatedText())
@@ -399,6 +402,10 @@ def pushTextDeleteQueue():
 def popTextDeleteQueue():
     destroyInWorldText(eventPlayer.textDeleteQueue[0])
     del eventPlayer.textDeleteQueue[0]
+
+def popAllTextDeleteQueue():
+    while len(eventPlayer.textDeleteQueue) > 0:
+        popTextDeleteQueue()
 
 # Creates in world text for the event player
 #!define CREATE_COLORED_TEXT(text, location, color) popTextDeleteQueue() \
@@ -425,7 +432,7 @@ def doBezier():
     chase(eventPlayer.T, 1, duration=eventPlayer.bezierDuration, ChaseReeval.DESTINATION_AND_DURATION)
 
 # Does bezier for all entries in eventPlayer.bezier
-# is destructive
+# is destructive for eventPlayer.bezier
 def doBezierArray():
     while len(eventPlayer.bezier) >= 4:
         doBezier()
@@ -433,7 +440,6 @@ def doBezierArray():
         del eventPlayer.bezier[0]
         del eventPlayer.bezier[0]
         del eventPlayer.bezier[0]
-
 
 #!define BEZIER_POSITION ((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T)
 #!define BEZIER_FACING (eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T)
@@ -456,6 +462,66 @@ SAVE_STATE(eventPlayer.tValue)
 #!define SET_STATE(id, value) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
 eventPlayer.tValue[Item.STATE] = value \
 SAVE_STATE(eventPlayer.tValue)
+
+def hideEquips():
+    equipPlayers[Equip.HAS_ANY].remove(eventPlayer)
+    equipPlayers[Equip.LITTLE_BUDDY].remove(eventPlayer)
+    equipPlayers[Equip.SUNSCREEN].remove(eventPlayer)
+    equipPlayers[Equip.SUNGLASES].remove(eventPlayer)
+    equipPlayers[Equip.DISGUISE].remove(eventPlayer)
+    equipPlayers[Equip.WINGS].remove(eventPlayer)
+
+def manageEquips():
+    hideEquips()
+
+    if len(eventPlayer.equipped) > 0:
+        equipPlayers[Equip.HAS_ANY].append(eventPlayer)
+    if Equip.LITTLE_BUDDY in eventPlayer.equipped:
+        equipPlayers[Equip.LITTLE_BUDDY].append(eventPlayer)
+    if Equip.SUNSCREEN in eventPlayer.equipped:
+        equipPlayers[Equip.SUNSCREEN].append(eventPlayer)
+    if Equip.SUNGLASES in eventPlayer.equipped:
+        equipPlayers[Equip.SUNGLASES].append(eventPlayer)
+    if Equip.DISGUISE in eventPlayer.equipped:
+        equipPlayers[Equip.DISGUISE].append(eventPlayer)
+    if Equip.WINGS in eventPlayer.equipped:
+        equipPlayers[Equip.WINGS].append(eventPlayer)
+
+def hideAchievements():
+    achievementPlayers[Achievement.HAS_ANY].append(eventPlayer)
+    achievementPlayers[Achievement.MOST_WANTED].remove(eventPlayer)
+    achievementPlayers[Achievement.INFRASIGHT].remove(eventPlayer)
+    achievementPlayers[Achievement.PUZZLE_MASTER].remove(eventPlayer)
+    achievementPlayers[Achievement.IN_A_HURRY].remove(eventPlayer)
+    achievementPlayers[Achievement.ESCAPE_ARTIST].remove(eventPlayer)
+
+def manageAchievements():
+    hideAchievements()
+
+    if len(eventPlayer.achievements) > 0:
+        achievementPlayers[Achievement.HAS_ANY].append(eventPlayer)
+    if Achievement.MOST_WANTED in eventPlayer.achievements:
+        achievementPlayers[Achievement.MOST_WANTED].append(eventPlayer)
+    if Achievement.INFRASIGHT in eventPlayer.achievements:
+        achievementPlayers[Achievement.INFRASIGHT].append(eventPlayer)
+    if Achievement.PUZZLE_MASTER in eventPlayer.achievements:
+        achievementPlayers[Achievement.PUZZLE_MASTER].append(eventPlayer)
+    if Achievement.IN_A_HURRY in eventPlayer.achievements:
+        achievementPlayers[Achievement.IN_A_HURRY].append(eventPlayer)
+    if Achievement.ESCAPE_ARTIST in eventPlayer.achievements:
+        achievementPlayers[Achievement.ESCAPE_ARTIST].append(eventPlayer)
+
+def hideUi():
+    eventPlayer.disableHeroHUD()
+    hideEquips()
+    hideAchievements()
+    inventoryPlayers.remove(eventPlayer)
+
+def showUi():
+    eventPlayer.enableHeroHud()
+    manageEquips()
+    manageAchievements()
+    inventoryPlayers.append(eventPlayer)
 
 # Freezes and unfreezes the player
 def freeze():
@@ -601,8 +667,8 @@ def makeSwitchNoise():
 
 # CUTSCENES
 
-def onIntroDone():
-    hudHeader(eventPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+def onWakingDone():
+    inventoryPlayers.append(eventPlayer)
     wait(3)
     graphicsQualityPlayers.append(eventPlayer)
 
@@ -701,7 +767,16 @@ def showIntro():
     eventPlayer.clearStatusEffect(Status.ROOTED)
     eventPlayer.setInvisibility(Invis.NONE)
 
-    onIntroDone()
+def doWakingAnimation():
+    FADE_TO_BLACK()
+    wait(2)
+    smallMessage(eventPlayer, "What... happened?")
+    wait(4)
+    smallMessage(eventPlayer, "The last thing you remember was pushing the cart to the gate, then a pain from behind")
+    wait(4)
+    smallMessage(eventPlayer, "And... a fuzzy face?")
+    wait(4)
+    eventPlayer.stopCamera()
 
 #!define JUNK_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
 #!define HOG_CAM_POS vect(68.39, 15.54, -86.84)
@@ -744,7 +819,6 @@ def doInnerRadioConversation():
     popTextDeleteQueue()
     wait(1)
 
-    smallMessage(eventPlayer, "Thing go boom")
     playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, eventPlayer.innerRadio[Item.POINT], 100)
     playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
     radioSmokePlayers.append(eventPlayer)
@@ -801,81 +875,56 @@ def doBruceContact():
 
 def doMoleLeaderInteraction():
     freeze()
+    hideUi()
 
     eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
 
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
     CREATE_TEXT("Ahh...", DOOR_24_TEXT_LOCATION)
-    wait(3)
+    wait(2)
     CREATE_TEXT("You've found the thing we need to free ourselves", DOOR_24_TEXT_LOCATION)
-    wait(3)
+    wait(4)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_21_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     CREATE_TEXT("from shackles long endured and sorrows wept.", DOOR_21_TEXT_LOCATION)
-    wait(3)
+    wait(4)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     CREATE_TEXT("The walls around this city hem us in", DOOR_23_TEXT_LOCATION)
-    wait(3)
+    wait(4)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     CREATE_TEXT("but we must not expose our secrets kept.", DOOR_25_TEXT_LOCATION)
-    wait(3)
-
-
+    wait(4)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("And so we ask your aid in our endeavor:", DOOR_25_TEXT_LOCATION)
-    wait(3)
+    CREATE_TEXT("And so we ask your aid in our endeavor:", DOOR_24_TEXT_LOCATION)
+    wait(4)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_22_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("Bring this device outside the barren gate", DOOR_25_TEXT_LOCATION)
-    wait(3)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("to one who hides amongst the dust with fervor-", DOOR_25_TEXT_LOCATION)
-    wait(3)
+    CREATE_TEXT("Bring this device outside the barren gate", DOOR_22_TEXT_LOCATION)
+    wait(4)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("to one who hides amongst the dust with fervor-", DOOR_23_TEXT_LOCATION)
+    wait(4)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     CREATE_TEXT("then we shall help you passages locate.", DOOR_25_TEXT_LOCATION)
-    wait(0.5)
+    wait(4)
 
     stopChasingVariable(eventPlayer.tPos)
 
-
-    # Ahh...
-    # You've found the thing we need to free ourselves
-    # from shackles long endured and sorrows wept.
-    # The walls around this city hem us in
-    # but we must not expose our secrets kept.
-
-    # And so we ask your aid in our endeavor:
-    # Bring this device outside the barren gate
-    # to one who hides amongst the dust with fervor-
-    # then we shall help you passages locate.
-
-    # Seek first the room beneath the outer wall.
-    # If they're not there, return back to this hall.
-
-    # Look next behind the old unused latrine.
-    # Not in the open, but the one less seen.
-
-    # Beneath the two stacked cars you next should comb,
-    # although it can be hardly called a home.
-
-    # The final place we know is by the cliff
-    # where sewage drains, you'll know it if you sniff.
-
-
     eventPlayer.stopFacing()
+    showUi()
     unfreeze()
 
 def doMoleLeaderInteractionStage1():
@@ -885,7 +934,7 @@ def doMoleLeaderInteractionStage1():
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("Seek first the room beneath the outer wall.\nIf they're not there, return back to this hall.", DOOR_25_TEXT_LOCATION)
+    CREATE_TEXT("Seek first the room beneath the outer wall.\nIf they're not there, return back to this hall.", DOOR_24_TEXT_LOCATION)
     wait(0.5)
 
     eventPlayer.stopFacing()
@@ -898,7 +947,7 @@ def doMoleLeaderInteractionStage2():
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("Look next behind the old unused latrine.\nNot in the open, but the one less seen.", DOOR_25_TEXT_LOCATION)
+    CREATE_TEXT("Look next behind the old unused latrine.\nNot in the open, but the one less seen.", DOOR_24_TEXT_LOCATION)
     wait(0.5)
 
     eventPlayer.stopFacing()
@@ -911,7 +960,7 @@ def doMoleLeaderInteractionStage3():
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("Beneath the two stacked cars you next should comb,\nalthough it can be hardly called a home.", DOOR_25_TEXT_LOCATION)
+    CREATE_TEXT("Beneath the two stacked cars you next should comb,\nalthough it can be hardly called a home.", DOOR_24_TEXT_LOCATION)
     wait(0.5)
 
     eventPlayer.stopFacing()
@@ -924,7 +973,7 @@ def doMoleLeaderInteractionStage4():
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("The final place we know is by the cliff\nwhere sewage drains, you'll know it if you sniff.", DOOR_25_TEXT_LOCATION)
+    CREATE_TEXT("The final place we know is by the cliff\nwhere sewage drains, you'll know it if you sniff.", DOOR_24_TEXT_LOCATION)
     wait(0.5)
 
     eventPlayer.stopFacing()
@@ -975,7 +1024,7 @@ def doMoleAgentInteraction():
     unfreeze()
 
 def doEndingCutscene():
-    eventPlayer.disableHeroHUD()
+    hideUi()
 
     eventPlayer.bezier = [
         vect(-37.02, 33.22, -123.09),
@@ -1062,6 +1111,8 @@ def doEndingCutscene():
 
 def doCredits():
     FADE_TO_BLACK()
+
+    smallMessage(eventPlayer, "Press F to restart")
 
 
 
@@ -1151,6 +1202,9 @@ rule "Global setup":
     createInWorldText(introStage1Players, "And now you're stuck", vect(-36.85, 6.07, -72.38) + vect(0.55, 0.12, 0.83), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(introStage2Players, "Escape", vect(-35.24, 13.01, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+
+    # inventory
+    hudHeader(inventoryPlayers, "Inventory: {0}".format(localPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     # equipped hud text
     hudHeader(equipPlayers[Equip.HAS_ANY], "Equipped", HudPosition.LEFT, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
@@ -1361,47 +1415,6 @@ def barnMinigameInitialState():
     eventPlayer.barnMinigameColorState = [0, 1, 1, 1, 1, 2, 2, 2, 2]
     eventPlayer.barnMinigamePosState = [1, 2, 3, 4, 5, 6, 7, 8]
 
-def manageEquips():
-    equipPlayers[Equip.HAS_ANY].remove(eventPlayer)
-    equipPlayers[Equip.LITTLE_BUDDY].remove(eventPlayer)
-    equipPlayers[Equip.SUNSCREEN].remove(eventPlayer)
-    equipPlayers[Equip.SUNGLASES].remove(eventPlayer)
-    equipPlayers[Equip.DISGUISE].remove(eventPlayer)
-    equipPlayers[Equip.WINGS].remove(eventPlayer)
-
-    if len(eventPlayer.equipped) > 0:
-        equipPlayers[Equip.HAS_ANY].append(eventPlayer)
-    if Equip.LITTLE_BUDDY in eventPlayer.equipped:
-        equipPlayers[Equip.LITTLE_BUDDY].append(eventPlayer)
-    if Equip.SUNSCREEN in eventPlayer.equipped:
-        equipPlayers[Equip.SUNSCREEN].append(eventPlayer)
-    if Equip.SUNGLASES in eventPlayer.equipped:
-        equipPlayers[Equip.SUNGLASES].append(eventPlayer)
-    if Equip.DISGUISE in eventPlayer.equipped:
-        equipPlayers[Equip.DISGUISE].append(eventPlayer)
-    if Equip.WINGS in eventPlayer.equipped:
-        equipPlayers[Equip.WINGS].append(eventPlayer)
-
-def manageAchievements():
-    achievementPlayers[Achievement.MOST_WANTED].remove(eventPlayer)
-    achievementPlayers[Achievement.INFRASIGHT].remove(eventPlayer)
-    achievementPlayers[Achievement.PUZZLE_MASTER].remove(eventPlayer)
-    achievementPlayers[Achievement.IN_A_HURRY].remove(eventPlayer)
-    achievementPlayers[Achievement.ESCAPE_ARTIST].remove(eventPlayer)
-
-    if len(eventPlayer.achievements) > 0:
-        achievementPlayers[Achievement.HAS_ANY].append(eventPlayer)
-    if Achievement.MOST_WANTED in eventPlayer.achievements:
-        achievementPlayers[Achievement.MOST_WANTED].append(eventPlayer)
-    if Achievement.INFRASIGHT in eventPlayer.achievements:
-        achievementPlayers[Achievement.INFRASIGHT].append(eventPlayer)
-    if Achievement.PUZZLE_MASTER in eventPlayer.achievements:
-        achievementPlayers[Achievement.PUZZLE_MASTER].append(eventPlayer)
-    if Achievement.IN_A_HURRY in eventPlayer.achievements:
-        achievementPlayers[Achievement.IN_A_HURRY].append(eventPlayer)
-    if Achievement.ESCAPE_ARTIST in eventPlayer.achievements:
-        achievementPlayers[Achievement.ESCAPE_ARTIST].append(eventPlayer)
-
 def playerInitialState():
     # Player state
     eventPlayer.pauseInteraction = false
@@ -1477,7 +1490,7 @@ def playerInitialState():
 
     eventPlayer.bruceTimer = 0
 
-    eventPlayer.satsTuned = 0
+    eventPlayer.hasFinishedGame = false
 
     eventPlayer.postersFound = []
     eventPlayer.outsideMapFound = false
@@ -1749,6 +1762,8 @@ def playerInitialState():
     eventPlayer.tutorialGate1End = vect(-101.64, 10.93, -90.46)
     eventPlayer.tutorialGate2End = vect(-91.58, 10.93, -92.60)
 
+    inventoryPlayers.remove(eventPlayer)
+
     manageEquips()
     manageAchievements()
 
@@ -1801,22 +1816,31 @@ def playerInitialState():
     wait(RACE_CONDITION_DELAY)
     eventPlayer.isJunk = true
 
-rule "On player join":
+def resetGame():
+    popAllEffectDeleteQueue()
+    popAllTextDeleteQueue()
+    playerInitialState()
+    doWakingAnimation()
+    onWakingDone()
+
+rule "Show intro":
     @Event playerJoined
     @Team 1
 
-    # async(showIntro, AsyncBehavior.NOOP)
+    # showIntro()
+    resetGame()
 
-    playerInitialState()
+rule "Initial player setup":
+    @Event playerJoined
+    @Team 1
 
     eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF)
     eventPlayer.setInvisibility(Invis.ENEMIES)
     eventPlayer.disableGamemodeHud()
-    # eventPlayer.disableScoreboard()
+    if hostPlayer != eventPlayer:
+        eventPlayer.disableScoreboard()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
-
-    onIntroDone()
 
 
 
@@ -1876,7 +1900,7 @@ rule "Hide npc text":
     @Condition distance(eventPlayer, NOT_SMUGGLER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, vect(-49.37, 13.63, -86.90)) > 12 or eventPlayer.getPosition().y < 12.40
     @Condition distance(eventPlayer, MOLE_PERSON_ROOM_TEXT_LOCATION) > 16
-    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) > 16
+    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) > 12
     @Condition distance(eventPlayer, MOLE_PERSON_CAR_TEXT_LOCATION) > 16
     @Condition distance(eventPlayer, MOLE_PERSON_CLIFF_TEXT_LOCATION) > 16
 
@@ -2122,6 +2146,7 @@ rule "Switch between heroes":
         eventPlayer.isJunk = true
         eventPlayer.preloadHero(Hero.JUNKRAT)
 
+    popAllTextDeleteQueue()
     manageEquips()
 
 rule "Scroll inventory forwards":
@@ -2156,7 +2181,7 @@ distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingD
 
 rule "Interact":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame
 
     eventPlayer.tValue = [elem for elem in eventPlayer.itemPoints if SHOULD_INTERACT(elem)]
 
@@ -2463,8 +2488,17 @@ rule "Interact":
                 if "Odd looking coin" in eventPlayer.inventory:
                     CREATE_COLORED_TEXT(moleLeaderRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleLeaderRiddle)
+                elif eventPlayer.molePersonInteractStage == 0:
+                    doMoleLeaderInteractionStage1()
+                elif eventPlayer.molePersonInteractStage == 1:
+                    doMoleLeaderInteractionStage2()
+                elif eventPlayer.molePersonInteractStage == 2:
+                    doMoleLeaderInteractionStage3()
+                elif eventPlayer.molePersonInteractStage == 3:
+                    doMoleLeaderInteractionStage4()
                 elif eventPlayer.molePersonInteractStage == 4:
                     doEndingCutscene()
+                    doCredits()
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
@@ -2495,9 +2529,13 @@ rule "Interact":
         elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
             smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
         elif eventPlayer.tValue[Item.ID] == "barnSafe2":
-            if Equip.LITTLE_BUDDY not in eventPlayer.equipped:
+            if Equip.LITTLE_BUDDY in eventPlayer.equipped:
+                smallMessage(eventPlayer, "You've already secured your little buddy")
+            else:
                 eventPlayer.equipped.append(Equip.LITTLE_BUDDY)
                 manageEquips()
+                eventPlayer.tValue[Item.STATE]++
+                eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             eventPlayer.canLeaveBarn = true
         elif eventPlayer.tValue[Item.ID] == "barnWorkbench" and not eventPlayer.isDoingBarnMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
@@ -2538,7 +2576,7 @@ rule "Interact":
         elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
             eventPlayer.outsideMapFound = true
             freeze()
-            eventPlayer.disableHeroHUD()
+            hideUi()
             mapMarkerPlayers.append(eventPlayer)
             eventPlayer.startCamera(vect(-81.29, 50.24, -143.14), vect(-81.29, 50.24, -143.14) + vect(-0.00682, -0.9994, -0.03402), 0)
             wait(1)
@@ -2550,7 +2588,7 @@ rule "Interact":
             wait(1)
             mapMarkerPlayers.append(eventPlayer)
             wait(1)
-            eventPlayer.enableHeroHud()
+            showUi()
             mapMarkerPlayers.remove(eventPlayer)
             eventPlayer.stopCamera()
             unfreeze()
@@ -2583,6 +2621,12 @@ rule "Interact":
     if strContains(eventPlayer.tValue[Item.ID], "Poster"):
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
             eventPlayer.postersFound.append(eventPlayer.tValue[Item.ID])
+
+rule "Restart game":
+    @Event eachPlayer
+    @Condition eventPlayer.hasFinishedGame and eventPlayer.isHoldingButton(Button.INTERACT)
+
+    resetGame()
 
 
 
@@ -2811,7 +2855,9 @@ rule "Apply":
         if Equip.WINGS in eventPlayer.equipped:
             if eventPlayer.inventory[0] == "Odd looking coin":
                 CREATE_TEXT("This needs to be shown to our leader", DOOR_21_TEXT_LOCATION)
-            else:
+            elif eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+                CREATE_TEXT("Give this to the one outside", DOOR_21_TEXT_LOCATION)
+            elif eventPlayer.inventory[0]:
                 CREATE_TEXT("This is not what we desire", DOOR_21_TEXT_LOCATION)
         else:
             CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_21_TEXT_LOCATION)
@@ -2819,7 +2865,9 @@ rule "Apply":
         if Equip.WINGS in eventPlayer.equipped:
             if eventPlayer.inventory[0] == "Odd looking coin":
                 CREATE_TEXT("This needs to be shown to our leader", DOOR_22_TEXT_LOCATION)
-            else:
+            elif eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+                CREATE_TEXT("Give this to the one outside", DOOR_22_TEXT_LOCATION)
+            elif eventPlayer.inventory[0]:
                 CREATE_TEXT("This is not what we desire", DOOR_22_TEXT_LOCATION)
         else:
             CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_22_TEXT_LOCATION)
@@ -2827,7 +2875,9 @@ rule "Apply":
         if Equip.WINGS in eventPlayer.equipped:
             if eventPlayer.inventory[0] == "Odd looking coin":
                 CREATE_TEXT("This needs to be shown to our leader", DOOR_23_TEXT_LOCATION)
-            else:
+            elif eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+                CREATE_TEXT("Give this to the one outside", DOOR_23_TEXT_LOCATION)
+            elif eventPlayer.inventory[0]:
                 CREATE_TEXT("This is not what we desire", DOOR_23_TEXT_LOCATION)
         else:
             CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_23_TEXT_LOCATION)
@@ -2835,7 +2885,12 @@ rule "Apply":
         if Equip.WINGS in eventPlayer.equipped:
             if eventPlayer.inventory[0] == "Odd looking coin":
                 doMoleLeaderInteraction()
-            else:
+                eventPlayer.inventory.remove("Odd looking coin")
+                GIVE_ITEM(MOLE_PERSON_DEVICE_NAME)
+                doMoleLeaderInteractionStage1()
+            elif eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+                CREATE_TEXT("Give this to the one outside", DOOR_24_TEXT_LOCATION)
+            elif eventPlayer.inventory[0]:
                 CREATE_TEXT("This is not what we desire", DOOR_24_TEXT_LOCATION)
         else:
             CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_24_TEXT_LOCATION)
@@ -2843,7 +2898,9 @@ rule "Apply":
         if Equip.WINGS in eventPlayer.equipped:
             if eventPlayer.inventory[0] == "Odd looking coin":
                 CREATE_TEXT("This needs to be shown to our leader", DOOR_25_TEXT_LOCATION)
-            else:
+            elif eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
+                CREATE_TEXT("Give this to the one outside", DOOR_25_TEXT_LOCATION)
+            elif eventPlayer.inventory[0]:
                 CREATE_TEXT("This is not what we desire", DOOR_25_TEXT_LOCATION)
         else:
             CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_25_TEXT_LOCATION)
@@ -3099,14 +3156,14 @@ rule "Mole person room away text":
 rule "Mole person outhouse shuffle text":
     @Event eachPlayer
     @Condition eventPlayer.molePersonInteractStage == 1
-    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) < 16
+    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) < 12
 
     CREATE_TEXT("*shuffle shuffle*", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
 
 rule "Mole person outhouse away text":
     @Event eachPlayer
     @Condition eventPlayer.molePersonInteractStage == 1
-    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) < 10
+    @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) < 9
 
     CREATE_TEXT("*mole away!*", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
     wait(0.5)
