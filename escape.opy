@@ -806,43 +806,126 @@ def doMoleLeaderInteraction():
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
 
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
-    CREATE_TEXT("Ah, you have found the {0}.".format(MOLE_PERSON_DEVICE_NAME), DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("Ahh...", DOOR_24_TEXT_LOCATION)
+    wait(3)
+    CREATE_TEXT("You've found the thing we need to free ourselves", DOOR_24_TEXT_LOCATION)
     wait(3)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_21_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("We need this to help unite the Mole People.", DOOR_21_TEXT_LOCATION)
+    CREATE_TEXT("from shackles long endured and sorrows wept.", DOOR_21_TEXT_LOCATION)
     wait(3)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("But we can't get it outside the walls ourselves.", DOOR_23_TEXT_LOCATION)
+    CREATE_TEXT("The walls around this city hem us in", DOOR_23_TEXT_LOCATION)
     wait(3)
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("And we'd rather not expose ourselves.", DOOR_25_TEXT_LOCATION)
+    CREATE_TEXT("but we must not expose our secrets kept.", DOOR_25_TEXT_LOCATION)
     wait(3)
+
+
 
     stopChasingVariable(eventPlayer.tPos)
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("Which is why we need you.", DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("And so we ask your aid in our endeavor:", DOOR_25_TEXT_LOCATION)
     wait(3)
 
     stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_22_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("Bring this device outside the barren gate", DOOR_25_TEXT_LOCATION)
+    wait(3)
 
-    # "We need this to help unite the Mole People."
-    # "But we can't get it outside the walls ourselves."
-    # "Which is why we need you."
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("to one who hides amongst the dust with fervor-", DOOR_25_TEXT_LOCATION)
+    wait(3)
 
-    # "Bring this to our agent outside."
-    # "They're in hiding though, so you may need to track them down."
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("then we shall help you passages locate.", DOOR_25_TEXT_LOCATION)
+    wait(0.5)
 
-    # "Start by looking in the old room built into the town walls."
-    # "If they aren't there, look behind the old outhouse."
-    # "Check under the stacked cars."
-    # "Go to the cliff overlooking the drainage pipes."
+    stopChasingVariable(eventPlayer.tPos)
 
+
+    # Ahh...
+    # You've found the thing we need to free ourselves
+    # from shackles long endured and sorrows wept.
+    # The walls around this city hem us in
+    # but we must not expose our secrets kept.
+
+    # And so we ask your aid in our endeavor:
+    # Bring this device outside the barren gate
+    # to one who hides amongst the dust with fervor-
+    # then we shall help you passages locate.
+
+    # Seek first the room beneath the outer wall.
+    # If they're not there, return back to this hall.
+
+    # Look next behind the old unused latrine.
+    # Not in the open, but the one less seen.
+
+    # Beneath the two stacked cars you next should comb,
+    # although it can be hardly called a home.
+
+    # The final place we know is by the cliff
+    # where sewage drains, you'll know it if you sniff.
+
+
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doMoleLeaderInteractionStage1():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("Seek first the room beneath the outer wall.\nIf they're not there, return back to this hall.", DOOR_25_TEXT_LOCATION)
+    wait(0.5)
+
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doMoleLeaderInteractionStage2():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("Look next behind the old unused latrine.\nNot in the open, but the one less seen.", DOOR_25_TEXT_LOCATION)
+    wait(0.5)
+
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doMoleLeaderInteractionStage3():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("Beneath the two stacked cars you next should comb,\nalthough it can be hardly called a home.", DOOR_25_TEXT_LOCATION)
+    wait(0.5)
+
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doMoleLeaderInteractionStage4():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("The final place we know is by the cliff\nwhere sewage drains, you'll know it if you sniff.", DOOR_25_TEXT_LOCATION)
+    wait(0.5)
 
     eventPlayer.stopFacing()
     unfreeze()
@@ -2492,10 +2575,10 @@ rule "Interact":
                 CREATE_TEXT("Uhh, \"cacaw! cacaw!\"", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCar":
             if eventPlayer.molePersonInteractStage == 2:
-                CREATE_TEXT("*Intense silence*", MOLE_PERSON_CAR_TEXT_LOCATION)
+                CREATE_TEXT("Vroom vroom, just a normal car here.", MOLE_PERSON_CAR_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCliff":
             if eventPlayer.molePersonInteractStage == 3:
-                CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+                CREATE_TEXT("*Intense silence*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
 
     if strContains(eventPlayer.tValue[Item.ID], "Poster"):
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
