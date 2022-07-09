@@ -1382,8 +1382,8 @@ rule "Global setup":
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
 
     # barn paper clues
-    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.2, -93.83), 0.3, EffectReeval.VISIBILITY)
-    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.2, -71.88), 0.3, EffectReeval.VISIBILITY)
+    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.3, -93.83), 0.3, EffectReeval.VISIBILITY)
+    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.3, -71.88), 0.3, EffectReeval.VISIBILITY)
 
     # barn workbench puzzle
     for I in range(len(barnMinigameConnections)):
@@ -1565,7 +1565,7 @@ def playerInitialState():
         ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
         ["innerChest1", 0, vect(-114.91, 7.07, -124.08), 1.2, ["There's an empty petrol can inside, just free for the taking"], "Empty petrol can", true],
         ["innerLocker1", 0, vect(-112.76, 7.55, -134.80), 1.2, ["Whoever's locker this was didn't have the decency to leave easily stolen goods inside"], null, true],
-        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["It's as empty as your head when someone mentions explosions"], null, true],
+        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["There's a note: \"Keep your hands off my stuff you scrawny eyed mole rats!\""], null, true],
         ["innerLocker3", 0, vect(-112.58, 7.55, -141.24), 1.2, ["The locker is completely devoid of utility"], null, true],
         ["innerLocker4", 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true],
         ["innerLocker5", 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true],
@@ -1585,7 +1585,7 @@ def playerInitialState():
         ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
         ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
-        ["innerToolbox1", 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in the air vent. As long as the valves are open, no one should be able to grab it.\""], null, true],
+        ["innerToolbox1", 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in large air vent. Long as the valves are open, no one will be able to grab it.\""], null, true],
         ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
@@ -1662,7 +1662,6 @@ def playerInitialState():
         ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
         ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to change the TV channel right now"]],
         ["barnPachimari", 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]],
-        ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, ["This bike is one of the only working vehicles around here"]],
         ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["This machine helps you survive the irradiated outdoors"], null, true],
         ["barnFridge", 0, vect(66.91, 10.37, -67.64), 1, ["The fridge is full of half eaten Chinese food"], null, true],
         ["barnTireRack", 0, vect(44.07, 10.12, -88.71), 1.5, ["This rack of hover pads is entirely unremarkable"], null, null, true],
@@ -1678,6 +1677,7 @@ def playerInitialState():
 
         ["barnPaperClue1", 0, vect(58.30, 9, -93.83), 0.3, null],
         ["barnPaperClue2", 0, vect(42.25, 16, -71.88), 0.3, null],
+        ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, null],
 
         ["barnSwitch1", 0, vect(56.48, 10.655, -66.584), 0.05, null],
         ["barnSwitch2", 0, vect(56.48, 10.581, -66.584), 0.05, null],
@@ -1829,11 +1829,11 @@ def resetGame():
     doWakingAnimation()
     onWakingDone()
 
-rule "Show intro":
+rule "Show intro cutscenes":
     @Event playerJoined
     @Team 1
 
-    showIntro()
+    # showIntro()
     resetGame()
 
 rule "Initial player setup":
@@ -2383,7 +2383,7 @@ rule "Interact":
                 eventPlayer.tValue[Item.STATE]++
                 SAVE_STATE(eventPlayer.tValue)
             else:
-                CREATE_TEXT("Hey, I already paid you.", NOT_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Did you know there's legends of a hidden race in Junkertown?\nSome say they go around stealing small objects, hiding things in vents.\nEh- but it's probably nothing right?", NOT_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == "outerToolbox1":
             if eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.equipped.append(Equip.DISGUISE)
@@ -2537,6 +2537,8 @@ rule "Interact":
             smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
         elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
             smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
+        elif eventPlayer.tValue[Item.ID] == "barnBike":
+            smallMessage(eventPlayer, "There's some numbers scratched in the paint, but you can only make out the middle digit: {0}".format(eventPlayer.barnCode[2]))
         elif eventPlayer.tValue[Item.ID] == "barnSafe2":
             if Equip.LITTLE_BUDDY in eventPlayer.equipped:
                 smallMessage(eventPlayer, "You've already secured your little buddy")
