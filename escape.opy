@@ -488,7 +488,7 @@ def manageEquips():
         equipPlayers[Equip.WINGS].append(eventPlayer)
 
 def hideAchievements():
-    achievementPlayers[Achievement.HAS_ANY].append(eventPlayer)
+    achievementPlayers[Achievement.HAS_ANY].remove(eventPlayer)
     achievementPlayers[Achievement.MOST_WANTED].remove(eventPlayer)
     achievementPlayers[Achievement.INFRASIGHT].remove(eventPlayer)
     achievementPlayers[Achievement.PUZZLE_MASTER].remove(eventPlayer)
@@ -763,11 +763,12 @@ def showIntro():
     introStage2Players.remove(eventPlayer)
 
     eventPlayer.stopCamera()
-    eventPlayer.enableHeroHud()
     eventPlayer.clearStatusEffect(Status.ROOTED)
     eventPlayer.setInvisibility(Invis.NONE)
 
 def doWakingAnimation():
+    freeze()
+    hideUi()
     FADE_TO_BLACK()
     wait(2)
     smallMessage(eventPlayer, "What... happened?")
@@ -777,6 +778,8 @@ def doWakingAnimation():
     smallMessage(eventPlayer, "And... a fuzzy face?")
     wait(4)
     eventPlayer.stopCamera()
+    unfreeze()
+    showUi()
 
 #!define JUNK_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
 #!define HOG_CAM_POS vect(68.39, 15.54, -86.84)
@@ -1361,6 +1364,7 @@ rule "Global setup":
     createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createEffect(innerMinigamePlayers, Effect.SPHERE, Color.BLACK, INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73, 0)), 0.05, EffectReeval.VISIBILITY)
     createInWorldText(innerMinigamePlayers, "skip", INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(innerMinigamePlayers, "Make the arrow point the other way", vect(-103.48, 9.64, -184.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
@@ -1371,6 +1375,7 @@ rule "Global setup":
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.BLACK, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, EffectReeval.VISIBILITY)
     createInWorldText(outerMinigamePlayers, "skip", OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(outerMinigamePlayers, "Turn all the red dots black", vect(-56.46, 12.81, -60.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # map marker
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
@@ -1387,6 +1392,7 @@ rule "Global setup":
 
     createEffect(barnMinigamePlayers, Effect.SPHERE, Color.BLACK, BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8, 0)), 0.05, EffectReeval.VISIBILITY)
     createInWorldText(barnMinigamePlayers, "skip", BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(barnMinigamePlayers, "Swap the positions of the black and white dots", vect(48.86, 11.14, -81.48), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # sat control
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), 0.05, EffectReeval.VISIBILITY)
@@ -1539,7 +1545,7 @@ def playerInitialState():
     eventPlayer.barnWorkbench = ["barnWorkbench", 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
     eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
-    eventPlayer.outsideSatControl = ["outsideSatControl", 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you need the remote to use it", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
+    eventPlayer.outsideSatControl = ["outsideSatControl", 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the necessary remote at his place", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outsideMolePersonRoom = ["outsideMolePersonRoom", 0, vect(-50.68, 5.97, -4.12), 2, null]
     eventPlayer.outsideMolePersonOuthouse = ["outsideMolePersonOuthouse", 0, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION, 2, null]
@@ -2323,7 +2329,7 @@ rule "Interact":
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
-                CREATE_TEXT("Since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\n- a black battery\n- some purified water\n- and a bottle of strong alcohol.", BRUCE_TEXT_LOCATION)
+                CREATE_TEXT("Alright, since you're a friend of Roadhog, I guess I can help you out.\nI'll need you to bring me three things though:\n- a black battery\n- some purified water\n- and a bottle of strong alcohol.", BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] < 8:
                 eventPlayer.tText = "You still need to bring me:"
                 if eventPlayer.tValue[Item.STATE] % 2 == 1:
@@ -2497,6 +2503,7 @@ rule "Interact":
                 elif eventPlayer.molePersonInteractStage == 3:
                     doMoleLeaderInteractionStage4()
                 elif eventPlayer.molePersonInteractStage == 4:
+                    eventPlayer.hasFinishedGame = true
                     doEndingCutscene()
                     doCredits()
                 else:

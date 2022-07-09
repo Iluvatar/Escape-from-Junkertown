@@ -112,6 +112,21 @@ playervar bezierDuration = 2
 playervar doCamera = false
 playervar isMercyUlting = false
 
+def addInitialPoints():
+    eventPlayer.points = [
+        vect(-49.22, 33.22, -113.27),
+        vect(-48.44, 43.13, -111.83),
+        vect(-48.67, 53.38, -112.37),
+        vect(-50.39, 63.90, -115.43),
+    ]
+    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-49.22, 33.22, -113.27), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+    eventPlayer.pointsEffect.append(getLastCreatedEntity())
+    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-48.44, 43.13, -111.83), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+    eventPlayer.pointsEffect.append(getLastCreatedEntity())
+    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-48.67, 53.38, -112.37), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+    eventPlayer.pointsEffect.append(getLastCreatedEntity())
+    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-50.39, 63.90, -115.43), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+    eventPlayer.pointsEffect.append(getLastCreatedEntity())
 
 
 def renderHandles():
@@ -227,8 +242,11 @@ rule "Player join":
     textVisibility.append(eventPlayer)
     hudHeader(eventPlayer, "segment duration: {0}".format(eventPlayer.bezierDuration), HudPosition.LEFT, 20, Color.PURPLE, HudReeval.STRING, SpecVisibility.NEVER)
     hudHeader(eventPlayer, "{0} points in line".format(len(eventPlayer.points)), HudPosition.RIGHT, 1, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection()), HudPosition.RIGHT, 2, Color.WHITE, HudReeval.STRING, SpecVisibility.NEVER)
 
     wait(1)
+
+    # addInitialPoints()
 
     visibility.append(eventPlayer)
     eventPlayer.disableGamemodeHud()
