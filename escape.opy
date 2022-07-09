@@ -674,8 +674,7 @@ def onWakingDone():
 
 def showIntro():
     wait(1)
-    eventPlayer.disableHeroHUD()
-    eventPlayer.setStatusEffect(null, Status.ROOTED, INF)
+    hideUi()
     eventPlayer.setInvisibility(Invis.ALL)
     introStage1Players.append(eventPlayer)
 
@@ -760,10 +759,10 @@ def showIntro():
 
     wait(4)
 
+    FADE_TO_BLACK()
+
     introStage2Players.remove(eventPlayer)
 
-    eventPlayer.stopCamera()
-    eventPlayer.clearStatusEffect(Status.ROOTED)
     eventPlayer.setInvisibility(Invis.NONE)
 
 def doWakingAnimation():
@@ -773,7 +772,9 @@ def doWakingAnimation():
     wait(2)
     smallMessage(eventPlayer, "What... happened?")
     wait(4)
-    smallMessage(eventPlayer, "The last thing you remember was pushing the cart to the gate, then a pain from behind")
+    smallMessage(eventPlayer, "The last thing you remember was pushing the cart to the gate")
+    wait(4)
+    smallMessage(eventPlayer, "Then a pain from behind")
     wait(4)
     smallMessage(eventPlayer, "And... a fuzzy face?")
     wait(4)
@@ -1424,7 +1425,6 @@ def barnMinigameInitialState():
 def playerInitialState():
     # Player state
     eventPlayer.pauseInteraction = false
-    eventPlayer.clearStatusEffect(Status.ROOTED)
 
     eventPlayer.junkPos = vect(-95.58, 12.17, -86.79)
     eventPlayer.junkFacing = vect(0.21, 0.08, 0.97)
@@ -1833,12 +1833,14 @@ rule "Show intro":
     @Event playerJoined
     @Team 1
 
-    # showIntro()
+    showIntro()
     resetGame()
 
 rule "Initial player setup":
     @Event playerJoined
     @Team 1
+
+    playerInitialState()
 
     eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF)
     eventPlayer.setInvisibility(Invis.ENEMIES)
