@@ -117,6 +117,7 @@ enum Item:
 
 # GLOBAL VARIABLES
 
+globalvar skipCutscenePlayers = []
 globalvar introStage1Players = []
 globalvar introStage2Players = []
 globalvar inventoryPlayers = []
@@ -166,6 +167,17 @@ enum Achievement:
     ESCAPE_ARTIST, # escape Junkertown
     END_MARKER # always at the end, the number of total achievements
 
+# cutscenes
+enum Cutscene:
+    NONE = 0,
+    INTRO,
+    WAKING,
+    INNER_RADIO,
+    COMEDY,
+    BRUCE_CONTACT,
+    MOLE_LEADER_INTERACTION,
+    MOLE_AGENT_INTERACTION,
+    ENDING
 
 globalvar achievementPlayers = [[], [], [], [], [], []]
 
@@ -333,6 +345,9 @@ playervar outsideMolePersonCliff
 playervar tutorialGate1End
 playervar tutorialGate2End
 
+playervar currentCutscene
+playervar isCutsceneFinished
+
 playervar bezier
 playervar bezierDuration
 
@@ -436,13 +451,16 @@ def doBezier():
 def doBezierArray():
     while len(eventPlayer.bezier) >= 4:
         doBezier()
-        wait(eventPlayer.bezierDuration)
+        wait(eventPlayer.bezierDuration, Wait.ABORT_WHEN_FALSE)
         del eventPlayer.bezier[0]
         del eventPlayer.bezier[0]
         del eventPlayer.bezier[0]
 
 #!define BEZIER_POSITION ((eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T) + ((eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T) - (eventPlayer.X + (eventPlayer.Y - eventPlayer.X) * eventPlayer.T)) * eventPlayer.T)
 #!define BEZIER_FACING (eventPlayer.Y + (eventPlayer.Z - eventPlayer.Y) * eventPlayer.T)
+
+# Gives the player an item
+#!define GIVE_ITEM(item) eventPlayer.inventory = item.concat(eventPlayer.inventory)
 
 # Used to turn the whole screen black (doesn't actually fade)
 #!define BLACK_SCREEN_POS vect(34, 6, -88)
@@ -451,10 +469,12 @@ def doBezierArray():
 
 # Create text while faded to black
 #!define LINE_SPACING 0.08
-#!define CREATE_BLACK_TEXT(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line, 0, 0), 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER)
+#!define CREATE_BLACK_TEXT(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line, 0, 0), 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
+pushTextDeleteQueue()
 
 # Creates text that can be scrolled using eventPlayer.tPos
-#!define CREATE_MOVABLE_TEXT(text, line, size, color) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line - eventPlayer.tPos, 0, 0), size, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, color, SpecVisibility.NEVER)
+#!define CREATE_MOVABLE_TEXT(text, line, size, color) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line - eventPlayer.tPos, 0, 0), size, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, color, SpecVisibility.NEVER) \
+pushTextDeleteQueue()
 
 # Increments the state of the item with the given id
 #!define INCREMENT_STATE(id) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
@@ -672,511 +692,6 @@ def makeSwitchNoise():
 
 
 
-# CUTSCENES
-
-def onWakingDone():
-    inventoryPlayers.append(eventPlayer)
-    wait(3)
-    graphicsQualityPlayers.append(eventPlayer)
-
-def showIntro():
-    wait(1)
-    hideUi()
-    eventPlayer.setInvisibility(Invis.ALL)
-    introStage1Players.append(eventPlayer)
-
-    FADE_TO_BLACK()
-
-    wait(3.5)
-
-    # Stage 1, view of plan
-    eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
-    eventPlayer.startCamera(eventPlayer.tPos, vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
-    chase(eventPlayer.tPos, vect(45.98, 11.12, -71.48) - vect(-1, -0.01, 0.10) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-
-    wait(3.3)
-
-    stopChasingVariable(eventPlayer.tPos)
-
-    # Stage 2, following cart path
-    smallMessage(eventPlayer, "But something went wrong")
-
-
-    # vect(7.60, 8.28, -68.38)
-    # vect(8.22, 8.32, -64.54)
-    # vect(8.84, 8.36, -60.69)
-    # vect(6.69, 8.28, -56.59)
-    # vect(4.54, 8.20, -52.48)
-    # vect(-0.38, 8.00, -48.11)
-    # vect(-5.31, 7.79, -43.75)
-
-
-    eventPlayer.bezier = [
-        vect(7.60, 8.28, -68.38),
-        vect(8.22, 8.32, -64.54),
-        vect(8.84, 8.36, -60.69),
-        vect(6.69, 8.28, -56.59),
-    ]
-    eventPlayer.bezierDuration = 1.65
-    doBezier()
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-
-    wait(1.65)
-
-    eventPlayer.bezier = [
-        vect(6.69, 8.28, -56.59),
-        vect(4.54, 8.20, -52.48),
-        vect(-0.38, 8.00, -48.11),
-        vect(-5.31, 7.79, -43.75),
-    ]
-    eventPlayer.bezierDuration = 1.65
-    doBezier()
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-
-    wait(1.65)
-
-    stopChasingVariable(eventPlayer.tStart)
-    stopChasingVariable(eventPlayer.tEnd)
-    stopChasingVariable(eventPlayer.tIndex)
-
-    # Stage 3, view of posters
-    eventPlayer.tPos = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
-    eventPlayer.startCamera(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
-    chase(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
-
-    wait(3.3)
-
-    stopChasingVariable(eventPlayer.tPos)
-
-    # Stage 4
-    introStage1Players.remove(eventPlayer)
-
-    eventPlayer.tPos = vect(26.97, 21.97, 47.25)
-    eventPlayer.startCamera(eventPlayer.tPos, vect(-35.24, 11.71, -55.88), 0)
-    chase(eventPlayer.tPos, vect(-33.71, 11.70, -53.29), duration=2.80, ChaseReeval.DESTINATION_AND_DURATION)
-
-    wait(4.6)
-
-    stopChasingVariable(eventPlayer.tPos)
-
-    # Title view
-    introStage2Players.append(eventPlayer)
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, vect(-35.24, 12.71, -55.88), 10)
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, vect(-35.24, 12.71, -55.88), 80)
-
-    wait(4)
-
-    FADE_TO_BLACK()
-
-    introStage2Players.remove(eventPlayer)
-
-    eventPlayer.setInvisibility(Invis.NONE)
-
-#!define SPACING "\n                                                                                                                     "
-def doWakingAnimation():
-    freeze()
-    hideUi()
-    FADE_TO_BLACK()
-    wait(2)
-
-    CREATE_BLACK_TEXT("What... happened?" SPACING, -2)
-    pushTextDeleteQueue()
-    wait(3)
-    CREATE_BLACK_TEXT("The last thing you remember is pushing the cart to the gate" SPACING, -1)
-    pushTextDeleteQueue()
-    wait(3)
-    CREATE_BLACK_TEXT("Then a pain from behind" SPACING, 0)
-    pushTextDeleteQueue()
-    wait(3)
-    CREATE_BLACK_TEXT("And..." SPACING, 1)
-    pushTextDeleteQueue()
-    wait(2)
-    destroyInWorldText(eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1])
-    del eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1]
-    CREATE_BLACK_TEXT("And... a fuzzy face?" SPACING, 1)
-    pushTextDeleteQueue()
-    wait(6)
-
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    eventPlayer.stopCamera()
-    unfreeze()
-    showUi()
-
-#!define JUNK_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
-#!define HOG_CAM_POS vect(68.39, 15.54, -86.84)
-#!define HOG_CAM_FACE vect(68.39, 15.54, -86.84) + vect(0.86, -0.51, 0)
-#!define HOG_TEXT_POS vect(69.46, 15.15 + 0.15, -86.83)
-#!define JUNK_COLOR rgb(236, 190, 82)
-#!define HOG_COLOR rgb(179, 139, 80)
-
-def doInnerRadioConversation():
-    freeze()
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.innerRadio[Item.POINT]), 60, Relativity.TO_PLAYER, FacingReeval.NONE)
-
-    wait(1)
-    CREATE_TEXT("*krssshksht*", JUNK_TEXT_POS)
-    createEffect(eventPlayer, Effect.MERCY_DAMAGE_BOOSTED_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100, EffectReeval.NONE)
-    pushEffectDeleteQueue()
-
-    wait(1)
-    popEffectDeleteQueue()
-
-    wait(0.5)
-    eventPlayer.communicate(Comms.NEED_HELP)
-
-    wait(2)
-    CREATE_COLORED_TEXT(". . .", JUNK_TEXT_POS, HOG_COLOR)
-
-    wait(3)
-    CREATE_COLORED_TEXT("What did you get yourself into this time", JUNK_TEXT_POS, HOG_COLOR)
-
-    wait(3)
-    eventPlayer.startCamera(HOG_CAM_POS, HOG_CAM_FACE, 0)
-
-    wait(1.5)
-    CREATE_COLORED_TEXT("I dunno, but I'm trapped in here!", HOG_TEXT_POS, JUNK_COLOR)
-    CREATE_COLORED_TEXT("Ｍａｙｂｅ　ａｎ　ＥＸＰＬＯＳＩＯＮ　ｗｏｕｌｄ　ｈｅｌｐ！", HOG_TEXT_POS, JUNK_COLOR)
-
-
-    wait(4)
-    eventPlayer.stopCamera()
-    popTextDeleteQueue()
-    wait(1)
-
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, eventPlayer.innerRadio[Item.POINT], 100)
-    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
-    radioSmokePlayers.append(eventPlayer)
-    wait(3)
-    smallMessage(eventPlayer, "Press {0} to be the other guy".format(buttonString(Button.INTERACT)))
-
-    eventPlayer.canBeTheOtherGuy = true
-
-    eventPlayer.stopFacing()
-    unfreeze()
-
-def doBruceContact():
-    eventPlayer.pauseInteraction = true
-
-    dvdLogoPlayers.remove(eventPlayer)
-    wait(0.5)
-    satControlPlayers.append(eventPlayer)
-
-    eventPlayer.tStart = 0 # beam angle
-    eventPlayer.tEnd = 0.1 # center sphere radius
-
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-
-    wait(1)
-    chase(eventPlayer.tStart, 1.107, duration=3, ChaseReeval.NONE)
-
-    wait(3)
-    createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), updateEveryTick(eventPlayer.tEnd), EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-
-    wait(2)
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    satControlPlayers.remove(eventPlayer)
-
-    chase(eventPlayer.tEnd, 0, duration=0.3, ChaseReeval.NONE)
-
-    wait(0.3)
-    popEffectDeleteQueue()
-
-    stopChasingVariable(eventPlayer.tStart)
-    stopChasingVariable(eventPlayer.tEnd)
-
-    eventPlayer.pauseInteraction = false
-
-def doMoleLeaderInteraction():
-    freeze()
-    hideUi()
-
-    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
-    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
-    CREATE_TEXT("Ahh...", DOOR_24_TEXT_LOCATION)
-    wait(2)
-    CREATE_TEXT("You've found the thing we need to free ourselves", DOOR_24_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_21_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("from shackles long endured and sorrows wept.", DOOR_21_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("The walls around this city hem us in", DOOR_23_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("but we must not expose our secrets kept.", DOOR_25_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("And so we ask your aid in our endeavor:", DOOR_24_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_22_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("Bring this device outside the barren gate", DOOR_22_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("to one who hides amongst the dust with fervor-", DOOR_23_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    CREATE_TEXT("then we shall help you passages locate.", DOOR_25_TEXT_LOCATION)
-    wait(4)
-
-    stopChasingVariable(eventPlayer.tPos)
-
-    eventPlayer.stopFacing()
-    showUi()
-    unfreeze()
-
-def doMoleLeaderInteractionStage1():
-    freeze()
-
-    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
-    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
-
-    CREATE_TEXT("Seek first the room beneath the outer wall.\nIf they're not there, return back to this hall.", DOOR_24_TEXT_LOCATION)
-    wait(0.5)
-
-    eventPlayer.stopFacing()
-    unfreeze()
-
-def doMoleLeaderInteractionStage2():
-    freeze()
-
-    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
-    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
-
-    CREATE_TEXT("Look next behind the old unused latrine.\nNot in the open, but the one less seen.", DOOR_24_TEXT_LOCATION)
-    wait(0.5)
-
-    eventPlayer.stopFacing()
-    unfreeze()
-
-def doMoleLeaderInteractionStage3():
-    freeze()
-
-    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
-    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
-
-    CREATE_TEXT("Beneath the two stacked cars you next should comb,\nalthough it can be hardly called a home.", DOOR_24_TEXT_LOCATION)
-    wait(0.5)
-
-    eventPlayer.stopFacing()
-    unfreeze()
-
-def doMoleLeaderInteractionStage4():
-    freeze()
-
-    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
-    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
-
-    CREATE_TEXT("The final place we know is by the cliff\nwhere sewage drains, you'll know it if you sniff.", DOOR_24_TEXT_LOCATION)
-    wait(0.5)
-
-    eventPlayer.stopFacing()
-    unfreeze()
-
-def doMoleAgentInteraction():
-    freeze()
-
-    CREATE_TEXT("Eep! Is that what I think it is?", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(3)
-
-    CREATE_TEXT("I never thought I'd see it... squiz", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(3)
-
-    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\n", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(3)
-
-    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\nMaybe that's why they sent me out here.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(5)
-
-    CREATE_TEXT("*Sigh*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(2)
-
-    CREATE_TEXT("It's nothing you need to worry about though.\nThanks for getting the device out of Junkertown.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(6)
-
-    CREATE_TEXT("I'll let the others know you've delivered it.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
-    wait(4)
-
-    popTextDeleteQueue()
-
-    eventPlayer.tPos = MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 1, 0)
-    createBeam(eventPlayer, Beam.ECHO_FOCUSING, MOLE_PERSON_CLIFF_TEXT_LOCATION, eventPlayer.tPos, Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()
-    wait(2)
-    chase(eventPlayer.tPos, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), rate=10, ChaseReeval.NONE)
-
-    wait(4)
-
-    popEffectDeleteQueue()
-    createBeam(eventPlayer, Beam.TORBJORN_TURRET_SIGHT, MOLE_PERSON_CLIFF_TEXT_LOCATION, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), Color.TEAM_1, EffectReeval.NONE)
-    pushEffectDeleteQueue()
-
-    wait(5)
-
-
-
-    unfreeze()
-
-def doEndingCutscene():
-    hideUi()
-
-    eventPlayer.bezier = [
-        vect(-37.02, 33.22, -123.09),
-        vect(-38.33, 33.22, -121.57),
-        vect(-39.65, 33.22, -120.05),
-        vect(-41.69, 33.22, -118.41),
-        vect(-43.72, 33.22, -116.78),
-        vect(-46.47, 33.22, -115.02),
-        vect(-49.22, 33.22, -113.27),
-    ]
-    eventPlayer.bezierDuration = 3
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-    doBezierArray()
-
-    eventPlayer.tPos = BEZIER_POSITION
-    eventPlayer.tEnd = eventPlayer.tPos + vect(-0.84, 0, 0.54)
-
-    eventPlayer.startCamera(eventPlayer.tPos, eventPlayer.tEnd, 0)
-    chase(eventPlayer.tEnd, eventPlayer.tPos + vect(0, 10, -1), duration=2, ChaseReeval.NONE)
-    wait(3)
-    stopChasingVariable(eventPlayer.tEnd)
-
-    eventPlayer.bezier = [
-        vect(-49.22, 33.22, -113.27),
-        vect(-48.90, 35.67, -112.70),
-        vect(-48.58, 38.12, -112.13),
-        vect(-48.46, 40.97, -111.93),
-        vect(-48.35, 43.82, -111.72),
-        vect(-48.44, 47.06, -111.87),
-        vect(-48.53, 49.74, -112.06),
-    ]
-    eventPlayer.bezierDuration = 3
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_POSITION + vect(0.99, 0, -0.16), 10)
-    doBezierArray()
-
-    eventPlayer.bezier = [
-        vect(-48.53, 49.74, -112.06),
-        vect(-48.62, 52.42, -112.25),
-        vect(-48.71, 54.53, -112.47),
-        vect(-49.03, 56.91, -113.07),
-        vect(-49.34, 59.29, -113.66),
-        vect(-49.88, 61.94, -114.64),
-        vect(-50.43, 64.20, -115.66),
-    ]
-    eventPlayer.bezierDuration = 3
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 3)
-    doBezierArray()
-
-    wait(2)
-
-    eventPlayer.bezier = [
-        vect(-48.03, 65.26, -116.94),
-        vect(-47.62, 61.24, -110.82),
-        vect(-47.22, 57.21, -104.71),
-        vect(-42.88, 53.43, -99.76),
-        vect(-38.54, 49.65, -94.81),
-        vect(-30.27, 46.12, -91.03),
-        vect(-19.10, 41.99, -93.56),
-        vect(-7.94, 37.87, -96.08),
-        vect(6.11, 33.16, -104.90),
-        vect(23.30, 29.13, -109.77),
-        vect(40.49, 25.09, -114.64),
-        vect(60.81, 21.74, -115.56),
-        vect(72.50, 19.39, -110.53),
-        vect(84.19, 17.05, -105.50),
-        vect(87.24, 15.72, -94.52),
-        vect(97.07, 13.29, -81.67),
-        vect(106.90, 10.86, -68.81),
-        vect(123.52, 7.35, -54.09),
-        vect(140.66, 4.80, -56.95),
-        vect(157.80, 2.25, -59.81),
-        vect(175.47, 0.67, -80.25),
-        vect(193.15, -0.91, -100.69),
-    ]
-    eventPlayer.bezierDuration = 2
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-    doBezierArray()
-
-    wait(2)
-
-    FADE_TO_BLACK()
-    wait(3)
-    eventPlayer.stopCamera()
-
-def doCredits():
-    FADE_TO_BLACK()
-    # wait(4)
-    eventPlayer.disableHeroHUD()
-
-    eventPlayer.tPos = -1.6
-    CREATE_MOVABLE_TEXT("Thanks for playing", 0, 1, Color.WHITE)
-    pushTextDeleteQueue()
-    CREATE_MOVABLE_TEXT("Escape from", 3, 2, Color.WHITE)
-    pushTextDeleteQueue()
-    CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
-    pushTextDeleteQueue()
-    CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
-    pushTextDeleteQueue()
-    CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
-    pushTextDeleteQueue()
-    CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER), 13, 2, Color.PURPLE)
-    pushTextDeleteQueue()
-
-
-    chase(eventPlayer.tPos, 0.8, rate=0.3, ChaseReeval.NONE)
-    wait(8)
-    stopChasingVariable(eventPlayer.tPos)
-
-    wait(3)
-    CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 16, 1.5, Color.WHITE)
-    pushTextDeleteQueue()
-
-    wait(10)
-    eventPlayer.stopCamera()
-    eventPlayer.enableHeroHud()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-
-
-
 # SETUP
 
 rule "Disable hero assemble":
@@ -1257,6 +772,9 @@ rule "Global setup":
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
     startForcingSpawn(Team.2, 2)
     getAllPlayers().disableNameplatesFor(getAllPlayers())
+
+    # cutscene skip text
+    hudSubtext(skipCutscenePlayers, "Press {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 0, Color.GRAY, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
     # intro text
     createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
@@ -1340,7 +858,7 @@ rule "Global setup":
     createEffect(getAllPlayers(), Effect.SPHERE, POWER_BROKEN_COLOR, vect(-111.398, 13.914, -137.334), 0.013, EffectReeval.VISIBILITY)
     createEffect(getAllPlayers(), Effect.SPHERE, POWER_BROKEN_COLOR, vect(-111.400, 13.914, -137.343), 0.013, EffectReeval.VISIBILITY)
     createEffect(getAllPlayers(), Effect.SPHERE, POWER_BROKEN_COLOR, vect(-111.402, 13.914, -137.352), 0.013, EffectReeval.VISIBILITY)
-    
+
     createEffect(powerPanelPlayers[4], Effect.SPHERE, POWER_OFF_COLOR, vect(-111.392, 13.835, -137.307), 0.013, EffectReeval.VISIBILITY)
     createEffect(powerPanelPlayers[4], Effect.SPHERE, POWER_OFF_COLOR, vect(-111.394, 13.835, -137.316), 0.013, EffectReeval.VISIBILITY)
     createEffect(powerPanelPlayers[4], Effect.SPHERE, POWER_OFF_COLOR, vect(-111.396, 13.835, -137.325), 0.013, EffectReeval.VISIBILITY)
@@ -1401,7 +919,7 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.95, 13.5, -150.25), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.52, 13.5, -149.31), 3, EffectReeval.VISIBILITY)
-    
+
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 13.5, -153.41), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.54, 13.5, -152.50), 3, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
@@ -1480,6 +998,20 @@ def barnMinigameInitialState():
     eventPlayer.barnMinigamePosState = [1, 2, 3, 4, 5, 6, 7, 8]
 
 def playerInitialState():
+    # Stop chasing
+    stopChasingVariable(eventPlayer.X)
+    stopChasingVariable(eventPlayer.Y)
+    stopChasingVariable(eventPlayer.Z)
+    stopChasingVariable(eventPlayer.T)
+    stopChasingVariable(eventPlayer.tStart)
+    stopChasingVariable(eventPlayer.tEnd)
+    stopChasingVariable(eventPlayer.tPos)
+    stopChasingVariable(eventPlayer.innerMinigameValue1)
+    stopChasingVariable(eventPlayer.innerMinigameValue2)
+    stopChasingVariable(eventPlayer.bruceTimer)
+    stopChasingVariable(eventPlayer.tutorialGate1End)
+    stopChasingVariable(eventPlayer.tutorialGate2End)
+
     # Player state
     eventPlayer.pauseInteraction = false
 
@@ -1756,7 +1288,7 @@ def playerInitialState():
 
 
         # larger outside area
-        eventPlayer.outsideHose, # placed here for priority reasons 
+        eventPlayer.outsideHose, # placed here for priority reasons
 
         ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
         ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
@@ -1808,7 +1340,7 @@ def playerInitialState():
         eventPlayer.outsideSat4,
         eventPlayer.outsideSatControl,
         eventPlayer.outsideSmuggler,
-        # eventPlayer.outsideHose, # placed above for priority reasons 
+        # eventPlayer.outsideHose, # placed above for priority reasons
         eventPlayer.outsideMolePersonRoom,
         eventPlayer.outsideMolePersonOuthouse,
         eventPlayer.outsideMolePersonCar,
@@ -1883,15 +1415,15 @@ def resetGame():
     popAllEffectDeleteQueue()
     popAllTextDeleteQueue()
     playerInitialState()
-    doWakingAnimation()
-    onWakingDone()
+
+    eventPlayer.currentCutscene = Cutscene.WAKING
 
 rule "Show intro cutscenes":
     @Event playerJoined
     @Team 1
 
-    showIntro()
-    resetGame()
+    eventPlayer.isCutsceneFinished = false
+    eventPlayer.currentCutscene = Cutscene.INTRO
 
 rule "Initial player setup":
     @Event playerJoined
@@ -1906,6 +1438,608 @@ rule "Initial player setup":
         eventPlayer.disableScoreboard()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
+
+
+
+# CUTSCENES
+
+rule "skip cutscene text and disable jump":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene != Cutscene.NONE
+
+    eventPlayer.disallowButton(Button.JUMP)
+    skipCutscenePlayers.append(eventPlayer)
+    wait(5)
+    skipCutscenePlayers.remove(eventPlayer)
+
+rule "reenable jump":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.NONE
+    eventPlayer.allowButton(Button.JUMP)
+
+rule "skip cutscene":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene != Cutscene.NONE
+    @Condition eventPlayer.isHoldingButton(Button.JUMP)
+
+    eventPlayer.isCutsceneFinished = true
+    skipCutscenePlayers.remove(eventPlayer)
+
+rule "show intro":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.INTRO and not eventPlayer.isCutsceneFinished
+
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    hideUi()
+    eventPlayer.setInvisibility(Invis.ALL)
+    introStage1Players.append(eventPlayer)
+
+    FADE_TO_BLACK()
+
+    wait(3.5, Wait.ABORT_WHEN_FALSE)
+
+    # Stage 1, view of plan
+    eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
+    eventPlayer.startCamera(eventPlayer.tPos, vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10), 0)
+    chase(eventPlayer.tPos, vect(45.98, 11.12, -71.48) - vect(-1, -0.01, 0.10) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(3.3, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+
+    # Stage 2, following cart path
+    smallMessage(eventPlayer, "But something went wrong")
+
+    eventPlayer.bezier = [
+        vect(7.60, 8.28, -68.38),
+        vect(8.22, 8.32, -64.54),
+        vect(8.84, 8.36, -60.69),
+        vect(6.69, 8.28, -56.59),
+    ]
+    eventPlayer.bezierDuration = 1.65
+    doBezier()
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+
+    wait(1.65, Wait.ABORT_WHEN_FALSE)
+
+    eventPlayer.bezier = [
+        vect(6.69, 8.28, -56.59),
+        vect(4.54, 8.20, -52.48),
+        vect(-0.38, 8.00, -48.11),
+        vect(-5.31, 7.79, -43.75),
+    ]
+    eventPlayer.bezierDuration = 1.65
+    doBezier()
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+
+    wait(1.65, Wait.ABORT_WHEN_FALSE)
+
+    # Stage 3, view of posters
+    eventPlayer.tPos = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
+    eventPlayer.startCamera(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
+    chase(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(3.3, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+
+    # Stage 4
+    introStage1Players.remove(eventPlayer)
+
+    eventPlayer.tPos = vect(26.97, 21.97, 47.25)
+    eventPlayer.startCamera(eventPlayer.tPos, vect(-35.24, 11.71, -55.88), 0)
+    chase(eventPlayer.tPos, vect(-33.71, 11.70, -53.29), duration=2.80, ChaseReeval.DESTINATION_AND_DURATION)
+
+    wait(4.6, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+
+    # Title view
+    introStage2Players.append(eventPlayer)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, vect(-35.24, 12.71, -55.88), 10)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, vect(-35.24, 12.71, -55.88), 80)
+
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    FADE_TO_BLACK()
+
+    introStage2Players.remove(eventPlayer)
+
+    eventPlayer.isCutsceneFinished = true
+
+rule "show intro cleanup":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.INTRO and eventPlayer.isCutsceneFinished
+
+    eventPlayer.currentCutscene = Cutscene.NONE
+    eventPlayer.isCutsceneFinished = false
+
+    stopChasingVariable(eventPlayer.tPos)
+    introStage1Players.remove(eventPlayer)
+    introStage2Players.remove(eventPlayer)
+    eventPlayer.setInvisibility(Invis.NONE)
+
+    resetGame()
+
+#!define SPACING "\n                                                                                                                     "
+
+rule "do waking animation":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.WAKING and not eventPlayer.isCutsceneFinished
+
+    freeze()
+    hideUi()
+    FADE_TO_BLACK()
+    wait(2, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_BLACK_TEXT("What... happened?" SPACING, -2)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    CREATE_BLACK_TEXT("The last thing you remember is pushing the cart to the gate" SPACING, -1)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    CREATE_BLACK_TEXT("Then a pain from behind" SPACING, 0)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    CREATE_BLACK_TEXT("And..." SPACING, 1)
+    wait(2, Wait.ABORT_WHEN_FALSE)
+    destroyInWorldText(eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1])
+    del eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1]
+    CREATE_BLACK_TEXT("And... a fuzzy face?" SPACING, 1)
+    wait(6, Wait.ABORT_WHEN_FALSE)
+
+    eventPlayer.isCutsceneFinished = true
+
+rule "do waking animation cleanup":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.WAKING and eventPlayer.isCutsceneFinished
+
+    eventPlayer.currentCutscene = Cutscene.NONE
+    eventPlayer.isCutsceneFinished = false
+
+    inventoryPlayers.append(eventPlayer)
+    unfreeze()
+    showUi()
+    eventPlayer.stopCamera()
+    popAllTextDeleteQueue()
+    wait(3)
+    graphicsQualityPlayers.append(eventPlayer)
+
+#!define JUNK_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
+#!define HOG_CAM_POS vect(68.39, 15.54, -86.84)
+#!define HOG_CAM_FACE vect(68.39, 15.54, -86.84) + vect(0.86, -0.51, 0)
+#!define HOG_TEXT_POS vect(69.46, 15.15 + 0.15, -86.83)
+#!define JUNK_COLOR rgb(236, 190, 82)
+#!define HOG_COLOR rgb(179, 139, 80)
+
+rule "do inner radio conversation":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.INNER_RADIO and not eventPlayer.isCutsceneFinished
+
+    freeze()
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.innerRadio[Item.POINT]), 60, Relativity.TO_PLAYER, FacingReeval.NONE)
+
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("*krssshksht*", JUNK_TEXT_POS)
+    createEffect(eventPlayer, Effect.MERCY_DAMAGE_BOOSTED_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100, EffectReeval.NONE)
+    pushEffectDeleteQueue()
+
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    popEffectDeleteQueue()
+
+    wait(0.5, Wait.ABORT_WHEN_FALSE)
+    eventPlayer.communicate(Comms.NEED_HELP)
+
+    wait(2, Wait.ABORT_WHEN_FALSE)
+    CREATE_COLORED_TEXT(". . .", JUNK_TEXT_POS, HOG_COLOR)
+
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    CREATE_COLORED_TEXT("What did you get yourself into this time", JUNK_TEXT_POS, HOG_COLOR)
+
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    eventPlayer.startCamera(HOG_CAM_POS, HOG_CAM_FACE, 0)
+
+    wait(1.5, Wait.ABORT_WHEN_FALSE)
+    CREATE_COLORED_TEXT("I dunno, but I'm trapped in here!", HOG_TEXT_POS, JUNK_COLOR)
+    CREATE_COLORED_TEXT("Ｍａｙｂｅ　ａｎ　ＥＸＰＬＯＳＩＯＮ　ｗｏｕｌｄ　ｈｅｌｐ！", HOG_TEXT_POS, JUNK_COLOR)
+
+
+    wait(4, Wait.ABORT_WHEN_FALSE)
+    eventPlayer.stopCamera()
+    popTextDeleteQueue()
+    wait(1, Wait.ABORT_WHEN_FALSE)
+
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, eventPlayer.innerRadio[Item.POINT], 100)
+    playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
+    radioSmokePlayers.append(eventPlayer)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    eventPlayer.isCutsceneFinished = true
+
+rule "do inner radio conversation cleanup":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.INNER_RADIO and eventPlayer.isCutsceneFinished
+
+    eventPlayer.currentCutscene = Cutscene.NONE
+    eventPlayer.isCutsceneFinished = false
+
+    smallMessage(eventPlayer, "Press {0} to be the other guy".format(buttonString(Button.INTERACT)))
+    eventPlayer.canBeTheOtherGuy = true
+    if eventPlayer not in radioSmokePlayers:
+        radioSmokePlayers.append(eventPlayer)
+    eventPlayer.stopFacing()
+    unfreeze()
+    popAllEffectDeleteQueue()
+    popAllTextDeleteQueue()
+
+rule "do comedy routine":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.COMEDY and not eventPlayer.isCutsceneFinished
+
+    freeze()
+    smallMessage(eventPlayer, "You walk up on stage and everyone starts laughing")
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    smallMessage(eventPlayer, "But you haven't even told any jokes yet?")
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    eventPlayer.isCutsceneFinished = true
+
+rule "do comedy routine cleanup":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.COMEDY and eventPlayer.isCutsceneFinished
+
+    eventPlayer.currentCutscene = Cutscene.NONE
+    eventPlayer.isCutsceneFinished = false
+
+    unfreeze()
+    eventPlayer.equipped.remove(Equip.DISGUISE)
+    manageEquips()
+
+def doBruceContact():
+    dvdLogoPlayers.remove(eventPlayer)
+    wait(0.5)
+    satControlPlayers.append(eventPlayer)
+
+    eventPlayer.tStart = 0 # beam angle
+    eventPlayer.tEnd = 0.1 # center sphere radius
+
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.1, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.1 + cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(0.1 + sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    createBeam(eventPlayer, Beam.MERCY_BOOST, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), OUTSIDE_SAT_TO_WORLD(vect(1.7 - sin(eventPlayer.tStart), 0.9 - cos(eventPlayer.tStart) * 0.9, 0)), Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+    wait(1)
+    chase(eventPlayer.tStart, 1.107, duration=3, ChaseReeval.NONE)
+
+    wait(3)
+    createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), updateEveryTick(eventPlayer.tEnd), EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
+    wait(2)
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    satControlPlayers.remove(eventPlayer)
+
+    chase(eventPlayer.tEnd, 0, duration=0.3, ChaseReeval.NONE)
+
+    wait(0.3)
+    popEffectDeleteQueue()
+
+    stopChasingVariable(eventPlayer.tStart)
+    stopChasingVariable(eventPlayer.tEnd)
+
+def doMoleLeaderInteractionStage1():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("Seek first the room beneath the outer wall.\nIf they're not there, return back to this hall.", DOOR_24_TEXT_LOCATION)
+    wait(0.5)
+
+    stopChasingVariable(eventPlayer.tPos)
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doMoleLeaderInteractionStage2():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("Look next behind the old unused latrine.\nNot in the open, but the one less seen.", DOOR_24_TEXT_LOCATION)
+    wait(0.5)
+
+    stopChasingVariable(eventPlayer.tPos)
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doMoleLeaderInteractionStage3():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("Beneath the two stacked cars you next should comb,\nalthough it can be hardly called a home.", DOOR_24_TEXT_LOCATION)
+    wait(0.5)
+
+    stopChasingVariable(eventPlayer.tPos)
+    eventPlayer.stopFacing()
+    unfreeze()
+
+def doMoleLeaderInteractionStage4():
+    freeze()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("The final place we know is by the cliff\nwhere sewage drains, you'll know it if you sniff.", DOOR_24_TEXT_LOCATION)
+    wait(0.5)
+
+    stopChasingVariable(eventPlayer.tPos)
+    eventPlayer.stopFacing()
+    unfreeze()
+
+rule "do mole leader interaction":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.MOLE_LEADER_INTERACTION and not eventPlayer.isCutsceneFinished
+
+    freeze()
+    hideUi()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+    CREATE_TEXT("Ahh...", DOOR_24_TEXT_LOCATION)
+    wait(2, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("You've found the thing we need to free ourselves", DOOR_24_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_21_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("from shackles long endured and sorrows wept.", DOOR_21_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("The walls around this city hem us in", DOOR_23_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("but we must not expose our secrets kept.", DOOR_25_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("And so we ask your aid in our endeavor:", DOOR_24_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_22_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("Bring this device outside the barren gate", DOOR_22_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_23_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("to one who hides amongst the dust with fervor-", DOOR_23_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    chase(eventPlayer.tPos, DOOR_25_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    CREATE_TEXT("then we shall help you passages locate.", DOOR_25_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    stopChasingVariable(eventPlayer.tPos)
+    eventPlayer.isCutsceneFinished = true
+
+rule "do mole leader interaction cleanup":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.MOLE_LEADER_INTERACTION and eventPlayer.isCutsceneFinished
+
+    eventPlayer.currentCutscene = Cutscene.NONE
+    eventPlayer.isCutsceneFinished = false
+
+    eventPlayer.inventory.remove("Odd looking coin")
+    GIVE_ITEM(MOLE_PERSON_DEVICE_NAME)
+
+    popTextDeleteQueue()
+    stopChasingVariable(eventPlayer.tPos)
+    eventPlayer.stopFacing()
+    showUi()
+    unfreeze()
+
+    doMoleLeaderInteractionStage1()
+
+rule "do mole agent interaction":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.MOLE_AGENT_INTERACTION and not eventPlayer.isCutsceneFinished
+
+    freeze()
+
+    CREATE_TEXT("Eep! Is that what I think it is?", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("I never thought I'd see it... squiz", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\n", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("Sorry, I was never any good at the whole riddle thing.\nMaybe that's why they sent me out here.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(5, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("*Sigh*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(2, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("It's nothing you need to worry about though.\nThanks for getting the device out of Junkertown.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(6, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("I'll let the others know you've delivered it.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    popTextDeleteQueue()
+
+    # eventPlayer.tPos = MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 1, 0)
+    # createBeam(eventPlayer, Beam.ECHO_FOCUSING, MOLE_PERSON_CLIFF_TEXT_LOCATION, eventPlayer.tPos, Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
+    # pushEffectDeleteQueue()
+    # wait(2)
+    # chase(eventPlayer.tPos, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), rate=10, ChaseReeval.NONE)
+
+    # wait(4)
+
+    # popEffectDeleteQueue()
+    # createBeam(eventPlayer, Beam.TORBJORN_TURRET_SIGHT, MOLE_PERSON_CLIFF_TEXT_LOCATION, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), Color.TEAM_1, EffectReeval.NONE)
+    # pushEffectDeleteQueue()
+
+    # wait(5)
+
+    eventPlayer.isCutsceneFinished = true
+
+rule "do mole agent interaction cleanup":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.MOLE_AGENT_INTERACTION and eventPlayer.isCutsceneFinished
+
+    eventPlayer.currentCutscene = Cutscene.NONE
+    eventPlayer.isCutsceneFinished = false
+
+    popTextDeleteQueue()
+    unfreeze()
+
+rule "do ending cutscene":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.ENDING and not eventPlayer.isCutsceneFinished
+
+    hideUi()
+
+    eventPlayer.bezier = [
+        vect(-37.02, 33.22, -123.09),
+        vect(-38.33, 33.22, -121.57),
+        vect(-39.65, 33.22, -120.05),
+        vect(-41.69, 33.22, -118.41),
+        vect(-43.72, 33.22, -116.78),
+        vect(-46.47, 33.22, -115.02),
+        vect(-49.22, 33.22, -113.27),
+    ]
+    eventPlayer.bezierDuration = 3
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+    doBezierArray()
+
+    eventPlayer.tPos = BEZIER_POSITION
+    eventPlayer.tEnd = eventPlayer.tPos + vect(-0.84, 0, 0.54)
+
+    eventPlayer.startCamera(eventPlayer.tPos, eventPlayer.tEnd, 0)
+    chase(eventPlayer.tEnd, eventPlayer.tPos + vect(0, 10, -1), duration=2, ChaseReeval.NONE)
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    stopChasingVariable(eventPlayer.tEnd)
+
+    eventPlayer.bezier = [
+        vect(-49.22, 33.22, -113.27),
+        vect(-48.90, 35.67, -112.70),
+        vect(-48.58, 38.12, -112.13),
+        vect(-48.46, 40.97, -111.93),
+        vect(-48.35, 43.82, -111.72),
+        vect(-48.44, 47.06, -111.87),
+        vect(-48.53, 49.74, -112.06),
+    ]
+    eventPlayer.bezierDuration = 3
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_POSITION + vect(0.99, 0, -0.16), 10)
+    doBezierArray()
+
+    eventPlayer.bezier = [
+        vect(-48.53, 49.74, -112.06),
+        vect(-48.62, 52.42, -112.25),
+        vect(-48.71, 54.53, -112.47),
+        vect(-49.03, 56.91, -113.07),
+        vect(-49.34, 59.29, -113.66),
+        vect(-49.88, 61.94, -114.64),
+        vect(-50.43, 64.20, -115.66),
+    ]
+    eventPlayer.bezierDuration = 3
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 3)
+    doBezierArray()
+
+    wait(2, Wait.ABORT_WHEN_FALSE)
+
+    eventPlayer.bezier = [
+        vect(-48.03, 65.26, -116.94),
+        vect(-47.62, 61.24, -110.82),
+        vect(-47.22, 57.21, -104.71),
+        vect(-42.88, 53.43, -99.76),
+        vect(-38.54, 49.65, -94.81),
+        vect(-30.27, 46.12, -91.03),
+        vect(-19.10, 41.99, -93.56),
+        vect(-7.94, 37.87, -96.08),
+        vect(6.11, 33.16, -104.90),
+        vect(23.30, 29.13, -109.77),
+        vect(40.49, 25.09, -114.64),
+        vect(60.81, 21.74, -115.56),
+        vect(72.50, 19.39, -110.53),
+        vect(84.19, 17.05, -105.50),
+        vect(87.24, 15.72, -94.52),
+        vect(97.07, 13.29, -81.67),
+        vect(106.90, 10.86, -68.81),
+        vect(123.52, 7.35, -54.09),
+        vect(140.66, 4.80, -56.95),
+        vect(157.80, 2.25, -59.81),
+        vect(175.47, 0.67, -80.25),
+        vect(193.15, -0.91, -100.69),
+    ]
+    eventPlayer.bezierDuration = 2
+    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
+    doBezierArray()
+
+    wait(2, Wait.ABORT_WHEN_FALSE)
+
+    eventPlayer.isCutsceneFinished = true
+
+def doCredits():
+    FADE_TO_BLACK()
+    wait(4)
+
+    eventPlayer.tPos = -1.6
+    CREATE_MOVABLE_TEXT("Thanks for playing", 0, 1, Color.WHITE)
+    CREATE_MOVABLE_TEXT("Escape from", 3, 2, Color.WHITE)
+    CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
+    CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
+    CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
+    CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER), 13, 2, Color.PURPLE)
+
+
+    chase(eventPlayer.tPos, 0.8, rate=0.3, ChaseReeval.NONE)
+    wait(8)
+    stopChasingVariable(eventPlayer.tPos)
+
+    wait(3)
+    CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 16, 1.5, Color.WHITE)
+
+    wait(10)
+    eventPlayer.stopCamera()
+    eventPlayer.enableHeroHud()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+
+rule "do ending cutscene cleanup":
+    @Event eachPlayer
+    @Condition eventPlayer.currentCutscene == Cutscene.ENDING and eventPlayer.isCutsceneFinished
+
+    eventPlayer.currentCutscene = Cutscene.NONE
+    eventPlayer.isCutsceneFinished = false
+
+    stopChasingVariable(eventPlayer.tEnd)
+    doCredits()
 
 
 
@@ -1939,7 +2073,7 @@ rule "Update hog position and direction":
     eventPlayer.hogFacing = eventPlayer.getFacingDirection()
     wait(0.016, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
-    
+
 #!define SPAWN_CLIP_RADIUS 1.3
 #!define NEXT_TO(pos) (distance(eventPlayer.getEyePosition(), pos) < SPAWN_CLIP_RADIUS)
 
@@ -2006,7 +2140,7 @@ rule "Inner workbench minigame start":
     createBeam(eventPlayer, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
     createBeam(eventPlayer, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 2 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    pushEffectDeleteQueue()    
+    pushEffectDeleteQueue()
     createBeam(eventPlayer, Beam.BRIGITTE_FLAIL_CHAIN, updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2 + 4 * PI / 3) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), updateEveryTick(INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(eventPlayer.innerMinigameValue1) * 0.422 + sin(eventPlayer.innerMinigameValue2) * 0.2, 0.451 + cos(eventPlayer.innerMinigameValue2) * 0.2 + sin(eventPlayer.innerMinigameValue1 * 2) * 0.15, 0))), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
 
@@ -2165,6 +2299,7 @@ rule "Bruce wings fix":
     @Condition eventPlayer.bruceTimer == 60
 
     SET_STATE("outerBruce", 9)
+    stopChasingVariable(eventPlayer.bruceTimer)
 
 # In a hurry achievement
 rule "In a hurry achievement":
@@ -2175,6 +2310,14 @@ rule "In a hurry achievement":
     eventPlayer.achievements.append(Achievement.IN_A_HURRY)
     manageAchievements()
 
+rule "Finish game achievement":
+    @Event eachPlayer
+    @Condition eventPlayer.hasFinishedGame
+
+    bigMessage(eventPlayer, "Achievement get! Escape artist: get out of Junkertown")
+    eventPlayer.achievements.append(Achievement.ESCAPE_ARTIST)
+    manageAchievements()
+
 
 
 # CONTROLS
@@ -2182,7 +2325,7 @@ rule "In a hurry achievement":
 rule "Switch between heroes":
     @Event eachPlayer
     @Condition eventPlayer.canBeTheOtherGuy
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame
 
     if eventPlayer.isJunk:
         eventPlayer.isJunk = false
@@ -2242,7 +2385,6 @@ def playNoItem():
 #!define SHOULD_INTERACT(item) (distance(eventPlayer.getEyePosition(), item[Item.POINT]) < INTERACT_DISTANCE and \
 distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * distance(eventPlayer.getEyePosition(), item[Item.POINT])) < (item[Item.RADIUS]) and \
 (not item[Item.NEEDS_LOS] or isInLoS(item[Item.POINT], eventPlayer.getEyePosition(), BarrierLos.PASS_THROUGH_BARRIERS)))
-#!define GIVE_ITEM(item) eventPlayer.inventory = item.concat(eventPlayer.inventory)
 
 rule "Interact":
     @Event eachPlayer
@@ -2257,7 +2399,7 @@ rule "Interact":
 
     if eventPlayer.tValue[Item.REMOVE_ON_STATE] > 0 and eventPlayer.tValue[Item.STATE] >= eventPlayer.tValue[Item.REMOVE_ON_STATE]:
         return
-        
+
     eventPlayer.tIndex = eventPlayer.itemIds.index(eventPlayer.tValue[Item.ID])
 
     if eventPlayer.tValue[Item.STATE] < len(eventPlayer.tValue[Item.MESSAGE]):
@@ -2369,8 +2511,10 @@ rule "Interact":
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             eventPlayer.numVentsClosed++
             playEffect(eventPlayer, DynamicEffect.DOOMFIST_RISING_UPPERCUT_IMPACT_SOUND, null, eventPlayer.tValue[Item.POINT], 100)
-            if eventPlayer.numVentsClosed < 3:
+            if eventPlayer.numVentsClosed == 1:
                 smallMessage(eventPlayer, "You twist the valve shut and hear the airflow decrease")
+            elif eventPlayer.numVentsClosed == 2:
+                smallMessage(eventPlayer, "You twist the valve shut and hear the airflow slow to a trickle")
             else:
                 smallMessage(eventPlayer, "You twist the valve shut and hear the air stop entirely")
         elif eventPlayer.tValue[Item.ID] == "innerVent3":
@@ -2530,18 +2674,11 @@ rule "Interact":
                 smallMessage(eventPlayer, "You don't know why you would waste any time on this")
             elif eventPlayer.tValue[Item.STATE] == 1:
                 if Equip.DISGUISE in eventPlayer.equipped:
-                    freeze()
-                    smallMessage(eventPlayer, "You walk up on stage and everyone starts laughing")
-                    wait(3)
-                    smallMessage(eventPlayer, "But you haven't even told any jokes yet?")
-                    wait(3)
-                    unfreeze()
-
-                    eventPlayer.equipped.remove(Equip.DISGUISE)
-                    manageEquips()
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
                     SET_STATE("outerNotSmuggler", 1)
+
+                    eventPlayer.currentCutscene = Cutscene.COMEDY
                 else:
                     smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious disguise")
             else:
@@ -2563,8 +2700,7 @@ rule "Interact":
                     doMoleLeaderInteractionStage4()
                 elif eventPlayer.molePersonInteractStage == 4:
                     eventPlayer.hasFinishedGame = true
-                    doEndingCutscene()
-                    doCredits()
+                    eventPlayer.currentCutscene = Cutscene.ENDING
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
@@ -2796,7 +2932,7 @@ rule "Apply":
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
             eventPlayer.inventory.remove("Reverse polarity fiddly part")
             INCREMENT_STATE("innerRadio")
-            doInnerRadioConversation()
+            eventPlayer.currentCutscene = Cutscene.INNER_RADIO
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerToolbox2):
@@ -2952,10 +3088,7 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.outerDoor24):
         if Equip.WINGS in eventPlayer.equipped:
             if eventPlayer.inventory[0] == "Odd looking coin":
-                doMoleLeaderInteraction()
-                eventPlayer.inventory.remove("Odd looking coin")
-                GIVE_ITEM(MOLE_PERSON_DEVICE_NAME)
-                doMoleLeaderInteractionStage1()
+                eventPlayer.currentCutscene = Cutscene.MOLE_LEADER_INTERACTION
             elif eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
                 CREATE_TEXT("Give this to the one outside", DOOR_24_TEXT_LOCATION)
             elif eventPlayer.inventory[0]:
@@ -3027,12 +3160,12 @@ rule "Apply":
             eventPlayer.molePersonInteractStage++
             popTextDeleteQueue()
             eventPlayer.inventory.remove(MOLE_PERSON_DEVICE_NAME)
-            doMoleAgentInteraction()
+            eventPlayer.currentCutscene = Cutscene.MOLE_AGENT_INTERACTION
     else:
         pass
-        
 
-    
+
+
 # SPECIAL EFFECTS
 
 # Tutorial gate
@@ -3056,6 +3189,9 @@ rule "Remove tutorial gate":
     chase(eventPlayer.tutorialGate2End, vect(-94.20, 10.93, -92.04), duration=TUTORIAL_GATE_OPEN_TIME, ChaseReeval.NONE)
 
     wait(TUTORIAL_GATE_OPEN_TIME)
+
+    stopChasingVariable(eventPlayer.tutorialGate1End)
+    stopChasingVariable(eventPlayer.tutorialGate2End)
 
     tutorialPlayers.remove(eventPlayer)
     graphicsQualityPlayers.remove(eventPlayer)
@@ -3140,7 +3276,7 @@ rule "Create barn outside wall":
     MAKE_WALL(vect(43.16, 16, -72.95), vect(46.87, 19, -73.26), BARN_OUTSIDE_MESSAGE)
     MAKE_WALL(vect(43.08, 10, -74.13), vect(42.65, 12.75, -78.85), BARN_OUTSIDE_MESSAGE)
     MAKE_WALL(vect(49.50, 10, -91.89), vect(49.17, 13, -95.62), BARN_OUTSIDE_MESSAGE)
-    
+
     wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
@@ -3352,10 +3488,17 @@ rule "stop trip cam":
 rule "end game state":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.isHoldingButton(Button.ABILITY_1)
-    
+
     eventPlayer.molePersonInteractStage = 4
     eventPlayer.equipped.append(Equip.WINGS)
     manageEquips()
+
+
+rule "Restart game":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.ULTIMATE)
+
+    resetGame()
 
 rule "Mercy infinite ult":
     @Event eachPlayer
@@ -3409,13 +3552,13 @@ rule "Item visualization":
 rule "Noclip on":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.MELEE) == true
-    
+
     eventPlayer.disableEnvironmentCollision(false)
 
 rule "Noclip off":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.MELEE) == false
-    
+
     eventPlayer.enableEnvironmentCollision()
 
 rule "Display stats":
