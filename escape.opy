@@ -446,8 +446,15 @@ def doBezierArray():
 
 # Used to turn the whole screen black (doesn't actually fade)
 #!define BLACK_SCREEN_POS vect(34, 6, -88)
-#!define BLACK_SCREEN_FACING vect(0, -1, 0)
+#!define BLACK_SCREEN_FACING vect(0.01, -1, 0)
 #!define FADE_TO_BLACK() eventPlayer.startCamera(BLACK_SCREEN_POS, BLACK_SCREEN_POS + BLACK_SCREEN_FACING, 0)
+
+# Create text while faded to black
+#!define LINE_SPACING 0.08
+#!define CREATE_BLACK_TEXT(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line, 0, 0), 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER)
+
+# Creates text that can be scrolled using eventPlayer.tPos
+#!define CREATE_MOVABLE_TEXT(text, line, size, color) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line - eventPlayer.tPos, 0, 0), size, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, color, SpecVisibility.NEVER)
 
 # Increments the state of the item with the given id
 #!define INCREMENT_STATE(id) eventPlayer.tValue = GET_ITEM_ENTRY(id) \
@@ -765,19 +772,35 @@ def showIntro():
 
     eventPlayer.setInvisibility(Invis.NONE)
 
+#!define SPACING "\n                                                                                                                     "
 def doWakingAnimation():
     freeze()
     hideUi()
     FADE_TO_BLACK()
     wait(2)
-    smallMessage(eventPlayer, "What... happened?")
-    wait(4)
-    smallMessage(eventPlayer, "The last thing you remember was pushing the cart to the gate")
-    wait(4)
-    smallMessage(eventPlayer, "Then a pain from behind")
-    wait(4)
-    smallMessage(eventPlayer, "And... a fuzzy face?")
-    wait(4)
+
+    CREATE_BLACK_TEXT("What... happened?" SPACING, -2)
+    pushTextDeleteQueue()
+    wait(3)
+    CREATE_BLACK_TEXT("The last thing you remember is pushing the cart to the gate" SPACING, -1)
+    pushTextDeleteQueue()
+    wait(3)
+    CREATE_BLACK_TEXT("Then a pain from behind" SPACING, 0)
+    pushTextDeleteQueue()
+    wait(3)
+    CREATE_BLACK_TEXT("And..." SPACING, 1)
+    pushTextDeleteQueue()
+    wait(2)
+    destroyInWorldText(eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1])
+    del eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1]
+    CREATE_BLACK_TEXT("And... a fuzzy face?" SPACING, 1)
+    pushTextDeleteQueue()
+    wait(6)
+
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
     eventPlayer.stopCamera()
     unfreeze()
     showUi()
@@ -1115,8 +1138,42 @@ def doEndingCutscene():
 
 def doCredits():
     FADE_TO_BLACK()
+    # wait(4)
+    eventPlayer.disableHeroHUD()
 
-    smallMessage(eventPlayer, "Press F to restart")
+    eventPlayer.tPos = -1.6
+    CREATE_MOVABLE_TEXT("Thanks for playing", 0, 1, Color.WHITE)
+    pushTextDeleteQueue()
+    CREATE_MOVABLE_TEXT("Escape from", 3, 2, Color.WHITE)
+    pushTextDeleteQueue()
+    CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
+    pushTextDeleteQueue()
+    CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
+    pushTextDeleteQueue()
+    CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
+    pushTextDeleteQueue()
+    CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER), 13, 2, Color.PURPLE)
+    pushTextDeleteQueue()
+
+
+    chase(eventPlayer.tPos, 0.8, rate=0.3, ChaseReeval.NONE)
+    wait(8)
+    stopChasingVariable(eventPlayer.tPos)
+
+    wait(3)
+    CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 16, 1.5, Color.WHITE)
+    pushTextDeleteQueue()
+
+    wait(10)
+    eventPlayer.stopCamera()
+    eventPlayer.enableHeroHud()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
+    popTextDeleteQueue()
 
 
 
@@ -1833,7 +1890,7 @@ rule "Show intro cutscenes":
     @Event playerJoined
     @Team 1
 
-    # showIntro()
+    showIntro()
     resetGame()
 
 rule "Initial player setup":
@@ -3276,20 +3333,21 @@ rule "trip cam":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
-    eventPlayer.disableHeroHUD()
-    eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+    # eventPlayer.disableHeroHUD()
+    # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
     # GIVE_ITEM("Right handed remote")
-    eventPlayer.equipped.append(Equip.WINGS)
-    manageEquips()
-    eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
+    # eventPlayer.equipped.append(Equip.WINGS)
+    # manageEquips()
+    # eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
+    doCredits()
 
 rule "stop trip cam":
     @Event eachPlayer
     @Condition not eventPlayer.isHoldingButton(Button.RELOAD)
 
-    eventPlayer.enableHeroHud()
-    eventPlayer.stopCamera()
+    # eventPlayer.enableHeroHud()
+    # eventPlayer.stopCamera()
 
 rule "end game state":
     @Event eachPlayer
