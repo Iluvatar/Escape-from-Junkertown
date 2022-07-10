@@ -2250,7 +2250,7 @@ rule "Update junk position and direction":
 
     eventPlayer.junkPos = eventPlayer.getPosition()
     eventPlayer.junkFacing = eventPlayer.getFacingDirection()
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(0.16, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 rule "Update hog position and direction":
@@ -2259,7 +2259,7 @@ rule "Update hog position and direction":
 
     eventPlayer.hogPos = eventPlayer.getPosition()
     eventPlayer.hogFacing = eventPlayer.getFacingDirection()
-    wait(0.016, Wait.ABORT_WHEN_FALSE)
+    wait(0.16, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
 #!define SPAWN_CLIP_RADIUS 1.3
@@ -2790,7 +2790,7 @@ rule "Interact":
                 smallMessage(eventPlayer, "The workbench has a number of paints left on it")
             else:
                 smallMessage(eventPlayer, "The workbench has outlived its usefulness")
-        elif Id.outerMinigameDot1 <= eventPlayer.tValue[Item.ID] <= Id.outerMinigameSkip and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
+        elif Id.outerMinigameDot1 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerMinigameSkip and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
             eventPlayer.outerMinigameMovesMade++
             if eventPlayer.tValue[Item.ID] == Id.outerMinigameDot1:
                 OUTER_MINIGAME_TOGGLE(1)
@@ -2877,7 +2877,8 @@ rule "Interact":
                     smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious disguise")
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
-        elif Id.outerDoor21 <= eventPlayer.tValue[Item.ID] <= Id.outerDoor25:
+        elif Id.outerDoor21 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerDoor25:
+            printLog("{0} {1} {2}".format(Id.outerDoor21, Id.outerDoor25, eventPlayer.tValue[Item.ID]))
             if Equip.WINGS not in eventPlayer.equipped:
                 CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
             else:
@@ -2955,7 +2956,7 @@ rule "Interact":
                 smallMessage(eventPlayer, "The workbench features a prominently placed mirror")
             else:
                 smallMessage(eventPlayer, "The workbench has outlived its usefulness")
-        elif Id.barnMinigameDot0 <= eventPlayer.tValue[Item.ID] <= Id.barnMinigameSkip and eventPlayer.isDoingBarnMinigame and not eventPlayer.hasFinishedBarnMinigame:
+        elif Id.barnMinigameDot0 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.barnMinigameSkip and eventPlayer.isDoingBarnMinigame and not eventPlayer.hasFinishedBarnMinigame:
             if eventPlayer.tValue[Item.ID] == Id.barnMinigameDot0:
                 eventPlayer.tPos = 0
                 barnMinigameClick()
@@ -3031,7 +3032,7 @@ rule "Interact":
             if eventPlayer.molePersonInteractStage == 3:
                 CREATE_TEXT("*Intense silence*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
 
-    if Id.outerPoster1 <= eventPlayer.tValue[Item.ID] <= Id.outerPoster10 or Id.outsidePoster1 <= eventPlayer.tValue[Item.ID] <= Id.outsidePoster2:
+    if (Id.outerPoster1 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerPoster10) or eventPlayer.tValue[Item.ID] == Id.outsidePoster1 or eventPlayer.tValue[Item.ID] == Id.outsidePoster2:
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
             eventPlayer.postersFound.append(eventPlayer.tValue[Item.ID])
 
@@ -3754,9 +3755,9 @@ rule "Item visualization":
     @Event eachPlayer
     @Condition eventPlayer == hostPlayer
 
-    for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if Id.outerIceBox <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerMinigameSkip:
-            createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
+    # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
+    #     if Id.outerIceBox <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerMinigameSkip:
+    #         createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
     @Event eachPlayer
@@ -3783,7 +3784,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
-    # hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
