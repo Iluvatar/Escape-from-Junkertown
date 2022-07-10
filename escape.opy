@@ -164,6 +164,7 @@ enum Achievement:
     INFRASIGHT, # find the sunglasses without using the map
     PUZZLE_MASTER, # finish the color minigame in 5 moves
     IN_A_HURRY, # click on Bruce 60 times before the minute is up
+    MASTER_HACKER, # look through the binoculars
     ESCAPE_ARTIST, # escape Junkertown
     END_MARKER # always at the end, the number of total achievements
 
@@ -179,7 +180,7 @@ enum Cutscene:
     MOLE_AGENT_INTERACTION,
     ENDING
 
-globalvar achievementPlayers = [[], [], [], [], [], []]
+globalvar achievementPlayers = [[], [], [], [], [], [], []]
 
 # NPCs
 
@@ -521,6 +522,7 @@ def hideAchievements():
     achievementPlayers[Achievement.INFRASIGHT].remove(eventPlayer)
     achievementPlayers[Achievement.PUZZLE_MASTER].remove(eventPlayer)
     achievementPlayers[Achievement.IN_A_HURRY].remove(eventPlayer)
+    achievementPlayers[Achievement.MASTER_HACKER].remove(eventPlayer)
     achievementPlayers[Achievement.ESCAPE_ARTIST].remove(eventPlayer)
 
 def manageAchievements():
@@ -536,6 +538,8 @@ def manageAchievements():
         achievementPlayers[Achievement.PUZZLE_MASTER].append(eventPlayer)
     if Achievement.IN_A_HURRY in eventPlayer.achievements:
         achievementPlayers[Achievement.IN_A_HURRY].append(eventPlayer)
+    if Achievement.MASTER_HACKER in eventPlayer.achievements:
+        achievementPlayers[Achievement.MASTER_HACKER].append(eventPlayer)
     if Achievement.ESCAPE_ARTIST in eventPlayer.achievements:
         achievementPlayers[Achievement.ESCAPE_ARTIST].append(eventPlayer)
 
@@ -800,7 +804,8 @@ rule "Global setup":
     hudHeader(achievementPlayers[Achievement.INFRASIGHT], "Infrasight {0}".format(abilityIconString(Hero.WIDOWMAKER, Button.ULTIMATE)), HudPosition.RIGHT, 3, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "Puzzle master {0}".format(abilityIconString(Hero.LUCIO, Button.JUMP)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.IN_A_HURRY], "In a hurry {0}".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)), HudPosition.RIGHT, 5, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.MASTER_HACKER], "Master hacker {0}".format(abilityIconString(Hero.SOMBRA, Button.SECONDARY_FIRE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 7, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # tutorial text
     hudSubtext(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 0, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
@@ -1212,6 +1217,7 @@ def playerInitialState():
         ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["You find an old remote inside"], "Right handed remote", true],
         ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["This allows incoming connections from outside as long as they're broadcasting on the right frequency"]],
         ["outerMic", 0, vect(-30.95, 3.80, -135.05), 0.5, null],
+        ["outerWaterBarrel", 0, vect(-17.72, 7.95, -90.27), 3, ["You've never been able to figure out how to get water out of here"]],
 
         ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["The cart is stopped in the middle of the road"]],
 
@@ -1225,13 +1231,13 @@ def playerInitialState():
         ["outerPoster8", 0, vect(-20.13, 8.15, -95.48), 0.7, ["And you thought this used to be a respectable establishment"], null, null, true],
         ["outerPoster9", 0, vect(-32.28, 7.78, -94.74), 0.5, ["This is completely unnecessary"], null, null, true],
         ["outerPoster10", 0, vect(-31.35, 7.44, -85.96), 1.1, ["Don't people deserve a sixth chance?"], null, null, true],
-        ["outerPoster11", 0, vect(-44.65, 6.38, -76.55), 0.7, ["\"Troublemakers\"? The nerve"], null, null, true],
-        ["outerPoster12", 0, vect(-35.80, 5.70, -70.76), 1, ["You feel wounded at such accusations"], null, null, true],
-        ["outerPoster13", 0, vect(-44.66, 6.73, -60.23), 1.1, ["Maybe if you just had a little chat with the Queen"], null, null, true],
-        ["outerPoster14", 0, vect(-33.01, 5.96, -63.99), 0.7, ["There's no need to go to such extremes"], null, null, true],
-        ["outerPoster15", 0, vect(-54.26, 5.98, -47.88), 0.7, ["What's the point of putting a poster all the way over here?"], null, null, true],
+        ["outerPosterOob11", 0, vect(-44.65, 6.38, -76.55), 0.7, ["\"Troublemakers\"? The nerve"], null, null, true],
+        ["outerPosterOob12", 0, vect(-35.80, 5.70, -70.76), 1, ["You feel wounded at such accusations"], null, null, true],
+        ["outerPosterOob13", 0, vect(-44.66, 6.73, -60.23), 1.1, ["Maybe if you just had a little chat with the Queen"], null, null, true],
+        ["outerPosterOob14", 0, vect(-33.01, 5.96, -63.99), 0.7, ["There's no need to go to such extremes"], null, null, true],
+        ["outerPosterOob15", 0, vect(-54.26, 5.98, -47.88), 0.7, ["What's the point of putting a poster all the way over here?"], null, null, true],
 
-        ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3, ["binoculars"]],
+        ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3],
 
         ["outerMinigameDot1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 3, 0)), OUTER_MINIGAME_BALL_SIZE, null],
         ["outerMinigameDot2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, null],
@@ -1924,6 +1930,9 @@ rule "do ending cutscene":
     @Event eachPlayer
     @Condition eventPlayer.currentCutscene == Cutscene.ENDING and not eventPlayer.isCutsceneFinished
 
+    freeze()
+    wait(1)
+
     hideUi()
 
     eventPlayer.bezier = [
@@ -2017,7 +2026,7 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
     CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
-    CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER), 13, 2, Color.PURPLE)
+    CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 13, 2, Color.PURPLE)
 
 
     chase(eventPlayer.tPos, 0.8, rate=0.3, ChaseReeval.NONE)
@@ -2118,7 +2127,7 @@ rule "Hide npc text":
 
 rule "Poster achievement":
     @Event eachPlayer
-    @Condition len(eventPlayer.postersFound) == 17
+    @Condition len(eventPlayer.postersFound) == 12
 
     bigMessage(eventPlayer, "Achievement get! Most wanted: find all the posters of you")
     eventPlayer.achievements.append(Achievement.MOST_WANTED)
@@ -2717,6 +2726,21 @@ rule "Interact":
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
+        elif eventPlayer.tValue[Item.ID] == "outerBinoculars":
+            freeze()
+            hideUi()
+
+            eventPlayer.startCamera(vect(-37.04, 14.25, -59.71) + vect(0.653, -0.107, 0.749) * 530, vect(-37.04, 14.25, -59.71) + vect(0.653, -0.107, 0.749) * 531, 0)
+            wait(5)
+            eventPlayer.stopCamera()
+
+            if Achievement.MASTER_HACKER not in eventPlayer.achievements:
+                bigMessage(eventPlayer, "Achievement get! Master hacker: glitch through the walls and enjoy the view")
+                eventPlayer.achievements.append(Achievement.MASTER_HACKER)
+                manageAchievements()
+
+            unfreeze()
+            showUi()
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == "barnSwitch1":
@@ -3482,21 +3506,21 @@ rule "trip cam":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
-    # eventPlayer.disableHeroHUD()
-    # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+    eventPlayer.disableHeroHUD()
+    eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
     # GIVE_ITEM("Right handed remote")
     # eventPlayer.equipped.append(Equip.WINGS)
     # manageEquips()
     # eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
-    doCredits()
+    # doCredits()
 
 rule "stop trip cam":
     @Event eachPlayer
     @Condition not eventPlayer.isHoldingButton(Button.RELOAD)
 
-    # eventPlayer.enableHeroHud()
-    # eventPlayer.stopCamera()
+    eventPlayer.enableHeroHud()
+    eventPlayer.stopCamera()
 
 rule "end game state":
     @Event eachPlayer
@@ -3559,7 +3583,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outside"):
+        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer"):
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
@@ -3580,7 +3604,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "q: {0}".format(Q), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "b facing: {0}".format(normalize(BEZIER_POSITION - BEZIER_FACING)), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "B: {0}".format(B), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
