@@ -345,6 +345,7 @@ playervar outsideMolePersonCliff
 playervar tutorialGate1End
 playervar tutorialGate2End
 
+playervar skipAlpha
 playervar currentCutscene
 playervar isCutsceneFinished
 
@@ -774,7 +775,7 @@ rule "Global setup":
     getAllPlayers().disableNameplatesFor(getAllPlayers())
 
     # cutscene skip text
-    hudSubtext(skipCutscenePlayers, "Press {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 0, Color.GRAY, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudSubtext(skipCutscenePlayers, "Press {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
 
     # intro text
     createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
@@ -1011,6 +1012,7 @@ def playerInitialState():
     stopChasingVariable(eventPlayer.bruceTimer)
     stopChasingVariable(eventPlayer.tutorialGate1End)
     stopChasingVariable(eventPlayer.tutorialGate2End)
+    stopChasingVariable(eventPlayer.skipAlpha)
 
     # Player state
     eventPlayer.pauseInteraction = false
@@ -1412,6 +1414,8 @@ def playerInitialState():
     eventPlayer.isJunk = true
 
 def resetGame():
+    FADE_TO_BLACK()
+
     popAllEffectDeleteQueue()
     popAllTextDeleteQueue()
     playerInitialState()
@@ -1449,7 +1453,10 @@ rule "skip cutscene text and disable jump":
 
     eventPlayer.disallowButton(Button.JUMP)
     skipCutscenePlayers.append(eventPlayer)
+    eventPlayer.skipAlpha = 255
     wait(5)
+    chase(eventPlayer.skipAlpha, 0, duration=0.6, ChaseReeval.NONE)
+    wait(0.6)
     skipCutscenePlayers.remove(eventPlayer)
 
 rule "reenable jump":
@@ -2021,15 +2028,15 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 16, 1.5, Color.WHITE)
 
     wait(10)
-    eventPlayer.stopCamera()
-    eventPlayer.enableHeroHud()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
-    popTextDeleteQueue()
+    # eventPlayer.stopCamera()
+    # eventPlayer.enableHeroHud()
+    # popTextDeleteQueue()
+    # popTextDeleteQueue()
+    # popTextDeleteQueue()
+    # popTextDeleteQueue()
+    # popTextDeleteQueue()
+    # popTextDeleteQueue()
+    # popTextDeleteQueue()
 
 rule "do ending cutscene cleanup":
     @Event eachPlayer
@@ -2129,6 +2136,12 @@ rule "Lights on check":
     INCREMENT_STATE("innerSwitch3")
     INCREMENT_STATE("innerSwitch4")
     INCREMENT_STATE("innerSwitch5")
+
+rule "Set inner power box state":
+    @Event eachPlayer
+    @Condition eventPlayer.wiresConnected and eventPlayer.generatorOn
+
+    SET_STATE("innerPowerBox", 3)
 
 rule "Inner workbench minigame start":
     @Event eachPlayer
@@ -2416,7 +2429,7 @@ rule "Interact":
         else:
             if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
                 playNoItem()
-    elif eventPlayer.tValue[Item.MESSAGE]:
+    elif eventPlayer.tValue[Item.PLAY_GET_SOUND]:
         playNoItem()
         smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
 
@@ -3564,8 +3577,8 @@ rule "Noclip off":
 rule "Display stats":
     @Event eachPlayer
 
-    hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     # hudHeader(eventPlayer, "mv1: {0} / {1}".format(eventPlayer.innerMinigameValue1 % (2 * PI), 3*PI/2), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
@@ -3574,7 +3587,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
-    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
+    # hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
