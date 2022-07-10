@@ -180,6 +180,178 @@ enum Cutscene:
     MOLE_AGENT_INTERACTION,
     ENDING
 
+# interaction point ids
+enum Id:
+    # item apply points
+    tutGate1,
+    tutGate2,
+    innerWires,
+    innerBarrel2,
+    innerGenerator,
+    innerRadio,
+    innerWorkbench,
+    innerToolbox2,
+    outerWorkbench,
+    outerBruce,
+    outerSmuggler,
+    outerBartender,
+    outerNotSmuggler,
+    outerDoor21,
+    outerDoor22,
+    outerDoor23,
+    outerDoor24,
+    outerDoor25,
+    barnWorkbench,
+    outsideHose,
+    outsideSatControl,
+    outsideSmuggler,
+    outsideMolePersonRoom,
+    outsideMolePersonOuthouse,
+    outsideMolePersonCar,
+    outsideMolePersonCliff,
+
+    # interaction points
+    # tutorial room
+    tutSafe1,
+    tutSafe2,
+    tutSafe3,
+    tutSafe4,
+    tutSafe5,
+    tutGold,
+    # lights on section
+    innerFridge,
+    innerChest1,
+    innerLocker1,
+    innerLocker2,
+    innerLocker3,
+    innerLocker4,
+    innerLocker5,
+    innerPowerDistributor,
+    innerBarrel1,
+    innerBarrel3,
+    innerSwitch1,
+    innerSwitch2,
+    innerSwitch3,
+    innerSwitch4,
+    innerSwitch5,
+    innerPowerBox,
+    # larger inner section
+    innerThrone,
+    innerChest2,
+    innerToolbox1,
+    innerSmallToolbox1,
+    innerTireRack,
+    innerBrokenMech1,
+    innerBrokenMech2,
+    innerMech1,
+    innerMech2,
+    innerMinigameControl1,
+    innerMinigameControl2,
+    innerMinigameSkip,
+    innerSunglasses,
+    innerValve1,
+    innerValve2,
+    innerValve3,
+    innerVent1,
+    innerVent2,
+    innerVent3,
+    innerVent4,
+    innerVent5,
+    innerVent6,
+    innerVent7,
+    # courtyard area
+    outerIceBox,
+    outerSmallToolbox1,
+    outerToolbox1,
+    outerToolbox2,
+    outerToolbox3,
+    outerRadio,
+    outerMic,
+    outerWaterBarrel,
+    outerCart,
+    outerPoster1,
+    outerPoster2,
+    outerPoster3,
+    outerPoster4,
+    outerPoster5,
+    outerPoster6,
+    outerPoster7,
+    outerPoster8,
+    outerPoster9,
+    outerPoster10,
+    outerPosterOob11,
+    outerPosterOob12,
+    outerPosterOob13,
+    outerPosterOob14,
+    outerPosterOob15,
+    outerBinoculars,
+    outerMinigameDot1,
+    outerMinigameDot2,
+    outerMinigameDot3,
+    outerMinigameDot4,
+    outerMinigameDot5,
+    outerMinigameDot6,
+    outerMinigameDot7,
+    outerMinigameDot8,
+    outerMinigameDot9,
+    outerMinigameDot10,
+    outerMinigameRotate1,
+    outerMinigameRotate2,
+    outerMinigameRotate3,
+    outerMinigameSkip,
+    # barn area
+    barnRadio,
+    barnTvPanel,
+    barnPachimari,
+    barnFuelMachine,
+    barnFridge,
+    barnTireRack,
+    barnPlan,
+    barnToolbox1,
+    barnToolbox2,
+    barnSmallToolbox1,
+    barnSafe1,
+    barnSafe2,
+    barnSafe3,
+    barnEmptyShelf,
+    barnPaperClue1,
+    barnPaperClue2,
+    barnBike,
+    barnSwitch1,
+    barnSwitch2,
+    barnSwitch3,
+    barnSwitch4,
+    barnSwitch5,
+    barnCodePanel,
+    barnMinigameDot0,
+    barnMinigameDot1,
+    barnMinigameDot2,
+    barnMinigameDot3,
+    barnMinigameDot4,
+    barnMinigameDot5,
+    barnMinigameDot6,
+    barnMinigameDot7,
+    barnMinigameDot8,
+    barnMinigameSkip,
+    # larger outside area
+    outsideJunkWorkbench,
+    outsideSafe,
+    outsideIceBox,
+    outsideFridge1,
+    outsideFridge2,
+    outsideFridge3,
+    outsideFridge4,
+    outsideToolbox1,
+    outsideToolbox2,
+    outsideSmallToolbox,
+    outsideChest1,
+    outsideChest2,
+    outsideChest3,
+    outsideChest4,
+    outsideChest5,
+    outsidePoster1,
+    outsidePoster2
+
 globalvar achievementPlayers = [[], [], [], [], [], [], []]
 
 # NPCs
@@ -1116,206 +1288,206 @@ def playerInitialState():
     #     SUCCESS_MESSAGE  # message to play on successful item use based on state (string array)
 
     # Interaction points
-    eventPlayer.tutGate1 = ["tutGate1", 0, vect(-100.32, 11.44, -90.75), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], ["How does a key open a laser gate? You aren't one to think about it too hard"]]
-    eventPlayer.tutGate2 = ["tutGate2", 0, vect(-92.97, 11.44, -92.29), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], null]
+    eventPlayer.tutGate1 = [Id.tutGate1, 0, vect(-100.32, 11.44, -90.75), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], ["How does a key open a laser gate? You aren't one to think about it too hard"]]
+    eventPlayer.tutGate2 = [Id.tutGate2, 0, vect(-92.97, 11.44, -92.29), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], null]
 
-    eventPlayer.innerWires = ["innerWires", 0, vect(-106.91, 12.44, -135.82), 0.4, ["The unconnected wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
-    eventPlayer.innerBarrel2 = ["innerBarrel2", 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
-    eventPlayer.innerGenerator = ["innerGenerator", 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator needs fuel to run", "The generator hums with a dim energy"], null, null, null, null, ["Fuel filled petrol can", "Fuel filled petrol can"], ["You pour the petrol into the generator", "You pour the petrol into the generator"]]
+    eventPlayer.innerWires = [Id.innerWires, 0, vect(-106.91, 12.44, -135.82), 0.4, ["The unconnected wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
+    eventPlayer.innerBarrel2 = [Id.innerBarrel2, 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
+    eventPlayer.innerGenerator = [Id.innerGenerator, 0, vect(-109.58, 13.83, -132.75), 2.5, ["The generator is cold and lifeless", "The generator needs fuel to run", "The generator hums with a dim energy"], null, null, null, null, ["Fuel filled petrol can", "Fuel filled petrol can"], ["You pour the petrol into the generator", "You pour the petrol into the generator"]]
 
-    eventPlayer.innerRadio = ["innerRadio", 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
-    eventPlayer.innerWorkbench = ["innerWorkbench", 0, vect(-103.41, 8.67, -184.58), 1, null, null, null, null, null, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
-    eventPlayer.innerToolbox2 = ["innerToolbox2", 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
+    eventPlayer.innerRadio = [Id.innerRadio, 0, vect(-90.05, 8.69, -103.28), 0.3, ["A radio to the outside. It seems to be missing a fiddly part though", "The radio is busted. Oops"], null, null, null, null, null, null]
+    eventPlayer.innerWorkbench = [Id.innerWorkbench, 0, vect(-103.41, 8.67, -184.58), 1, null, null, null, null, null, ["Fiddly part"], ["This should help you reverse the polarity of the fiddly part"]]
+    eventPlayer.innerToolbox2 = [Id.innerToolbox2, 0, vect(-103.00, 8.01, -182.63), 0.75, ["It's locked"], null, true, null, null, ["Vent key"], ["The toolbox unlocks. Inside you find some ancient sunscreen"]]
 
-    eventPlayer.outerWorkbench = ["outerWorkbench", 0, vect(-56.45, 11.90, -60.51), 1, null, null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
-    eventPlayer.outerBruce = ["outerBruce", 0, vect(-21.62, 7.48, -104.95), 1, null]
-    eventPlayer.outerSmuggler = ["outerSmuggler", 0, vect(-19.06, 14.48, -88.07), 1, null]
-    eventPlayer.outerBartender = ["outerBartender", 0, vect(-54.65, 2.73, -131.02), 1, null]
-    eventPlayer.outerNotSmuggler = ["outerNotSmuggler", 0, vect(-35.02, 2.48, -126.33), 1, null]
-    eventPlayer.outerDoor21 = ["outerDoor21", 0, vect(-50.47, 13.63, -84.74), 1.1, null]
-    eventPlayer.outerDoor22 = ["outerDoor22", 0, vect(-54.41, 13.63, -84.09), 1.1, null]
-    eventPlayer.outerDoor23 = ["outerDoor23", 0, vect(-59.72, 13.63, -85.31), 1.1, null]
-    eventPlayer.outerDoor24 = ["outerDoor24", 0, vect(-48.46, 13.63, -90.79), 1.1, null]
-    eventPlayer.outerDoor25 = ["outerDoor25", 0, vect(-42.10, 14.63, -94.75), 1.1, null]
+    eventPlayer.outerWorkbench = [Id.outerWorkbench, 0, vect(-56.45, 11.90, -60.51), 1, null, null, null, null, null, ["Red battery"], ["This should help you change the color of the battery"]]
+    eventPlayer.outerBruce = [Id.outerBruce, 0, vect(-21.62, 7.48, -104.95), 1, null]
+    eventPlayer.outerSmuggler = [Id.outerSmuggler, 0, vect(-19.06, 14.48, -88.07), 1, null]
+    eventPlayer.outerBartender = [Id.outerBartender, 0, vect(-54.65, 2.73, -131.02), 1, null]
+    eventPlayer.outerNotSmuggler = [Id.outerNotSmuggler, 0, vect(-35.02, 2.48, -126.33), 1, null]
+    eventPlayer.outerDoor21 = [Id.outerDoor21, 0, vect(-50.47, 13.63, -84.74), 1.1, null]
+    eventPlayer.outerDoor22 = [Id.outerDoor22, 0, vect(-54.41, 13.63, -84.09), 1.1, null]
+    eventPlayer.outerDoor23 = [Id.outerDoor23, 0, vect(-59.72, 13.63, -85.31), 1.1, null]
+    eventPlayer.outerDoor24 = [Id.outerDoor24, 0, vect(-48.46, 13.63, -90.79), 1.1, null]
+    eventPlayer.outerDoor25 = [Id.outerDoor25, 0, vect(-42.10, 14.63, -94.75), 1.1, null]
 
-    eventPlayer.barnWorkbench = ["barnWorkbench", 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
+    eventPlayer.barnWorkbench = [Id.barnWorkbench, 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
-    eventPlayer.outsideHose = ["outsideHose", 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
-    eventPlayer.outsideSatControl = ["outsideSatControl", 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the necessary remote at his place", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
-    eventPlayer.outsideSmuggler = ["outsideSmuggler", 0, vect(-44.52, 5.49, -49.63), 1, null]
-    eventPlayer.outsideMolePersonRoom = ["outsideMolePersonRoom", 0, vect(-50.68, 5.97, -4.12), 2, null]
-    eventPlayer.outsideMolePersonOuthouse = ["outsideMolePersonOuthouse", 0, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION, 2, null]
-    eventPlayer.outsideMolePersonCar = ["outsideMolePersonCar", 0, MOLE_PERSON_CAR_TEXT_LOCATION, 2, null]
-    eventPlayer.outsideMolePersonCliff = ["outsideMolePersonCliff", 0, MOLE_PERSON_CLIFF_TEXT_LOCATION, 2, null]
+    eventPlayer.outsideHose = [Id.outsideHose, 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
+    eventPlayer.outsideSatControl = [Id.outsideSatControl, 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the necessary remote at his place", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
+    eventPlayer.outsideSmuggler = [Id.outsideSmuggler, 0, vect(-44.52, 5.49, -49.63), 1, null]
+    eventPlayer.outsideMolePersonRoom = [Id.outsideMolePersonRoom, 0, vect(-50.68, 5.97, -4.12), 2, null]
+    eventPlayer.outsideMolePersonOuthouse = [Id.outsideMolePersonOuthouse, 0, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION, 2, null]
+    eventPlayer.outsideMolePersonCar = [Id.outsideMolePersonCar, 0, MOLE_PERSON_CAR_TEXT_LOCATION, 2, null]
+    eventPlayer.outsideMolePersonCliff = [Id.outsideMolePersonCliff, 0, MOLE_PERSON_CLIFF_TEXT_LOCATION, 2, null]
 
     eventPlayer.itemPoints = [
         # tutorial room
-        ["tutSafe1", 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
-        ["tutSafe2", 0, vect(-100.95, 11.28, -80.59), 0.7, ["There's an odd looking coin in here"], "Odd looking coin", true],
-        ["tutSafe3", 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of coins and can't be opened"], null, true],
-        ["tutSafe4", 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true],
-        ["tutSafe5", 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], null, true],
-        ["tutGold", 0, vect(-95.60, 11.38, -86.96), 1.5, ["Is this... how you were brought in here?"]],
+        [Id.tutSafe1, 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
+        [Id.tutSafe2, 0, vect(-100.95, 11.28, -80.59), 0.7, ["There's an odd looking coin in here"], "Odd looking coin", true],
+        [Id.tutSafe3, 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of coins and can't be opened"], null, true],
+        [Id.tutSafe4, 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true],
+        [Id.tutSafe5, 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], null, true],
+        [Id.tutGold, 0, vect(-95.60, 11.38, -86.96), 1.5, ["Is this... how you were brought in here?"]],
 
         # lights on section
-        ["innerFridge", 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
-        ["innerChest1", 0, vect(-114.91, 7.07, -124.08), 1.2, ["There's an empty petrol can inside, just free for the taking"], "Empty petrol can", true],
-        ["innerLocker1", 0, vect(-112.76, 7.55, -134.80), 1.2, ["Whoever's locker this was didn't have the decency to leave easily stolen goods inside"], null, true],
-        ["innerLocker2", 0, vect(-113.80, 7.55, -139.10), 1.2, ["There's a note: \"Keep your hands off my stuff you scrawny eyed mole rats!\""], null, true],
-        ["innerLocker3", 0, vect(-112.58, 7.55, -141.24), 1.2, ["The locker is completely devoid of utility"], null, true],
-        ["innerLocker4", 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true],
-        ["innerLocker5", 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true],
-        ["innerPowerDistributor", 0, vect(-110.71, 13.19, -136.03), 0.8, ["This power distribution unit sends power from the generator to the panel above"]],
+        [Id.innerFridge, 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
+        [Id.innerChest1, 0, vect(-114.91, 7.07, -124.08), 1.2, ["There's an empty petrol can inside, just free for the taking"], "Empty petrol can", true],
+        [Id.innerLocker1, 0, vect(-112.76, 7.55, -134.80), 1.2, ["Whoever's locker this was didn't have the decency to leave easily stolen goods inside"], null, true],
+        [Id.innerLocker2, 0, vect(-113.80, 7.55, -139.10), 1.2, ["There's a note: \"Keep your hands off my stuff you scrawny eyed mole rats!\""], null, true],
+        [Id.innerLocker3, 0, vect(-112.58, 7.55, -141.24), 1.2, ["The locker is completely devoid of utility"], null, true],
+        [Id.innerLocker4, 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true],
+        [Id.innerLocker5, 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true],
+        [Id.innerPowerDistributor, 0, vect(-110.71, 13.19, -136.03), 0.8, ["This power distribution unit sends power from the generator to the panel above"]],
 
-        ["innerBarrel1", 0, vect(-113.43, 7.02, -116.14), 0.5, ["The barrel is as dry as a day in December"], null, true],
-        ["innerBarrel3", 0, vect(-105.32, 12.79, -132.71), 0.5, ["It's as empty as the depths of your soul"], null, true],
+        [Id.innerBarrel1, 0, vect(-113.43, 7.02, -116.14), 0.5, ["The barrel is as dry as a day in December"], null, true],
+        [Id.innerBarrel3, 0, vect(-105.32, 12.79, -132.71), 0.5, ["It's as empty as the depths of your soul"], null, true],
 
-        ["innerSwitch1", 0, vect(-111.46, 14.145, -137.47), 0.05, null],
-        ["innerSwitch2", 0, vect(-111.46, 14.071, -137.47), 0.05, null],
-        ["innerSwitch3", 0, vect(-111.46, 13.994, -137.47), 0.05, null],
-        ["innerSwitch4", 0, vect(-111.46, 13.914, -137.47), 0.05, null],
-        ["innerSwitch5", 0, vect(-111.46, 13.835, -137.47), 0.05, null],
-        ["innerPowerBox", 0, vect(-111.73, 14.04, -137.34), 0.5, ["This is the power switching box for the whole area", "Maybe if you get the generator running you can turn the lights on", "There's no power going to the box"]],
+        [Id.innerSwitch1, 0, vect(-111.46, 14.145, -137.47), 0.05, null],
+        [Id.innerSwitch2, 0, vect(-111.46, 14.071, -137.47), 0.05, null],
+        [Id.innerSwitch3, 0, vect(-111.46, 13.994, -137.47), 0.05, null],
+        [Id.innerSwitch4, 0, vect(-111.46, 13.914, -137.47), 0.05, null],
+        [Id.innerSwitch5, 0, vect(-111.46, 13.835, -137.47), 0.05, null],
+        [Id.innerPowerBox, 0, vect(-111.73, 14.04, -137.34), 0.5, ["This is the power switching box for the whole area", "Maybe if you get the generator running you can turn the lights on", "There's no power going to the box"]],
 
         # larger inner section
-        ["innerThrone", 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
+        [Id.innerThrone, 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
-        ["innerChest2", 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
-        ["innerToolbox1", 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in large air vent. Long as the valves are open, no one will be able to grab it.\""], null, true],
-        ["innerSmallToolbox1", 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
-        ["innerTireRack", 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
+        [Id.innerChest2, 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
+        [Id.innerToolbox1, 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in large air vent. Long as the valves are open, no one will be able to grab it.\""], null, true],
+        [Id.innerSmallToolbox1, 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
+        [Id.innerTireRack, 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
-        ["innerBrokenMech1", 0, vect(-88.35, 8.26, -142.03), 2, ["The mech seems to be missing a limb. You sympathize with it"]],
-        ["innerBrokenMech2", 0, vect(-75.42, 8.52, -146.11), 2, ["This mech doesn't even have a saw blade on it"]],
-        ["innerMech1", 0, vect(-90.47, 10.09, -177.75), 2, ["Now *that's* a sawblade"]],
-        ["innerMech2", 0, vect(-94.87, 10.11, -178.01), 2, ["The old king's mech. You've never seen it up close before"]],
+        [Id.innerBrokenMech1, 0, vect(-88.35, 8.26, -142.03), 2, ["The mech seems to be missing a limb. You sympathize with it"]],
+        [Id.innerBrokenMech2, 0, vect(-75.42, 8.52, -146.11), 2, ["This mech doesn't even have a saw blade on it"]],
+        [Id.innerMech1, 0, vect(-90.47, 10.09, -177.75), 2, ["Now *that's* a sawblade"]],
+        [Id.innerMech2, 0, vect(-94.87, 10.11, -178.01), 2, ["The old king's mech. You've never seen it up close before"]],
 
-        ["innerMinigameControl1", 0, vect(-103.45, 8.89, -184.36), 0.1, null],
-        ["innerMinigameControl2", 0, vect(-103.50, 8.89, -184.63), 0.1, null],
-        ["innerMinigameSkip", 0, INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73, 0)), 0.05, null],
+        [Id.innerMinigameControl1, 0, vect(-103.45, 8.89, -184.36), 0.1, null],
+        [Id.innerMinigameControl2, 0, vect(-103.50, 8.89, -184.63), 0.1, null],
+        [Id.innerMinigameSkip, 0, INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73, 0)), 0.05, null],
 
-        ["innerSunglasses", 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tattered sunglasses hidden in the corner", "You've already scoured this area"]],
+        [Id.innerSunglasses, 0, vect(-88.04, 13.37, -158.22), 1, ["You find some tattered sunglasses hidden in the corner", "You've already scoured this area"]],
 
-        ["innerValve1", 0, vect(-85.83, 8.43, -178.64), 0.5, [null, "The valve is already closed"]],
-        ["innerValve2", 0, vect(-54.84, 9.57, -143.66), 0.5, [null, "The valve is already closed"]],
-        ["innerValve3", 0, vect(-53.58, 9.91, -122.34), 0.5, [null, "The valve is already closed"]],
+        [Id.innerValve1, 0, vect(-85.83, 8.43, -178.64), 0.5, [null, "The valve is already closed"]],
+        [Id.innerValve2, 0, vect(-54.84, 9.57, -143.66), 0.5, [null, "The valve is already closed"]],
+        [Id.innerValve3, 0, vect(-53.58, 9.91, -122.34), 0.5, [null, "The valve is already closed"]],
 
-        ["innerVent1", 0, vect(-108.61, 10.46, -108.17), 1, ["You don't see anything in here"]],
-        ["innerVent2", 0, vect(-84.87, 11.34, -186.75), 1, ["You don't see anything in here"]],
-        ["innerVent3", 0, vect(-54.90, 10.74, -125.39), 1, null],
-        ["innerVent4", 0, vect(-75.87, 14.17, -123.53), 2, ["You don't see anything in here"]],
-        ["innerVent5", 0, vect(-69.87, 15.81, -107.26), 1, ["You don't see anything in here"]],
-        ["innerVent6", 0, vect(-94.74, 13.59, -177.53), 1, ["You don't see anything in here"]],
-        ["innerVent7", 0, vect(-86.38, 14.14, -180.01), 1.8, ["You don't see anything in here"]],
+        [Id.innerVent1, 0, vect(-108.61, 10.46, -108.17), 1, ["You don't see anything in here"]],
+        [Id.innerVent2, 0, vect(-84.87, 11.34, -186.75), 1, ["You don't see anything in here"]],
+        [Id.innerVent3, 0, vect(-54.90, 10.74, -125.39), 1, null],
+        [Id.innerVent4, 0, vect(-75.87, 14.17, -123.53), 2, ["You don't see anything in here"]],
+        [Id.innerVent5, 0, vect(-69.87, 15.81, -107.26), 1, ["You don't see anything in here"]],
+        [Id.innerVent6, 0, vect(-94.74, 13.59, -177.53), 1, ["You don't see anything in here"]],
+        [Id.innerVent7, 0, vect(-86.38, 14.14, -180.01), 1.8, ["You don't see anything in here"]],
 
 
         # courtyard area
-        ["outerIceBox", 0, vect(-50.77, 2.49, -126.77), 1, ["The harsh look from the bartender keeps you from poking around inside"], null, true],
-        ["outerSmallToolbox1", 0, vect(-11.03, 8.29, -103.06), 0.5, ["The toolbox is far too heavy for its size"], null, true],
-        ["outerToolbox1", 0, vect(-61.25, 11.55, -75.41), 0.75, ["This looks like a... frog mask? You may as well put it on"], null, true],
-        ["outerToolbox2", 0, vect(-9.54, 8.40, -104.89), 0.75, ["You don't know what half these tools do. Okay, all of them"], null, true],
-        ["outerToolbox3", 0, vect(-10.33, 7.33, -102.96), 0.75, ["You find an old remote inside"], "Right handed remote", true],
-        ["outerRadio", 0, vect(-10.46, 8.35, -105.80), 0.3, ["This allows incoming connections from outside as long as they're broadcasting on the right frequency"]],
-        ["outerMic", 0, vect(-30.95, 3.80, -135.05), 0.5, null],
-        ["outerWaterBarrel", 0, vect(-17.72, 7.95, -90.27), 3, ["You've never been able to figure out how to get water out of here"]],
+        [Id.outerIceBox, 0, vect(-50.77, 2.49, -126.77), 1, ["The harsh look from the bartender keeps you from poking around inside"], null, true],
+        [Id.outerSmallToolbox1, 0, vect(-11.03, 8.29, -103.06), 0.5, ["The toolbox is far too heavy for its size"], null, true],
+        [Id.outerToolbox1, 0, vect(-61.25, 11.55, -75.41), 0.75, ["This looks like a... frog mask? You may as well put it on"], null, true],
+        [Id.outerToolbox2, 0, vect(-9.54, 8.40, -104.89), 0.75, ["You don't know what half these tools do. Okay, all of them"], null, true],
+        [Id.outerToolbox3, 0, vect(-10.33, 7.33, -102.96), 0.75, ["You find an old remote inside"], "Right handed remote", true],
+        [Id.outerRadio, 0, vect(-10.46, 8.35, -105.80), 0.3, ["This allows incoming connections from outside as long as they're broadcasting on the right frequency"]],
+        [Id.outerMic, 0, vect(-30.95, 3.80, -135.05), 0.5, null],
+        [Id.outerWaterBarrel, 0, vect(-17.72, 7.95, -90.27), 3, ["You've never been able to figure out how to get water out of here"]],
 
-        ["outerCart", 0, vect(-41.66, 6.20, -66.89), 3, ["The cart is stopped in the middle of the road"]],
+        [Id.outerCart, 0, vect(-41.66, 6.20, -66.89), 3, ["The cart is stopped in the middle of the road"]],
 
-        ["outerPoster1", 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"], null, null, true],
-        ["outerPoster2", 0, vect(-60.39, 14.28, -88.06), 0.5, ["You don't want to be here anyway"], null, null, true],
-        ["outerPoster3", 0, vect(-48.70, 8.39, -95.52), 0.8, ["It was all just a big misunderstanding"], null, null, true],
-        ["outerPoster4", 0, vect(-45.22, 8.42, -112.92), 0.5, ["The Queen was too attached to that summer shack anyway"], null, null, true],
-        ["outerPoster5", 0, vect(-42.93, 8.67, -116.01), 0.5, ["Really, you were doing her a favor"], null, null, true],
-        ["outerPoster6", 0, vect(-41.97, 14.58, -120.91), 0.5, ["The picture has your nose all wrong"], null, null, true],
-        ["outerPoster7", 0, vect(-26.17, 14.43, -112.75), 0.5, ["Come on, what's a few explosions between friends"], null, null, true],
-        ["outerPoster8", 0, vect(-20.13, 8.15, -95.48), 0.7, ["And you thought this used to be a respectable establishment"], null, null, true],
-        ["outerPoster9", 0, vect(-32.28, 7.78, -94.74), 0.5, ["This is completely unnecessary"], null, null, true],
-        ["outerPoster10", 0, vect(-31.35, 7.44, -85.96), 1.1, ["Don't people deserve a sixth chance?"], null, null, true],
-        ["outerPosterOob11", 0, vect(-44.65, 6.38, -76.55), 0.7, ["\"Troublemakers\"? The nerve"], null, null, true],
-        ["outerPosterOob12", 0, vect(-35.80, 5.70, -70.76), 1, ["You feel wounded at such accusations"], null, null, true],
-        ["outerPosterOob13", 0, vect(-44.66, 6.73, -60.23), 1.1, ["Maybe if you just had a little chat with the Queen"], null, null, true],
-        ["outerPosterOob14", 0, vect(-33.01, 5.96, -63.99), 0.7, ["There's no need to go to such extremes"], null, null, true],
-        ["outerPosterOob15", 0, vect(-54.26, 5.98, -47.88), 0.7, ["What's the point of putting a poster all the way over here?"], null, null, true],
+        [Id.outerPoster1, 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"], null, null, true],
+        [Id.outerPoster2, 0, vect(-60.39, 14.28, -88.06), 0.5, ["You don't want to be here anyway"], null, null, true],
+        [Id.outerPoster3, 0, vect(-48.70, 8.39, -95.52), 0.8, ["It was all just a big misunderstanding"], null, null, true],
+        [Id.outerPoster4, 0, vect(-45.22, 8.42, -112.92), 0.5, ["The Queen was too attached to that summer shack anyway"], null, null, true],
+        [Id.outerPoster5, 0, vect(-42.93, 8.67, -116.01), 0.5, ["Really, you were doing her a favor"], null, null, true],
+        [Id.outerPoster6, 0, vect(-41.97, 14.58, -120.91), 0.5, ["The picture has your nose all wrong"], null, null, true],
+        [Id.outerPoster7, 0, vect(-26.17, 14.43, -112.75), 0.5, ["Come on, what's a few explosions between friends"], null, null, true],
+        [Id.outerPoster8, 0, vect(-20.13, 8.15, -95.48), 0.7, ["And you thought this used to be a respectable establishment"], null, null, true],
+        [Id.outerPoster9, 0, vect(-32.28, 7.78, -94.74), 0.5, ["This is completely unnecessary"], null, null, true],
+        [Id.outerPoster10, 0, vect(-31.35, 7.44, -85.96), 1.1, ["Don't people deserve a sixth chance?"], null, null, true],
+        [Id.outerPosterOob11, 0, vect(-44.65, 6.38, -76.55), 0.7, ["\"Troublemakers\"? The nerve"], null, null, true],
+        [Id.outerPosterOob12, 0, vect(-35.80, 5.70, -70.76), 1, ["You feel wounded at such accusations"], null, null, true],
+        [Id.outerPosterOob13, 0, vect(-44.66, 6.73, -60.23), 1.1, ["Maybe if you just had a little chat with the Queen"], null, null, true],
+        [Id.outerPosterOob14, 0, vect(-33.01, 5.96, -63.99), 0.7, ["There's no need to go to such extremes"], null, null, true],
+        [Id.outerPosterOob15, 0, vect(-54.26, 5.98, -47.88), 0.7, ["What's the point of putting a poster all the way over here?"], null, null, true],
 
-        ["outerBinoculars", 0, vect(-36.64, 14.02, -59.19), 0.3],
+        [Id.outerBinoculars, 0, vect(-36.64, 14.02, -59.19), 0.3],
 
-        ["outerMinigameDot1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 3, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot4", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot5", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot6", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot7", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.42, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot8", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot9", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameDot10", 0, OUTER_MINIGAME_2D_TO_3D(vect(1.02, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
-        ["outerMinigameRotate1", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.08, null],
-        ["outerMinigameRotate2", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 3, 0)), 0.08, null],
-        ["outerMinigameRotate3", 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.08, null],
-        ["outerMinigameSkip", 0, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, null],
+        [Id.outerMinigameDot1, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 3, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot2, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot3, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot4, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot5, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot6, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot7, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.42, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot8, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot9, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameDot10, 0, OUTER_MINIGAME_2D_TO_3D(vect(1.02, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, null],
+        [Id.outerMinigameRotate1, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.08, null],
+        [Id.outerMinigameRotate2, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 3, 0)), 0.08, null],
+        [Id.outerMinigameRotate3, 0, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.08, null],
+        [Id.outerMinigameSkip, 0, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, null],
 
 
         # barn area
-        ["barnRadio", 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
-        ["barnTvPanel", 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to change the TV channel right now"]],
-        ["barnPachimari", 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]],
-        ["barnFuelMachine", 0, vect(69.01, 10.34, -84.15), 1.2, ["This machine helps you survive the irradiated outdoors"], null, true],
-        ["barnFridge", 0, vect(66.91, 10.37, -67.64), 1, ["The fridge is full of half eaten Chinese food"], null, true],
-        ["barnTireRack", 0, vect(44.07, 10.12, -88.71), 1.5, ["This rack of hover pads is entirely unremarkable"], null, null, true],
-        ["barnPlan", 0, vect(44.03, 11.11, -71.35), 1.5, ["Things didn't to according to plan"], null, null, true],
+        [Id.barnRadio, 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
+        [Id.barnTvPanel, 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to change the TV channel right now"]],
+        [Id.barnPachimari, 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]],
+        [Id.barnFuelMachine, 0, vect(69.01, 10.34, -84.15), 1.2, ["This machine helps you survive the irradiated outdoors"], null, true],
+        [Id.barnFridge, 0, vect(66.91, 10.37, -67.64), 1, ["The fridge is full of half eaten Chinese food"], null, true],
+        [Id.barnTireRack, 0, vect(44.07, 10.12, -88.71), 1.5, ["This rack of hover pads is entirely unremarkable"], null, null, true],
+        [Id.barnPlan, 0, vect(44.03, 11.11, -71.35), 1.5, ["Things didn't to according to plan"], null, null, true],
 
-        ["barnToolbox1", 0, vect(49.62, 10.55, -75.25), 0.75, ["The toolbox is filled with a bunch of spare spark plugs"], null, true],
-        ["barnToolbox2", 0, vect(50.55, 9.42, -75.90), 0.75, ["There's a meticulously arranged collection of screwdrivers, but nothing you need right now"], null, true],
-        ["barnSmallToolbox1", 0, vect(49.20, 10.27, -79.17), 0.5, ["This was always your least favorite toolbox"], null, true],
-        ["barnSafe1", 0, vect(60.60, 10.01, -65.34), 1, ["That's private, there's no need to look in there"], null, true, true],
-        ["barnSafe2", 0, vect(60.52, 9.50, -63.60), 0.8, ["You pick up your little buddy and place him carefully in your bag"], null, true],
-        ["barnSafe3", 0, vect(56.13, 9.74, -62.70), 0.7, ["This safe is empty, you just put it there for the aesthetic"], null, true, true],
-        ["barnEmptyShelf", 0, vect(50.05, 10.56, -63.46), 2, ["Times have been rough lately"], null, true, true],
+        [Id.barnToolbox1, 0, vect(49.62, 10.55, -75.25), 0.75, ["The toolbox is filled with a bunch of spare spark plugs"], null, true],
+        [Id.barnToolbox2, 0, vect(50.55, 9.42, -75.90), 0.75, ["There's a meticulously arranged collection of screwdrivers, but nothing you need right now"], null, true],
+        [Id.barnSmallToolbox1, 0, vect(49.20, 10.27, -79.17), 0.5, ["This was always your least favorite toolbox"], null, true],
+        [Id.barnSafe1, 0, vect(60.60, 10.01, -65.34), 1, ["That's private, there's no need to look in there"], null, true, true],
+        [Id.barnSafe2, 0, vect(60.52, 9.50, -63.60), 0.8, ["You pick up your little buddy and place him carefully in your bag"], null, true],
+        [Id.barnSafe3, 0, vect(56.13, 9.74, -62.70), 0.7, ["This safe is empty, you just put it there for the aesthetic"], null, true, true],
+        [Id.barnEmptyShelf, 0, vect(50.05, 10.56, -63.46), 2, ["Times have been rough lately"], null, true, true],
 
-        ["barnPaperClue1", 0, vect(58.30, 9, -93.83), 0.3, null],
-        ["barnPaperClue2", 0, vect(42.25, 16, -71.88), 0.3, null],
-        ["barnBike", 0, vect(54.56, 10.65, -78.11), 2.5, null],
+        [Id.barnPaperClue1, 0, vect(58.30, 9, -93.83), 0.3, null],
+        [Id.barnPaperClue2, 0, vect(42.25, 16, -71.88), 0.3, null],
+        [Id.barnBike, 0, vect(54.56, 10.65, -78.11), 2.5, null],
 
-        ["barnSwitch1", 0, vect(56.48, 10.655, -66.584), 0.05, null],
-        ["barnSwitch2", 0, vect(56.48, 10.581, -66.584), 0.05, null],
-        ["barnSwitch3", 0, vect(56.48, 10.504, -66.584), 0.05, null],
-        ["barnSwitch4", 0, vect(56.48, 10.424, -66.584), 0.05, null],
-        ["barnSwitch5", 0, vect(56.48, 10.345, -66.584), 0.05, null],
-        ["barnCodePanel", 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]],
+        [Id.barnSwitch1, 0, vect(56.48, 10.655, -66.584), 0.05, null],
+        [Id.barnSwitch2, 0, vect(56.48, 10.581, -66.584), 0.05, null],
+        [Id.barnSwitch3, 0, vect(56.48, 10.504, -66.584), 0.05, null],
+        [Id.barnSwitch4, 0, vect(56.48, 10.424, -66.584), 0.05, null],
+        [Id.barnSwitch5, 0, vect(56.48, 10.345, -66.584), 0.05, null],
+        [Id.barnCodePanel, 0, vect(56.55, 10.50, -66.74), 0.5, ["This opens your secret stash, if only you could remember the code"]],
 
-        ["barnMinigameDot0", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[0]), 0.05, null],
-        ["barnMinigameDot1", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[1]), 0.05, null],
-        ["barnMinigameDot2", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[2]), 0.05, null],
-        ["barnMinigameDot3", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[3]), 0.05, null],
-        ["barnMinigameDot4", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[4]), 0.05, null],
-        ["barnMinigameDot5", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[5]), 0.05, null],
-        ["barnMinigameDot6", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[6]), 0.05, null],
-        ["barnMinigameDot7", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[7]), 0.05, null],
-        ["barnMinigameDot8", 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[8]), 0.05, null],
-        ["barnMinigameSkip", 0, BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8, 0)), 0.05, null],
+        [Id.barnMinigameDot0, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[0]), 0.05, null],
+        [Id.barnMinigameDot1, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[1]), 0.05, null],
+        [Id.barnMinigameDot2, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[2]), 0.05, null],
+        [Id.barnMinigameDot3, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[3]), 0.05, null],
+        [Id.barnMinigameDot4, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[4]), 0.05, null],
+        [Id.barnMinigameDot5, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[5]), 0.05, null],
+        [Id.barnMinigameDot6, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[6]), 0.05, null],
+        [Id.barnMinigameDot7, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[7]), 0.05, null],
+        [Id.barnMinigameDot8, 0, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[8]), 0.05, null],
+        [Id.barnMinigameSkip, 0, BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8, 0)), 0.05, null],
 
 
         # larger outside area
         eventPlayer.outsideHose, # placed here for priority reasons
 
-        ["outsideJunkWorkbench", 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
-        ["outsideSafe", 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
-        ["outsideIceBox", 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
-        ["outsideFridge1", 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]],
-        ["outsideFridge2", 0, vect(-5.68, 13.51, -74.65), 1.2, ["Without electricity, this fridge isn't doing a very good job"], null, true],
-        ["outsideFridge3", 0, vect(-31.79, 5.62, -28.84), 0.8, ["You can't open the door"], null, true, true],
-        ["outsideFridge4", 0, vect(-31.72, 5.57, -30.10), 0.8, ["The door won't budge"], null, true, true],
-        ["outsideToolbox1", 0, vect(-6.67, 8.55, -77.17), 0.7, ["There's only some ancient pistons in here"], null, true],
-        ["outsideToolbox2", 0, vect(-6.55, 7.60, -77.18), 0.7, ["You don't need any of the car parts inside since you have a motorcycle"], null, true],
-        ["outsideSmallToolbox", 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the moldy remains of someone's lunch"], null, true],
-        ["outsideChest1", 0, vect(19.26, 8.73, -55.36), 1.2, ["Anything in here has been looted a long time ago"], null, true],
-        ["outsideChest2", 0, vect(-7.98, 8.35, -47.93), 1.2, ["It might be useful for standing on, but not much else"], null, true],
-        ["outsideChest3", 0, vect(-7.98, 6.58, -47.93), 1.2, ["This chest is trapped under the other one"], null, true],
-        ["outsideChest4", 0, vect(-35.12, 5.22, -43.65), 1.2, ["The only things inside are some half dead brambles"], null, true],
-        ["outsideChest5", 0, vect(-50.83, 4.92, -16.62), 1.2, ["Nothing up your sleeve, or in the chest"], null, true],
+        [Id.outsideJunkWorkbench, 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
+        [Id.outsideSafe, 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
+        [Id.outsideIceBox, 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
+        [Id.outsideFridge1, 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]],
+        [Id.outsideFridge2, 0, vect(-5.68, 13.51, -74.65), 1.2, ["Without electricity, this fridge isn't doing a very good job"], null, true],
+        [Id.outsideFridge3, 0, vect(-31.79, 5.62, -28.84), 0.8, ["You can't open the door"], null, true, true],
+        [Id.outsideFridge4, 0, vect(-31.72, 5.57, -30.10), 0.8, ["The door won't budge"], null, true, true],
+        [Id.outsideToolbox1, 0, vect(-6.67, 8.55, -77.17), 0.7, ["There's only some ancient pistons in here"], null, true],
+        [Id.outsideToolbox2, 0, vect(-6.55, 7.60, -77.18), 0.7, ["You don't need any of the car parts inside since you have a motorcycle"], null, true],
+        [Id.outsideSmallToolbox, 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the moldy remains of someone's lunch"], null, true],
+        [Id.outsideChest1, 0, vect(19.26, 8.73, -55.36), 1.2, ["Anything in here has been looted a long time ago"], null, true],
+        [Id.outsideChest2, 0, vect(-7.98, 8.35, -47.93), 1.2, ["It might be useful for standing on, but not much else"], null, true],
+        [Id.outsideChest3, 0, vect(-7.98, 6.58, -47.93), 1.2, ["This chest is trapped under the other one"], null, true],
+        [Id.outsideChest4, 0, vect(-35.12, 5.22, -43.65), 1.2, ["The only things inside are some half dead brambles"], null, true],
+        [Id.outsideChest5, 0, vect(-50.83, 4.92, -16.62), 1.2, ["Nothing up your sleeve, or in the chest"], null, true],
 
-        ["outsidePoster1", 0, vect(-30.90, 6.14, -60.22), 0.8, ["That idiot is always getting you in trouble"], null, null, true],
-        ["outsidePoster2", 0, vect(-23.46, 6.70, -66.49), 0.8, ["There's not much you need in there, but you'll miss talking to Bruce"], null, null, true],
+        [Id.outsidePoster1, 0, vect(-30.90, 6.14, -60.22), 0.8, ["That idiot is always getting you in trouble"], null, null, true],
+        [Id.outsidePoster2, 0, vect(-23.46, 6.70, -66.49), 0.8, ["There's not much you need in there, but you'll miss talking to Bruce"], null, null, true],
 
 
         # item apply points
@@ -1931,7 +2103,7 @@ rule "do ending cutscene":
     @Condition eventPlayer.currentCutscene == Cutscene.ENDING and not eventPlayer.isCutsceneFinished
 
     freeze()
-    wait(1)
+    wait(3)
 
     hideUi()
 
@@ -2140,17 +2312,17 @@ rule "Lights on check":
     eventPlayer.lightsOn = true
     playersInDark.remove(eventPlayer)
     playEffect(eventPlayer, DynamicEffect.SOMBRA_TRANSLOCATING_SOUND, null, eventPlayer.getPosition() - eventPlayer.getFacingDirection() * 0.1, 100)
-    INCREMENT_STATE("innerSwitch1")
-    INCREMENT_STATE("innerSwitch2")
-    INCREMENT_STATE("innerSwitch3")
-    INCREMENT_STATE("innerSwitch4")
-    INCREMENT_STATE("innerSwitch5")
+    INCREMENT_STATE(Id.innerSwitch1)
+    INCREMENT_STATE(Id.innerSwitch2)
+    INCREMENT_STATE(Id.innerSwitch3)
+    INCREMENT_STATE(Id.innerSwitch4)
+    INCREMENT_STATE(Id.innerSwitch5)
 
 rule "Set inner power box state":
     @Event eachPlayer
     @Condition eventPlayer.wiresConnected and eventPlayer.generatorOn
 
-    SET_STATE("innerPowerBox", 3)
+    SET_STATE(Id.innerPowerBox, 3)
 
 rule "Inner workbench minigame start":
     @Event eachPlayer
@@ -2185,7 +2357,7 @@ rule "Inner workbench minigame success":
     stopChasingVariable(eventPlayer.innerMinigameValue2)
     eventPlayer.innerMinigameValue1 = 3 * PI / 2
     eventPlayer.innerMinigameValue2 = PI / 6
-    SET_STATE("innerWorkbench", 1)
+    SET_STATE(Id.innerWorkbench, 1)
     eventPlayer.inventory.remove("Fiddly part")
     eventPlayer.inventory = "Reverse polarity fiddly part".concat(eventPlayer.inventory)
     smallMessage(eventPlayer, "You manage to reverse the polarity of the fiddly part")
@@ -2231,7 +2403,7 @@ rule "Outer workbench minigame success":
     @Condition all([e == 1 for e in eventPlayer.outerMinigameState])
 
     eventPlayer.hasFinishedOuterMinigame = true
-    SET_STATE("outerWorkbench", 1)
+    SET_STATE(Id.outerWorkbench, 1)
     eventPlayer.inventory.remove("Red battery")
     eventPlayer.inventory = "Black painted battery".concat(eventPlayer.inventory)
     smallMessage(eventPlayer, "You manage to change the color of the battery")
@@ -2286,7 +2458,7 @@ rule "Barn workbench minigame success":
     @Condition all([[0, 2, 2, 2, 2, 1, 1, 1, 1][index] == e for e, index in eventPlayer.barnMinigameColorState])
 
     eventPlayer.hasFinishedBarnMinigame = true
-    SET_STATE("barnWorkbench", 1)
+    SET_STATE(Id.barnWorkbench, 1)
     eventPlayer.inventory.remove("Right handed remote")
     eventPlayer.inventory = "Left handed remote".concat(eventPlayer.inventory)
     smallMessage(eventPlayer, "You turn the remote over to get a left handed remote")
@@ -2320,7 +2492,7 @@ rule "Bruce wings fix":
     @Event eachPlayer
     @Condition eventPlayer.bruceTimer == 60
 
-    SET_STATE("outerBruce", 9)
+    SET_STATE(Id.outerBruce, 9)
     stopChasingVariable(eventPlayer.bruceTimer)
 
 # In a hurry achievement
@@ -2446,41 +2618,41 @@ rule "Interact":
 
     if eventPlayer.isJunk:
         if eventPlayer.wiresConnected and eventPlayer.generatorOn and not eventPlayer.lightsOn:
-            if eventPlayer.tValue[Item.ID] == "innerSwitch1":
+            if eventPlayer.tValue[Item.ID] == Id.innerSwitch1:
                 TOGGLE_POWER_SWITCH(4)
                 TOGGLE_POWER_SWITCH(0)
                 TOGGLE_POWER_SWITCH(1)
                 makeSwitchNoise()
                 checkPowerPanel()
-            elif eventPlayer.tValue[Item.ID] == "innerSwitch2":
+            elif eventPlayer.tValue[Item.ID] == Id.innerSwitch2:
                 TOGGLE_POWER_SWITCH(0)
                 TOGGLE_POWER_SWITCH(1)
                 TOGGLE_POWER_SWITCH(2)
                 makeSwitchNoise()
                 checkPowerPanel()
-            elif eventPlayer.tValue[Item.ID] == "innerSwitch3":
+            elif eventPlayer.tValue[Item.ID] == Id.innerSwitch3:
                 TOGGLE_POWER_SWITCH(1)
                 TOGGLE_POWER_SWITCH(2)
                 TOGGLE_POWER_SWITCH(3)
                 makeSwitchNoise()
                 checkPowerPanel()
-            elif eventPlayer.tValue[Item.ID] == "innerSwitch4":
+            elif eventPlayer.tValue[Item.ID] == Id.innerSwitch4:
                 TOGGLE_POWER_SWITCH(2)
                 TOGGLE_POWER_SWITCH(3)
                 TOGGLE_POWER_SWITCH(4)
                 makeSwitchNoise()
                 checkPowerPanel()
-            elif eventPlayer.tValue[Item.ID] == "innerSwitch5":
+            elif eventPlayer.tValue[Item.ID] == Id.innerSwitch5:
                 TOGGLE_POWER_SWITCH(3)
                 TOGGLE_POWER_SWITCH(4)
                 TOGGLE_POWER_SWITCH(0)
                 makeSwitchNoise()
                 checkPowerPanel()
 
-        if eventPlayer.tValue[Item.ID] == "tutSafe2":
+        if eventPlayer.tValue[Item.ID] == Id.tutSafe2:
             tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
             eventPlayer.molePersonRiddleLine = 0
-        elif eventPlayer.tValue[Item.ID] == "tutSafe5":
+        elif eventPlayer.tValue[Item.ID] == Id.tutSafe5:
             if eventPlayer.tValue[Item.STATE] == 0:
                 tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
                 tutorialTextPlayers[TutorialText.INV_CYCLE].append(eventPlayer)
@@ -2488,7 +2660,7 @@ rule "Interact":
                 eventPlayer.inventory.append("Rusty key")
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-        elif eventPlayer.tValue[Item.ID] == "innerPowerBox":
+        elif eventPlayer.tValue[Item.ID] == Id.innerPowerBox:
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 if eventPlayer.tValue[Item.STATE] < 2:
                     eventPlayer.tValue[Item.STATE]++
@@ -2497,29 +2669,29 @@ rule "Interact":
                 smallMessage(eventPlayer, "There's power, but one of the panels is broken, just like everything else in this place")
             else:
                 smallMessage(eventPlayer, "The pretty green lights make you giddy")
-        elif eventPlayer.tValue[Item.ID] == "innerGenerator":
+        elif eventPlayer.tValue[Item.ID] == Id.innerGenerator:
             if eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-        elif eventPlayer.tValue[Item.ID] == "innerWorkbench" and not eventPlayer.isDoingInnerMinigame:
+        elif eventPlayer.tValue[Item.ID] == Id.innerWorkbench and not eventPlayer.isDoingInnerMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "The workbench has a label that says \"polarity reversificator\" on it")
             else:
                 smallMessage(eventPlayer, "The workbench has outlived its usefulness")
-        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl1" and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
+        elif eventPlayer.tValue[Item.ID] == Id.innerMinigameControl1 and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl1 = true
             chase(eventPlayer.innerMinigameValue1, INF, rate=1, ChaseReeval.NONE)
             chase(eventPlayer.innerMinigameValue2, INF, rate=1.8, ChaseReeval.NONE)
-        elif eventPlayer.tValue[Item.ID] == "innerMinigameControl2" and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
+        elif eventPlayer.tValue[Item.ID] == Id.innerMinigameControl2 and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl2 = true
             chase(eventPlayer.innerMinigameValue1, INF, rate=1.8, ChaseReeval.NONE)
             chase(eventPlayer.innerMinigameValue2, INF, rate=1, ChaseReeval.NONE)
-        elif eventPlayer.tValue[Item.ID] == "innerMinigameSkip" and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
+        elif eventPlayer.tValue[Item.ID] == Id.innerMinigameSkip and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.innerMinigameValue1 = 3 * PI / 2
             eventPlayer.innerMinigameValue2 = PI / 6
-        elif eventPlayer.tValue[Item.ID] == "innerSunglasses":
+        elif eventPlayer.tValue[Item.ID] == Id.innerSunglasses:
             if Equip.SUNGLASES not in eventPlayer.equipped:
-                INCREMENT_STATE("innerSunglasses")
+                INCREMENT_STATE(Id.innerSunglasses)
                 eventPlayer.hasSunglasses = true
                 eventPlayer.equipped.append(Equip.SUNGLASES)
                 manageEquips()
@@ -2528,7 +2700,7 @@ rule "Interact":
                     bigMessage(eventPlayer, "Achievement get! Infrasight: find the sunglasses without using the map")
                     eventPlayer.achievements.append(Achievement.INFRASIGHT)
                     manageAchievements()
-        elif eventPlayer.tValue[Item.STATE] == 0 and (eventPlayer.tValue[Item.ID] == "innerValve1" or eventPlayer.tValue[Item.ID] == "innerValve2" or eventPlayer.tValue[Item.ID] == "innerValve3"):
+        elif eventPlayer.tValue[Item.STATE] == 0 and (eventPlayer.tValue[Item.ID] == Id.innerValve1 or eventPlayer.tValue[Item.ID] == Id.innerValve2 or eventPlayer.tValue[Item.ID] == Id.innerValve3):
             eventPlayer.tValue[Item.STATE]++
             eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             eventPlayer.numVentsClosed++
@@ -2539,7 +2711,7 @@ rule "Interact":
                 smallMessage(eventPlayer, "You twist the valve shut and hear the airflow slow to a trickle")
             else:
                 smallMessage(eventPlayer, "You twist the valve shut and hear the air stop entirely")
-        elif eventPlayer.tValue[Item.ID] == "innerVent3":
+        elif eventPlayer.tValue[Item.ID] == Id.innerVent3:
             if eventPlayer.tValue[Item.STATE] == 0:
                 if eventPlayer.numVentsClosed == 3:
                     eventPlayer.tValue[Item.STATE]++
@@ -2550,7 +2722,7 @@ rule "Interact":
                     smallMessage(eventPlayer, "There's something in the back, but the blades are spinning too fast to grab it")
             else:
                 smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
-        elif eventPlayer.tValue[Item.ID] == "outerBruce":
+        elif eventPlayer.tValue[Item.ID] == Id.outerBruce:
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
@@ -2574,8 +2746,8 @@ rule "Interact":
                     manageEquips()
                 else:
                     CREATE_TEXT("You're going to have to find a high place to use your wings. I've heard there\nare secret tunnels that lead up to the dome. The bartender might know more.", BRUCE_TEXT_LOCATION)
-                SET_STATE("outerBartender", 2)
-        elif eventPlayer.tValue[Item.ID] == "outerSmuggler":
+                SET_STATE(Id.outerBartender, 2)
+        elif eventPlayer.tValue[Item.ID] == Id.outerSmuggler:
             if not eventPlayer.canUtilizeSmuggler:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nAnd we'll even deliver stuff from others to you!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
@@ -2588,17 +2760,17 @@ rule "Interact":
                     eventPlayer.insideSmugglerItem = null
                 else:
                     CREATE_TEXT("Sorry, nothing for you", INSIDE_SMUGGLER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outerBartender":
+        elif eventPlayer.tValue[Item.ID] == Id.outerBartender:
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Drinks round here cost {0} bucks. But just for you,\nI'll make an exception and only charge ya {1}.".format(ALCOHOL_COST / 2, ALCOHOL_COST), BARTENDER_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("You've cleaned me right out of liquor.", BARTENDER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the Chinese place. They all tend to talk in riddles though.", BARTENDER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outerNotSmuggler":
+        elif eventPlayer.tValue[Item.ID] == Id.outerNotSmuggler:
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay in cash.", NOT_SMUGGLER_TEXT_LOCATION)
-                SET_STATE("outerMic", 1)
+                SET_STATE(Id.outerMic, 1)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("Alright, you've earned your pay.", NOT_SMUGGLER_TEXT_LOCATION)
                 GIVE_ITEM("{0} dollars".format(ALCOHOL_COST + SMUGGLER_COST))
@@ -2607,105 +2779,105 @@ rule "Interact":
                 SAVE_STATE(eventPlayer.tValue)
             else:
                 CREATE_TEXT("Did you know there's legends of a hidden race in Junkertown?\nSome say they go around stealing small objects, hiding things in vents.\nEh- but it's probably nothing right?", NOT_SMUGGLER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outerToolbox1":
+        elif eventPlayer.tValue[Item.ID] == Id.outerToolbox1:
             if eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.equipped.append(Equip.DISGUISE)
                 eventPlayer.tValue[Item.STATE]++
                 SAVE_STATE(eventPlayer.tValue)
                 manageEquips()
-        elif eventPlayer.tValue[Item.ID] == "outerWorkbench" and not eventPlayer.isDoingOuterMinigame:
+        elif eventPlayer.tValue[Item.ID] == Id.outerWorkbench and not eventPlayer.isDoingOuterMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "The workbench has a number of paints left on it")
             else:
                 smallMessage(eventPlayer, "The workbench has outlived its usefulness")
-        elif strContains(eventPlayer.tValue[Item.ID], "outerMinigame") and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
+        elif Id.outerMinigameDot1 <= eventPlayer.tValue[Item.ID] <= Id.outerMinigameSkip and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
             eventPlayer.outerMinigameMovesMade++
-            if eventPlayer.tValue[Item.ID] == "outerMinigameDot1":
+            if eventPlayer.tValue[Item.ID] == Id.outerMinigameDot1:
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(3)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot2":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot2:
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(5)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot3":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot3:
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(6)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot4":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot4:
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(7)
                 OUTER_MINIGAME_TOGGLE(8)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot5":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot5:
                 playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer, 30)
                 eventPlayer.outerMinigameMovesMade--
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot6":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot6:
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(6)
                 OUTER_MINIGAME_TOGGLE(9)
                 OUTER_MINIGAME_TOGGLE(10)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot7":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot7:
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(7)
                 OUTER_MINIGAME_TOGGLE(8)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot8":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot8:
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(7)
                 OUTER_MINIGAME_TOGGLE(8)
                 OUTER_MINIGAME_TOGGLE(9)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot9":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot9:
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(6)
                 OUTER_MINIGAME_TOGGLE(8)
                 OUTER_MINIGAME_TOGGLE(9)
                 OUTER_MINIGAME_TOGGLE(10)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameDot10":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot10:
                 OUTER_MINIGAME_TOGGLE(6)
                 OUTER_MINIGAME_TOGGLE(9)
                 OUTER_MINIGAME_TOGGLE(10)
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameRotate1":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameRotate1:
                 eventPlayer.tMinigame = eventPlayer.outerMinigameState[1]
                 eventPlayer.outerMinigameState[1] = eventPlayer.outerMinigameState[2]
                 eventPlayer.outerMinigameState[2] = eventPlayer.outerMinigameState[3]
                 eventPlayer.outerMinigameState[3] = eventPlayer.tMinigame
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameRotate2":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameRotate2:
                 eventPlayer.tMinigame = eventPlayer.outerMinigameState[4]
                 eventPlayer.outerMinigameState[4] = eventPlayer.outerMinigameState[7]
                 eventPlayer.outerMinigameState[7] = eventPlayer.outerMinigameState[8]
                 eventPlayer.outerMinigameState[8] = eventPlayer.tMinigame
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameRotate3":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameRotate3:
                 eventPlayer.tMinigame = eventPlayer.outerMinigameState[6]
                 eventPlayer.outerMinigameState[6] = eventPlayer.outerMinigameState[9]
                 eventPlayer.outerMinigameState[9] = eventPlayer.outerMinigameState[10]
                 eventPlayer.outerMinigameState[10] = eventPlayer.tMinigame
-            elif eventPlayer.tValue[Item.ID] == "outerMinigameSkip":
+            elif eventPlayer.tValue[Item.ID] == Id.outerMinigameSkip:
                 eventPlayer.outerMinigameState = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
                 eventPlayer.outerMinigameMovesMade = INF
             else:
                 eventPlayer.outerMinigameMovesMade--
-        elif eventPlayer.tValue[Item.ID] == "outerMic":
+        elif eventPlayer.tValue[Item.ID] == Id.outerMic:
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "You don't know why you would waste any time on this")
             elif eventPlayer.tValue[Item.STATE] == 1:
                 if Equip.DISGUISE in eventPlayer.equipped:
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-                    SET_STATE("outerNotSmuggler", 1)
+                    SET_STATE(Id.outerNotSmuggler, 1)
 
                     eventPlayer.currentCutscene = Cutscene.COMEDY
                 else:
                     smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious disguise")
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
-        elif strContains(eventPlayer.tValue[Item.ID], "outerDoor"):
+        elif Id.outerDoor21 <= eventPlayer.tValue[Item.ID] <= Id.outerDoor25:
             if Equip.WINGS not in eventPlayer.equipped:
                 CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
             else:
@@ -2726,7 +2898,7 @@ rule "Interact":
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
-        elif eventPlayer.tValue[Item.ID] == "outerBinoculars":
+        elif eventPlayer.tValue[Item.ID] == Id.outerBinoculars:
             freeze()
             hideUi()
 
@@ -2743,33 +2915,33 @@ rule "Interact":
             showUi()
 
     if eventPlayer.isHog:
-        if eventPlayer.tValue[Item.ID] == "barnSwitch1":
+        if eventPlayer.tValue[Item.ID] == Id.barnSwitch1:
             makeSwitchNoise()
             ENTER_BARN_DIGIT(1)
             checkBarnCode()
-        elif eventPlayer.tValue[Item.ID] == "barnSwitch2":
+        elif eventPlayer.tValue[Item.ID] == Id.barnSwitch2:
             makeSwitchNoise()
             ENTER_BARN_DIGIT(2)
             checkBarnCode()
-        elif eventPlayer.tValue[Item.ID] == "barnSwitch3":
+        elif eventPlayer.tValue[Item.ID] == Id.barnSwitch3:
             makeSwitchNoise()
             ENTER_BARN_DIGIT(3)
             checkBarnCode()
-        elif eventPlayer.tValue[Item.ID] == "barnSwitch4":
+        elif eventPlayer.tValue[Item.ID] == Id.barnSwitch4:
             makeSwitchNoise()
             ENTER_BARN_DIGIT(4)
             checkBarnCode()
-        elif eventPlayer.tValue[Item.ID] == "barnSwitch5":
+        elif eventPlayer.tValue[Item.ID] == Id.barnSwitch5:
             makeSwitchNoise()
             ENTER_BARN_DIGIT(5)
             checkBarnCode()
-        elif eventPlayer.tValue[Item.ID] == "barnPaperClue1":
+        elif eventPlayer.tValue[Item.ID] == Id.barnPaperClue1:
             smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
-        elif eventPlayer.tValue[Item.ID] == "barnPaperClue2":
+        elif eventPlayer.tValue[Item.ID] == Id.barnPaperClue2:
             smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
-        elif eventPlayer.tValue[Item.ID] == "barnBike":
+        elif eventPlayer.tValue[Item.ID] == Id.barnBike:
             smallMessage(eventPlayer, "There's some numbers scratched in the paint, but you can only make out the middle digit: {0}".format(eventPlayer.barnCode[2]))
-        elif eventPlayer.tValue[Item.ID] == "barnSafe2":
+        elif eventPlayer.tValue[Item.ID] == Id.barnSafe2:
             if Equip.LITTLE_BUDDY in eventPlayer.equipped:
                 smallMessage(eventPlayer, "You've already secured your little buddy")
             else:
@@ -2778,43 +2950,43 @@ rule "Interact":
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             eventPlayer.canLeaveBarn = true
-        elif eventPlayer.tValue[Item.ID] == "barnWorkbench" and not eventPlayer.isDoingBarnMinigame:
+        elif eventPlayer.tValue[Item.ID] == Id.barnWorkbench and not eventPlayer.isDoingBarnMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "The workbench features a prominently placed mirror")
             else:
                 smallMessage(eventPlayer, "The workbench has outlived its usefulness")
-        elif strContains(eventPlayer.tValue[Item.ID], "barnMinigame") and eventPlayer.isDoingBarnMinigame and not eventPlayer.hasFinishedBarnMinigame:
-            if eventPlayer.tValue[Item.ID] == "barnMinigameDot0":
+        elif Id.barnMinigameDot0 <= eventPlayer.tValue[Item.ID] <= Id.barnMinigameSkip and eventPlayer.isDoingBarnMinigame and not eventPlayer.hasFinishedBarnMinigame:
+            if eventPlayer.tValue[Item.ID] == Id.barnMinigameDot0:
                 eventPlayer.tPos = 0
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot1":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot1:
                 eventPlayer.tPos = 1
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot2":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot2:
                 eventPlayer.tPos = 2
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot3":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot3:
                 eventPlayer.tPos = 3
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot4":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot4:
                 eventPlayer.tPos = 4
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot5":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot5:
                 eventPlayer.tPos = 5
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot6":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot6:
                 eventPlayer.tPos = 6
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot7":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot7:
                 eventPlayer.tPos = 7
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameDot8":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameDot8:
                 eventPlayer.tPos = 8
                 barnMinigameClick()
-            elif eventPlayer.tValue[Item.ID] == "barnMinigameSkip":
+            elif eventPlayer.tValue[Item.ID] == Id.barnMinigameSkip:
                 eventPlayer.barnMinigameColorState = [0, 2, 2, 2, 2, 1, 1, 1, 1]
                 eventPlayer.barnMinigamePosState = [5, 6, 7, 8, 1, 2, 3, 4]
-        elif eventPlayer.tValue[Item.ID] == "outsideFridge1":
+        elif eventPlayer.tValue[Item.ID] == Id.outsideFridge1:
             eventPlayer.outsideMapFound = true
             freeze()
             hideUi()
@@ -2833,7 +3005,7 @@ rule "Interact":
             mapMarkerPlayers.remove(eventPlayer)
             eventPlayer.stopCamera()
             unfreeze()
-        elif eventPlayer.tValue[Item.ID] == "outsideSmuggler":
+        elif eventPlayer.tValue[Item.ID] == Id.outsideSmuggler:
             if not eventPlayer.canUtilizeSmuggler:
                 CREATE_TEXT("Welcome to Tracer's Delivery Service!\nWe deliver anything to anyone anywhere!\nAnd we'll even deliver stuff from others to you!\nLifetime membership is only {0} dollars!".format(SMUGGLER_COST), OUTSIDE_SMUGGLER_TEXT_LOCATION)
             else:
@@ -2846,20 +3018,20 @@ rule "Interact":
                     eventPlayer.outsideSmugglerItem = null
                 else:
                     CREATE_TEXT("Sorry, nothing for you", OUTSIDE_SMUGGLER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonRoom":
+        elif eventPlayer.tValue[Item.ID] == Id.outsideMolePersonRoom:
             if eventPlayer.molePersonInteractStage == 0:
                 CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_ROOM_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonOuthouse":
+        elif eventPlayer.tValue[Item.ID] == Id.outsideMolePersonOuthouse:
             if eventPlayer.molePersonInteractStage == 1:
                 CREATE_TEXT("Uhh, \"cacaw! cacaw!\"", MOLE_PERSON_OUTHOUSE_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCar":
+        elif eventPlayer.tValue[Item.ID] == Id.outsideMolePersonCar:
             if eventPlayer.molePersonInteractStage == 2:
                 CREATE_TEXT("Vroom vroom, just a normal car here.", MOLE_PERSON_CAR_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == "outsideMolePersonCliff":
+        elif eventPlayer.tValue[Item.ID] == Id.outsideMolePersonCliff:
             if eventPlayer.molePersonInteractStage == 3:
                 CREATE_TEXT("*Intense silence*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
 
-    if strContains(eventPlayer.tValue[Item.ID], "Poster"):
+    if Id.outerPoster1 <= eventPlayer.tValue[Item.ID] <= Id.outerPoster10 or Id.outsidePoster1 <= eventPlayer.tValue[Item.ID] <= Id.outsidePoster2:
         if eventPlayer.tValue[Item.ID] not in eventPlayer.postersFound:
             eventPlayer.postersFound.append(eventPlayer.tValue[Item.ID])
 
@@ -2895,13 +3067,13 @@ rule "Apply":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction
 
     if SHOULD_INTERACT(eventPlayer.tutGate1) or SHOULD_INTERACT(eventPlayer.tutGate2):
-        eventPlayer.tValue = GET_ITEM_ENTRY("tutGate1")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.tutGate1)
         if eventPlayer.tValue[Item.STATE] == 0:
             if SHOULD_APPLY_ITEM(eventPlayer.tValue):
                 APPLY_ITEM_SUCCESS(eventPlayer.tValue)
                 eventPlayer.tValue[Item.STATE]++
                 SAVE_STATE(eventPlayer.tValue)
-                INCREMENT_STATE("tutGate2")
+                INCREMENT_STATE(Id.tutGate2)
 
                 del eventPlayer.inventory[0]
                 playEffect(eventPlayer, DynamicEffect.RING_EXPLOSION_SOUND, null, eventPlayer, 30)
@@ -2913,7 +3085,7 @@ rule "Apply":
             else:
                 APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWires):
-        eventPlayer.tValue = GET_ITEM_ENTRY("innerWires")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.innerWires)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
@@ -2925,7 +3097,7 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerBarrel2):
-        eventPlayer.tValue = GET_ITEM_ENTRY("innerBarrel2")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.innerBarrel2)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
@@ -2940,7 +3112,7 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerGenerator):
-        eventPlayer.tValue = GET_ITEM_ENTRY("innerGenerator")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.innerGenerator)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE] = 2
@@ -2956,7 +3128,7 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWorkbench):
-        eventPlayer.tValue = GET_ITEM_ENTRY("innerWorkbench")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.innerWorkbench)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingInnerMinigame = true
@@ -2968,12 +3140,12 @@ rule "Apply":
             smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios.\n                        Maybe you can switch this one at a workbench")
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
             eventPlayer.inventory.remove("Reverse polarity fiddly part")
-            INCREMENT_STATE("innerRadio")
+            INCREMENT_STATE(Id.innerRadio)
             eventPlayer.currentCutscene = Cutscene.INNER_RADIO
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerToolbox2):
-        eventPlayer.tValue = GET_ITEM_ENTRY("innerToolbox2")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.innerToolbox2)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
@@ -2986,7 +3158,7 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outerBruce):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outerBruce")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerBruce)
         if eventPlayer.tValue[Item.STATE] == 0 or eventPlayer.tValue[Item.STATE] > 8:
             if strContains(eventPlayer.inventory[0], "dollars"):
                 CREATE_TEXT("I don't take bribes, son.", BRUCE_TEXT_LOCATION)
@@ -3067,7 +3239,7 @@ rule "Apply":
                 del eventPlayer.inventory[0]
                 insideMailTextPlayers.append(eventPlayer)
     elif SHOULD_INTERACT(eventPlayer.outerBartender):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outerBartender")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerBartender)
         if strContains(eventPlayer.inventory[0], "dollars"):
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Here ya go, my last bottle of hard liquor.", BARTENDER_TEXT_LOCATION)
@@ -3085,7 +3257,7 @@ rule "Apply":
         else:
             CREATE_TEXT("Ya can't pay with that.", BARTENDER_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.outerWorkbench):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outerWorkbench")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerWorkbench)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingOuterMinigame = true
@@ -3143,7 +3315,7 @@ rule "Apply":
         else:
             CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", DOOR_25_TEXT_LOCATION)
     elif SHOULD_INTERACT(eventPlayer.barnWorkbench):
-        eventPlayer.tValue = GET_ITEM_ENTRY("barnWorkbench")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.barnWorkbench)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.isDoingBarnMinigame = true
@@ -3151,7 +3323,7 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outsideHose):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideHose")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.outsideHose)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             APPLY_ITEM_SUCCESS(eventPlayer.tValue)
             eventPlayer.tValue[Item.STATE]++
@@ -3166,12 +3338,12 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outsideSatControl):
-        eventPlayer.tValue = GET_ITEM_ENTRY("outsideSatControl")
+        eventPlayer.tValue = GET_ITEM_ENTRY(Id.outsideSatControl)
         if SHOULD_APPLY_ITEM(eventPlayer.tValue):
             del eventPlayer.inventory[0]
             eventPlayer.tValue[Item.STATE]++
             SAVE_STATE(eventPlayer.tValue)
-            INCREMENT_STATE("outerBruce")
+            INCREMENT_STATE(Id.outerBruce)
             doBruceContact()
         elif eventPlayer.inventory[0] == "Right handed remote":
             smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed")
@@ -3468,7 +3640,7 @@ rule "trigger all npcs":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
 
-    INCREMENT_STATE("outerBruce")
+    INCREMENT_STATE(Id.outerBruce)
 
 rule "Debug on":
     @Event eachPlayer
@@ -3583,7 +3755,7 @@ rule "Item visualization":
     @Condition eventPlayer == hostPlayer
 
     for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-        if strContains(eventPlayer.itemPoints[eventPlayer.tText][Item.ID], "outer"):
+        if Id.outerIceBox <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerMinigameSkip:
             createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 rule "Noclip on":
