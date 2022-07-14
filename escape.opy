@@ -436,6 +436,7 @@ playervar innerMinigameValue1
 playervar innerMinigameValue2
 playervar hasFinishedInnerMinigame
 
+playervar hasFoundInnerRadio
 playervar canBeTheOtherGuy
 
 playervar numVentsClosed
@@ -1267,6 +1268,7 @@ def playerInitialState():
     innerMinigameInitialState()
     eventPlayer.hasFinishedInnerMinigame = false
 
+    eventPlayer.hasFoundInnerRadio = false
     eventPlayer.canBeTheOtherGuy = false
 
     eventPlayer.numVentsClosed = 0
@@ -2695,6 +2697,8 @@ rule "Interact":
             if eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+        elif eventPlayer.tValue[Item.ID] == Id.innerRadio:
+            eventPlayer.hasFoundInnerRadio = true
         elif eventPlayer.tValue[Item.ID] == Id.innerWorkbench and not eventPlayer.isDoingInnerMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
                 smallMessage(eventPlayer, "The workbench has a label that says \"polarity reversificator\" on it")
@@ -3164,6 +3168,7 @@ rule "Apply":
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerRadio):
+        eventPlayer.hasFoundInnerRadio = true
         if eventPlayer.inventory[0] == "Fiddly part":
             smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios.\n                        Maybe you can switch this one at a workbench")
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
@@ -3486,6 +3491,14 @@ rule "Create sunlight barriers":
     wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
 
+# Inner radio help message
+
+rule "Inner radio help message":
+    @Event eachPlayer
+    @Condition not eventPlayer.hasFoundInnerRadio and distance(vect(-90, 6.5, -107), eventPlayer.getPosition()) < 10
+
+    smallMessage(eventPlayer, "A radio! Maybe you can call someone for help")
+
 # Junkertown exit wall
 
 #!define JUNKERTOWN_EXIT_WALL_MESSAGE "The guard will see you if you go any further"
@@ -3801,8 +3814,8 @@ rule "Noclip off":
 rule "Display stats":
     @Event eachPlayer
 
-    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
     # hudHeader(eventPlayer, "q: {0}".format(Q), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
