@@ -1054,64 +1054,67 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-80.91, 9.79, -97.13), 5, EffectReeval.VISIBILITY)
 
     # window 1
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-95.12, 8.43, -111.36), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-95.32, 8.43, -111.36), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-95.52, 8.43, -111.36), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-95.72, 8.43, -111.36), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-95.92, 8.43, -111.36), 9, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-98.09, 8.11, -113.37), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.83, 8.11, -112.13), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.57, 8.11, -110.89), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.30, 8.11, -109.65), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.04, 8.11, -108.41), 5, EffectReeval.VISIBILITY)
+
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-98.09, 9.89, -113.37), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.83, 9.89, -112.13), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.57, 9.89, -110.89), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.30, 9.89, -109.65), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.04, 9.89, -108.41), 5, EffectReeval.VISIBILITY)
 
     # window 2
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.15, 8, -118.84), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.35, 8, -118.84), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.55, 8, -118.84), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.75, 8, -118.84), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.95, 8, -118.84), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.94, 8.72, -120.05), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.74, 8.72, -119.11), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.54, 8.72, -118.17), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.34, 8.72, -117.23), 5, EffectReeval.VISIBILITY)
 
     # window 3
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.12, 8.43, -127.46), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.32, 8.43, -127.46), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.52, 8.43, -127.46), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.72, 8.43, -127.46), 9, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.92, 8.43, -127.46), 9, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.44, 8.11, -129.02), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 8.11, -127.78), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.92, 8.11, -126.54), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.66, 8.11, -125.30), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.40, 8.11, -124.06), 5, EffectReeval.VISIBILITY)
+
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.44, 9.89, -129.02), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 9.89, -127.78), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.92, 9.89, -126.54), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.66, 9.89, -125.30), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.40, 9.89, -124.06), 5, EffectReeval.VISIBILITY)
 
     # window 4
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.17, 8, -137.46), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.37, 8, -137.46), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.57, 8, -137.46), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.77, 8, -137.46), 5, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.97, 8, -137.46), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.18, 7.97, -138.75), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.03, 7.97, -138.04), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.88, 7.97, -137.33), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.73, 7.97, -136.62), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.58, 7.97, -135.91), 5, EffectReeval.VISIBILITY)
 
     # window 5
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -136), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -137), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -138), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -139), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -140), 3, EffectReeval.VISIBILITY)
-
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -136), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -137), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -138), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -139), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.5, 13.5, -140), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.32, 14.01, -140.24), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.16, 14.01, -139.46), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.00, 14.01, -138.68), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 14.01, -137.90), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.67, 14.01, -137.12), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.51, 14.01, -136.33), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.34, 14.01, -135.55), 5, EffectReeval.VISIBILITY)
 
     # # window 6
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 13.5, -153.41), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.54, 13.5, -152.50), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.95, 13.5, -150.25), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.52, 13.5, -149.31), 3, EffectReeval.VISIBILITY)
-
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.83, 13.5, -153.41), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-100.54, 13.5, -152.50), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-101.18, 13.5, -151.41), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.95, 13.5, -150.25), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-102.52, 13.5, -149.31), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.36, 14.01, -151.78), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.79, 14.01, -151.12), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-98.23, 14.01, -150.45), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-98.67, 14.01, -149.78), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.11, 14.01, -149.11), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.54, 14.01, -148.44), 5, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.98, 14.01, -147.77), 5, EffectReeval.VISIBILITY)
 
     # window 7
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 11.44, -169.05), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 11.94, -169.05), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.44, -169.05), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-93.95, 12.94, -169.05), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 11, -169.23), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 11.5, -169.23), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 12, -169.23), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 12.5, -169.23), 3, EffectReeval.VISIBILITY)
 
     # inner workbench puzzle
     createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.45, 8.89, -184.36), 0.04, EffectReeval.VISIBILITY)
@@ -1628,22 +1631,16 @@ rule "Initial player setup":
 
 # CUTSCENES
 
-rule "skip cutscene text and disable jump":
+rule "skip cutscene text":
     @Event eachPlayer
     @Condition eventPlayer.currentCutscene != Cutscene.NONE
 
-    eventPlayer.disallowButton(Button.JUMP)
     skipCutscenePlayers.append(eventPlayer)
     eventPlayer.skipAlpha = 255
     wait(5)
     chase(eventPlayer.skipAlpha, 0, duration=0.6, ChaseReeval.NONE)
     wait(0.6)
     skipCutscenePlayers.remove(eventPlayer)
-
-rule "reenable jump":
-    @Event eachPlayer
-    @Condition eventPlayer.currentCutscene == Cutscene.NONE
-    eventPlayer.allowButton(Button.JUMP)
 
 rule "skip cutscene":
     @Event eachPlayer
