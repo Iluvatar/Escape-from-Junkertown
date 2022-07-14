@@ -867,6 +867,39 @@ def makeSwitchNoise():
     wait(0.3)
     popEffectDeleteQueue()
 
+# Toggle the lights when a button is pressed on the barn code panel
+# the y value should be set in eventPlayer.tPos
+def toggleBarnSwitch():
+    eventPlayer.tStart = []
+    createEffect(eventPlayer.tStart, Effect.SPHERE, Color.RED, vect(56.656, eventPlayer.tPos, -66.630), 0.013, EffectReeval.VISIBILITY)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer.tStart, Effect.SPHERE, Color.RED, vect(56.647, eventPlayer.tPos, -66.629), 0.013, EffectReeval.VISIBILITY)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer.tStart, Effect.SPHERE, Color.RED, vect(56.639, eventPlayer.tPos, -66.628), 0.013, EffectReeval.VISIBILITY)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer.tStart, Effect.SPHERE, Color.RED, vect(56.630, eventPlayer.tPos, -66.6275), 0.013, EffectReeval.VISIBILITY)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer.tStart, Effect.SPHERE, Color.RED, vect(56.622, eventPlayer.tPos, -66.627), 0.013, EffectReeval.VISIBILITY)
+    pushEffectDeleteQueue()
+    createEffect(eventPlayer.tStart, Effect.SPHERE, Color.RED, vect(56.613, eventPlayer.tPos, -66.626), 0.013, EffectReeval.VISIBILITY)
+    pushEffectDeleteQueue()
+
+    eventPlayer.tStart.append(eventPlayer)
+
+    createEffect(eventPlayer, Effect.ECHO_FOCUSING_BEAM_SOUND, null, eventPlayer, 100, EffectReeval.NONE)
+    pushEffectDeleteQueue()
+    wait(0.3)
+
+    eventPlayer.tStart.remove(eventPlayer)
+
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
+
 
 
 # SETUP
@@ -2906,23 +2939,28 @@ rule "Interact":
 
     if eventPlayer.isHog:
         if eventPlayer.tValue[Item.ID] == Id.barnSwitch1:
-            makeSwitchNoise()
+            eventPlayer.tPos = 10.656
+            toggleBarnSwitch()
             ENTER_BARN_DIGIT(1)
             checkBarnCode()
         elif eventPlayer.tValue[Item.ID] == Id.barnSwitch2:
-            makeSwitchNoise()
+            eventPlayer.tPos = 10.581
+            toggleBarnSwitch()
             ENTER_BARN_DIGIT(2)
             checkBarnCode()
         elif eventPlayer.tValue[Item.ID] == Id.barnSwitch3:
-            makeSwitchNoise()
+            eventPlayer.tPos = 10.509
+            toggleBarnSwitch()
             ENTER_BARN_DIGIT(3)
             checkBarnCode()
         elif eventPlayer.tValue[Item.ID] == Id.barnSwitch4:
-            makeSwitchNoise()
+            eventPlayer.tPos = 10.425
+            toggleBarnSwitch()
             ENTER_BARN_DIGIT(4)
             checkBarnCode()
         elif eventPlayer.tValue[Item.ID] == Id.barnSwitch5:
-            makeSwitchNoise()
+            eventPlayer.tPos = 10.346
+            toggleBarnSwitch()
             ENTER_BARN_DIGIT(5)
             checkBarnCode()
         elif eventPlayer.tValue[Item.ID] == Id.barnPaperClue1:
