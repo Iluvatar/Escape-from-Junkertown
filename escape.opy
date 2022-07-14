@@ -1680,24 +1680,13 @@ rule "show intro":
         vect(8.22, 8.32, -64.54),
         vect(8.84, 8.36, -60.69),
         vect(6.69, 8.28, -56.59),
-    ]
-    eventPlayer.bezierDuration = 1.65
-    doBezier()
-    eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-
-    wait(1.65, Wait.ABORT_WHEN_FALSE)
-
-    eventPlayer.bezier = [
-        vect(6.69, 8.28, -56.59),
         vect(4.54, 8.20, -52.48),
         vect(-0.38, 8.00, -48.11),
         vect(-5.31, 7.79, -43.75),
     ]
     eventPlayer.bezierDuration = 1.65
-    doBezier()
     eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
-
-    wait(1.65, Wait.ABORT_WHEN_FALSE)
+    doBezierArray()
 
     # Stage 3, view of posters
     eventPlayer.tPos = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
