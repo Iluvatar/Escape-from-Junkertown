@@ -1671,6 +1671,7 @@ rule "skip cutscene text":
     @Condition eventPlayer.currentCutscene != Cutscene.NONE
 
     skipCutscenePlayers.append(eventPlayer)
+    stopChasingVariable(eventPlayer.skipAlpha)
     eventPlayer.skipAlpha = 255
     wait(5)
     chase(eventPlayer.skipAlpha, 0, duration=0.6, ChaseReeval.NONE)
@@ -1811,54 +1812,69 @@ rule "do waking animation cleanup":
     wait(3)
     graphicsQualityPlayers.append(eventPlayer)
 
-#!define JUNK_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
-#!define HOG_CAM_POS vect(68.39, 15.54, -86.84)
-#!define HOG_CAM_FACE vect(68.39, 15.54, -86.84) + vect(0.86, -0.51, 0)
-#!define HOG_TEXT_POS vect(69.46, 15.15 + 0.15, -86.83)
-#!define JUNK_COLOR rgb(236, 190, 82)
-#!define HOG_COLOR rgb(179, 139, 80)
+#!define RADIO_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
 
 rule "do inner radio conversation":
     @Event eachPlayer
     @Condition eventPlayer.currentCutscene == Cutscene.INNER_RADIO and not eventPlayer.isCutsceneFinished
 
     freeze()
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.innerRadio[Item.POINT]), 60, Relativity.TO_PLAYER, FacingReeval.NONE)
 
-    wait(1, Wait.ABORT_WHEN_FALSE)
-    CREATE_TEXT("*krssshksht*", JUNK_TEXT_POS)
+    smallMessage(eventPlayer, "You attempt to contact the other guy")
+
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("*krssshksht*", RADIO_TEXT_POS)
     createEffect(eventPlayer, Effect.MERCY_DAMAGE_BOOSTED_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100, EffectReeval.NONE)
     pushEffectDeleteQueue()
 
-    wait(1, Wait.ABORT_WHEN_FALSE)
+    wait(2, Wait.ABORT_WHEN_FALSE)
     popEffectDeleteQueue()
-
-    wait(0.5, Wait.ABORT_WHEN_FALSE)
-    eventPlayer.communicate(Comms.NEED_HELP)
+    popTextDeleteQueue()
 
     wait(2, Wait.ABORT_WHEN_FALSE)
-    CREATE_COLORED_TEXT(". . .", JUNK_TEXT_POS, HOG_COLOR)
+    CREATE_TEXT("...what did you get yourself into this time.", RADIO_TEXT_POS)
 
-    wait(3, Wait.ABORT_WHEN_FALSE)
-    CREATE_COLORED_TEXT("What did you get yourself into this time", JUNK_TEXT_POS, HOG_COLOR)
+    wait(5, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("You woke up in a safe full of gold?", RADIO_TEXT_POS)
 
-    wait(3, Wait.ABORT_WHEN_FALSE)
-    eventPlayer.startCamera(HOG_CAM_POS, HOG_CAM_FACE, 0)
+    wait(5, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("In the queen's treasure room?!", RADIO_TEXT_POS)
 
-    wait(1.5, Wait.ABORT_WHEN_FALSE)
-    CREATE_COLORED_TEXT("I dunno, but I'm trapped in here!", HOG_TEXT_POS, JUNK_COLOR)
-    CREATE_COLORED_TEXT("Ｍａｙｂｅ　ａｎ　ＥＸＰＬＯＳＩＯＮ　ｗｏｕｌｄ　ｈｅｌｐ！", HOG_TEXT_POS, JUNK_COLOR)
-
-
-    wait(4, Wait.ABORT_WHEN_FALSE)
-    eventPlayer.stopCamera()
+    wait(5, Wait.ABORT_WHEN_FALSE)
     popTextDeleteQueue()
     wait(1, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("        \n.", RADIO_TEXT_POS)
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("        \n. .", RADIO_TEXT_POS)
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("        \n. . .", RADIO_TEXT_POS)
+    wait(2, Wait.ABORT_WHEN_FALSE)
+    popTextDeleteQueue()
 
+    wait(2, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("Well, just try to get outside right now.", RADIO_TEXT_POS)
+
+    wait(5, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("Find Bruce, he might be able to help you.", RADIO_TEXT_POS)
+
+    wait(5, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("I'll let him know to expect you, he doesn't trust strangers.", RADIO_TEXT_POS)
+
+    wait(5, Wait.ABORT_WHEN_FALSE)
+    popTextDeleteQueue()
+
+    wait(3, Wait.ABORT_WHEN_FALSE)
+    CREATE_TEXT("What? No an explosion won't hel-", RADIO_TEXT_POS)
+
+    wait(1)
+    popTextDeleteQueue()
     playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION, null, eventPlayer.innerRadio[Item.POINT], 100)
     playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
     radioSmokePlayers.append(eventPlayer)
-    wait(3, Wait.ABORT_WHEN_FALSE)
+    wait(2)
+    smallMessage(eventPlayer, "Oops")
+    wait(5, Wait.ABORT_WHEN_FALSE)
     eventPlayer.isCutsceneFinished = true
 
 rule "do inner radio conversation cleanup":
@@ -1872,7 +1888,6 @@ rule "do inner radio conversation cleanup":
     eventPlayer.canBeTheOtherGuy = true
     if eventPlayer not in radioSmokePlayers:
         radioSmokePlayers.append(eventPlayer)
-    eventPlayer.stopFacing()
     unfreeze()
     popAllEffectDeleteQueue()
     popAllTextDeleteQueue()
