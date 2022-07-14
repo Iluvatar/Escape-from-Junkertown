@@ -1898,9 +1898,12 @@ rule "do comedy routine":
 
     freeze()
     smallMessage(eventPlayer, "You walk up on stage and everyone starts laughing")
-    wait(3, Wait.ABORT_WHEN_FALSE)
+    wait(5, Wait.ABORT_WHEN_FALSE)
     smallMessage(eventPlayer, "But you haven't even told any jokes yet?")
-    wait(3, Wait.ABORT_WHEN_FALSE)
+    wait(5, Wait.ABORT_WHEN_FALSE)
+    smallMessage(eventPlayer, "You rip the mask off in disgust")
+    wait(5, Wait.ABORT_WHEN_FALSE)
+    smallMessage(eventPlayer, "She tells you that's enough and waves you over")
 
     eventPlayer.isCutsceneFinished = true
 
@@ -1961,7 +1964,7 @@ def doMoleLeaderInteractionStage1():
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("Seek first the room beneath the outer wall.\nIf they're not there, return back to this hall.", DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("Seek first the room beneath the outer wall.\nIf no one's there, return back to this hall.", DOOR_24_TEXT_LOCATION)
     wait(0.5)
 
     stopChasingVariable(eventPlayer.tPos)
@@ -2810,7 +2813,7 @@ rule "Interact":
                 CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the Chinese place. They all tend to talk in riddles though.", BARTENDER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == Id.outerNotSmuggler:
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay in cash.", NOT_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay you in cash.", NOT_SMUGGLER_TEXT_LOCATION)
                 SET_STATE(Id.outerMic, 1)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("Alright, you've earned your pay.", NOT_SMUGGLER_TEXT_LOCATION)
