@@ -125,7 +125,6 @@ enum Item:
 globalvar skipCutscenePlayers = []
 globalvar introStage1Players = []
 globalvar introStage2Players = []
-globalvar inventoryPlayers = []
 globalvar tutorialPlayers = []
 globalvar graphicsQualityPlayers = []
 globalvar playersInDark = []
@@ -419,6 +418,7 @@ playervar isHog
 playervar junkInventory
 playervar hogInventory
 playervar inventory
+playervar inventoryPlayer
 playervar junkEquipped
 playervar hogEquipped
 playervar equipped
@@ -512,10 +512,6 @@ playervar outerDoor25
 playervar barnWorkbench
 
 playervar outsideHose
-playervar outsideSat1
-playervar outsideSat2
-playervar outsideSat3
-playervar outsideSat4
 playervar outsideSatControl
 playervar outsideSmuggler
 playervar outsideMolePersonRoom
@@ -728,13 +724,13 @@ def hideUi():
     eventPlayer.disableHeroHUD()
     hideEquips()
     hideAchievements()
-    inventoryPlayers.remove(eventPlayer)
+    eventPlayer.inventoryPlayer.remove(eventPlayer)
 
 def showUi():
     eventPlayer.enableHeroHud()
     manageEquips()
     manageAchievements()
-    inventoryPlayers.append(eventPlayer)
+    eventPlayer.inventoryPlayer.append(eventPlayer)
 
 # Freezes and unfreezes the player
 def freeze():
@@ -1002,9 +998,6 @@ rule "Global setup":
     createInWorldText(introStage2Players, "Escape", vect(-35.24, 13.01, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
-    # inventory
-    hudHeader(inventoryPlayers, "Inventory: {0}".format(localPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-
     # equipped hud text
     hudHeader(equipPlayers[Equip.HAS_ANY], "Equipped", HudPosition.LEFT, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
@@ -1031,7 +1024,7 @@ rule "Global setup":
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on objects".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    # createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
     createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tutorialGate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -1167,7 +1160,7 @@ rule "Global setup":
     createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createEffect(innerMinigamePlayers, Effect.SPHERE, Color.BLACK, INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73, 0)), 0.05, EffectReeval.VISIBILITY)
     createInWorldText(innerMinigamePlayers, "skip", INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(innerMinigamePlayers, "Make the arrow point the other way", vect(-103.48, 9.64, -184.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(innerMinigamePlayers, "Use the gray dots to make the arrow point the other way", vect(-103.48, 9.64, -184.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
@@ -1178,7 +1171,7 @@ rule "Global setup":
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.BLACK, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, EffectReeval.VISIBILITY)
     createInWorldText(outerMinigamePlayers, "skip", OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(outerMinigamePlayers, "Turn all the red dots black", vect(-56.46, 12.81, -60.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(outerMinigamePlayers, "Turn all the red dots black. Click the gray dots to rotate the surrounding ones.", vect(-56.46, 12.81, -60.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # map marker
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
@@ -1239,6 +1232,8 @@ def playerInitialState():
     stopChasingVariable(eventPlayer.tutorialGate1End)
     stopChasingVariable(eventPlayer.tutorialGate2End)
     stopChasingVariable(eventPlayer.skipAlpha)
+
+    eventPlayer.stopFacing()
 
     # Player state
     eventPlayer.pauseInteraction = false
@@ -1364,7 +1359,7 @@ def playerInitialState():
 
     eventPlayer.barnWorkbench = [Id.barnWorkbench, 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
-    eventPlayer.outsideHose = [Id.outsideHose, 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with murky water"]]
+    eventPlayer.outsideHose = [Id.outsideHose, 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with water"]]
     eventPlayer.outsideSatControl = [Id.outsideSatControl, 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the necessary remote at his place", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = [Id.outsideSmuggler, 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outsideMolePersonRoom = [Id.outsideMolePersonRoom, 0, vect(-50.68, 5.97, -4.12), 2, null]
@@ -1373,6 +1368,38 @@ def playerInitialState():
     eventPlayer.outsideMolePersonCliff = [Id.outsideMolePersonCliff, 0, MOLE_PERSON_CLIFF_TEXT_LOCATION, 2, null]
 
     eventPlayer.itemPoints = [
+        # item apply points
+        eventPlayer.tutGate1,
+        eventPlayer.tutGate2,
+
+        eventPlayer.innerWires,
+        eventPlayer.innerBarrel2,
+        eventPlayer.innerGenerator,
+        eventPlayer.innerRadio,
+        eventPlayer.innerWorkbench,
+        eventPlayer.innerToolbox2,
+
+        eventPlayer.outerBruce,
+        eventPlayer.outerSmuggler,
+        eventPlayer.outerBartender,
+        eventPlayer.outerNotSmuggler,
+        eventPlayer.outerWorkbench,
+        eventPlayer.outerDoor21,
+        eventPlayer.outerDoor22,
+        eventPlayer.outerDoor23,
+        eventPlayer.outerDoor24,
+        eventPlayer.outerDoor25,
+
+        eventPlayer.barnWorkbench,
+
+        eventPlayer.outsideSatControl,
+        eventPlayer.outsideSmuggler,
+        eventPlayer.outsideHose,
+        eventPlayer.outsideMolePersonRoom,
+        eventPlayer.outsideMolePersonOuthouse,
+        eventPlayer.outsideMolePersonCar,
+        eventPlayer.outsideMolePersonCliff,
+
         # tutorial room
         [Id.tutSafe1, 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
         [Id.tutSafe2, 0, vect(-100.95, 11.28, -80.59), 0.7, ["There's an odd looking coin in here"], "Odd looking coin", true],
@@ -1405,7 +1432,7 @@ def playerInitialState():
         [Id.innerThrone, 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
         [Id.innerChest2, 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
-        [Id.innerToolbox1, 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in large air vent. Long as the valves are open, no one will be able to grab it.\""], null, true],
+        [Id.innerToolbox1, 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in vent by entrance gate. Long as the three valves are open, no one can grab it.\""], null, true],
         [Id.innerSmallToolbox1, 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         [Id.innerTireRack, 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
@@ -1520,8 +1547,6 @@ def playerInitialState():
 
 
         # larger outside area
-        eventPlayer.outsideHose, # placed here for priority reasons
-
         [Id.outsideJunkWorkbench, 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
         [Id.outsideSafe, 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
         [Id.outsideIceBox, 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
@@ -1540,43 +1565,6 @@ def playerInitialState():
 
         [Id.outsidePoster1, 0, vect(-30.90, 6.14, -60.22), 0.8, ["That idiot is always getting you in trouble"], null, null, true],
         [Id.outsidePoster2, 0, vect(-23.46, 6.70, -66.49), 0.8, ["There's not much you need in there, but you'll miss talking to Bruce"], null, null, true],
-
-
-        # item apply points
-        eventPlayer.tutGate1,
-        eventPlayer.tutGate2,
-
-        eventPlayer.innerWires,
-        eventPlayer.innerBarrel2,
-        eventPlayer.innerGenerator,
-        eventPlayer.innerRadio,
-        eventPlayer.innerWorkbench,
-        eventPlayer.innerToolbox2,
-
-        eventPlayer.outerBruce,
-        eventPlayer.outerSmuggler,
-        eventPlayer.outerBartender,
-        eventPlayer.outerNotSmuggler,
-        eventPlayer.outerWorkbench,
-        eventPlayer.outerDoor21,
-        eventPlayer.outerDoor22,
-        eventPlayer.outerDoor23,
-        eventPlayer.outerDoor24,
-        eventPlayer.outerDoor25,
-
-        eventPlayer.barnWorkbench,
-
-        eventPlayer.outsideSat1,
-        eventPlayer.outsideSat2,
-        eventPlayer.outsideSat3,
-        eventPlayer.outsideSat4,
-        eventPlayer.outsideSatControl,
-        eventPlayer.outsideSmuggler,
-        # eventPlayer.outsideHose, # placed above for priority reasons
-        eventPlayer.outsideMolePersonRoom,
-        eventPlayer.outsideMolePersonOuthouse,
-        eventPlayer.outsideMolePersonCar,
-        eventPlayer.outsideMolePersonCliff,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -1589,7 +1577,7 @@ def playerInitialState():
     eventPlayer.tutorialGate1End = vect(-101.64, 10.93, -90.46)
     eventPlayer.tutorialGate2End = vect(-91.58, 10.93, -92.60)
 
-    inventoryPlayers.remove(eventPlayer)
+    eventPlayer.inventoryPlayer = []
 
     manageEquips()
     manageAchievements()
@@ -1672,6 +1660,8 @@ rule "Initial player setup":
         eventPlayer.disableScoreboard()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
+
+    hudHeader(eventPlayer.inventoryPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
 
 
@@ -1815,7 +1805,7 @@ rule "do waking animation cleanup":
     eventPlayer.currentCutscene = Cutscene.NONE
     eventPlayer.isCutsceneFinished = false
 
-    inventoryPlayers.append(eventPlayer)
+    eventPlayer.inventoryPlayer.append(eventPlayer)
     unfreeze()
     showUi()
     eventPlayer.stopCamera()
@@ -2425,7 +2415,7 @@ rule "Poster achievement":
 
 rule "Inner lights reset":
     @Event eachPlayer
-    @Condition distance(eventPlayer.getEyePosition(), vect(-111.73, 14.04, -137.34)) > 4
+    @Condition distance(eventPlayer.getEyePosition(), vect(-111.73, 14.04, -137.34)) > 4 and not eventPlayer.powerSwitched
 
     if eventPlayer not in powerPanelPlayers[0]:
         powerPanelPlayers[0].append(eventPlayer)
@@ -2456,6 +2446,8 @@ rule "Set inner power box state":
     @Condition eventPlayer.wiresConnected and eventPlayer.generatorOn
 
     SET_STATE(Id.innerPowerBox, 3)
+    wait(3)
+    smallMessage(eventPlayer, "If you could just get the power panel all green, maybe the lights would turn on")
 
 rule "Inner workbench minigame start":
     @Event eachPlayer
@@ -2594,7 +2586,7 @@ rule "Barn workbench minigame success":
     SET_STATE(Id.barnWorkbench, 1)
     eventPlayer.inventory.remove("Right handed remote")
     eventPlayer.inventory = "Left handed remote".concat(eventPlayer.inventory)
-    smallMessage(eventPlayer, "You turn the remote over to get a left handed remote")
+    smallMessage(eventPlayer, "You pick up the remote with your left hand. Turns out remotes aren't handed.")
 
 rule "Barn workbench minigame stop":
     @Event eachPlayer
@@ -2791,7 +2783,7 @@ rule "Interact":
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             elif not eventPlayer.powerSwitched:
-                smallMessage(eventPlayer, "There's power, but one of the panels is broken, just like everything else in this place")
+                smallMessage(eventPlayer, "There's power, so the switches next to the lights should work")
             else:
                 smallMessage(eventPlayer, "The pretty green lights make you giddy")
         elif eventPlayer.tValue[Item.ID] == Id.innerGenerator:
@@ -3355,6 +3347,8 @@ rule "Apply":
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif strContains(eventPlayer.inventory[0], "dollars"):
                 CREATE_TEXT("You already have a membership.", INSIDE_SMUGGLER_TEXT_LOCATION)
+            elif eventPlayer.inventory[0] == "Odd looking coin":
+                CREATE_TEXT("This is far too odd looking for me to deliver.", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it! We'll have the {0} outside the walls for you in a jiffy.".format(eventPlayer.inventory[0]), INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.outsideSmugglerItem = eventPlayer.inventory[0]
@@ -3606,7 +3600,7 @@ rule "Inner radio help message":
     @Event eachPlayer
     @Condition not eventPlayer.hasFoundInnerRadio and distance(vect(-90, 6.5, -107), eventPlayer.getPosition()) < 10
 
-    smallMessage(eventPlayer, "A radio! Maybe you can call someone for help")
+    smallMessage(eventPlayer, "A radio mic next to the throne! Maybe you can call for help")
 
 # Junkertown exit wall
 
@@ -3661,6 +3655,7 @@ rule "Create dvd logo":
 
     chase(dvdLogoPos, dvdLogoPos + dvdLogoDir, rate=0.5, ChaseReeval.DESTINATION_AND_RATE)
     createEffect(dvdLogoPlayers, Effect.SPHERE, Color.VIOLET, updateEveryTick(OUTSIDE_SAT_TO_WORLD(dvdLogoPos)), 0.17, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(getAllPlayers(), Effect.BAPTISTE_IMMORTALITY_FIELD_PROTECTED_SOUND, null, localPlayer.getPosition(), (5 - distance(vect(-3.30, 14.20, -83.94), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
 rule "DVD logo bounce x":
     @Event global
@@ -3784,178 +3779,178 @@ def showHintScreen():
 
     generateHintText()
 
-rule "Toggle hints":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
+# rule "Toggle hints":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
 
-    eventPlayer.isDoingHint = not eventPlayer.isDoingHint
-    if eventPlayer.isDoingHint:
-        freeze()
-        FADE_TO_BLACK()
-        hideUi()
-        showHintScreen()
-    else:
-        showUi()
-        popAllTextDeleteQueue()
-        eventPlayer.stopCamera()
-        unfreeze()
-
-
-
-# DEBUG FUNCTIONS
-globalvar debugPlayers = []
-
-playervar pointHelperEffect
-playervar pointHelperHud
-playervar pointHelperState = 0
+#     eventPlayer.isDoingHint = not eventPlayer.isDoingHint
+#     if eventPlayer.isDoingHint:
+#         freeze()
+#         FADE_TO_BLACK()
+#         hideUi()
+#         showHintScreen()
+#     else:
+#         showUi()
+#         popAllTextDeleteQueue()
+#         eventPlayer.stopCamera()
+#         unfreeze()
 
 
-rule "test":
-    @Event global
 
-    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(5.77, 16.46, -44.27), vect(-1.10, 15.52, -59.41), null, EffectReeval.VISIBILITY)
-    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(-1.10, 15.52, -59.41), vect(12.34, 17.12, -88.35), null, EffectReeval.VISIBILITY)
-    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(12.34, 17.12, -88.35), vect(20.92, 15.01, -86.41), null, EffectReeval.VISIBILITY)
-    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(20.92, 15.01, -86.41), vect(26.18, 15.70, -90.36), null, EffectReeval.VISIBILITY)
-    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(26.18, 15.70, -90.36), vect(29.31, 16.27, -90.89), null, EffectReeval.VISIBILITY)
+# # DEBUG FUNCTIONS
+# globalvar debugPlayers = []
 
-
-rule "trigger all npcs":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
-
-    INCREMENT_STATE(Id.outerBruce)
-
-rule "Debug on":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ULTIMATE)
-
-    if eventPlayer in debugPlayers:
-        debugPlayers.remove(eventPlayer)
-    else:
-        debugPlayers.append(eventPlayer)
-
-playervar isMercyUlting = false
-
-rule "Be mercy":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer.isHoldingButton(Button.CROUCH)
-
-    eventPlayer.isMercyUlting = false
-    eventPlayer.startForcingHero(Hero.MERCY)
-
-rule "Toggle infinite mercy ult":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
-    @Condition eventPlayer.getCurrentHero() == Hero.MERCY
-
-    eventPlayer.isMercyUlting = not eventPlayer.isMercyUlting
-
-globalvar x
-
-rule "setup":
-    @Event global
-
-    chase(x, INF, rate=2 * PI / 32, ChaseReeval.NONE)
-
-rule "trip cam":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
-
-    # eventPlayer.disableHeroHUD()
-    # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
-    # GIVE_ITEM("Strong alcohol")
-    # GIVE_ITEM("Right handed remote")
-    # eventPlayer.equipped.append(Equip.WINGS)
-    # manageEquips()
-    # eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
-    # doCredits()
-    eventPlayer.currentCutscene = Cutscene.ENDING
-
-rule "stop trip cam":
-    @Event eachPlayer
-    @Condition not eventPlayer.isHoldingButton(Button.RELOAD)
-
-    # eventPlayer.enableHeroHud()
-    # eventPlayer.stopCamera()
-
-rule "end game state":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.isHoldingButton(Button.ABILITY_1)
-
-    eventPlayer.molePersonInteractStage = 4
-    eventPlayer.equipped.append(Equip.WINGS)
-    manageEquips()
+# playervar pointHelperEffect
+# playervar pointHelperHud
+# playervar pointHelperState = 0
 
 
-rule "Restart game":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.ULTIMATE)
+# rule "test":
+#     @Event global
 
-    resetGame()
+#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(5.77, 16.46, -44.27), vect(-1.10, 15.52, -59.41), null, EffectReeval.VISIBILITY)
+#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(-1.10, 15.52, -59.41), vect(12.34, 17.12, -88.35), null, EffectReeval.VISIBILITY)
+#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(12.34, 17.12, -88.35), vect(20.92, 15.01, -86.41), null, EffectReeval.VISIBILITY)
+#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(20.92, 15.01, -86.41), vect(26.18, 15.70, -90.36), null, EffectReeval.VISIBILITY)
+#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(26.18, 15.70, -90.36), vect(29.31, 16.27, -90.89), null, EffectReeval.VISIBILITY)
 
-rule "Mercy infinite ult":
-    @Event eachPlayer
-    @Condition eventPlayer.getCurrentHero() == Hero.MERCY
-    @Condition eventPlayer.isMercyUlting
-    @Condition not eventPlayer.isUsingUltimate()
 
-    eventPlayer.setUltCharge(100)
-    eventPlayer.forceButtonPress(Button.ULTIMATE)
-    wait(0.1)
-    eventPlayer.isMercyUlting = true
+# rule "trigger all npcs":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
 
-rule "Easy restart":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
-    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+#     INCREMENT_STATE(Id.outerBruce)
 
-    restartMatch()
+# rule "Debug on":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ULTIMATE)
 
-rule "Point helper":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.CROUCH)
+#     if eventPlayer in debugPlayers:
+#         debugPlayers.remove(eventPlayer)
+#     else:
+#         debugPlayers.append(eventPlayer)
 
-    eventPlayer.canBeTheOtherGuy = true
+# playervar isMercyUlting = false
 
-    if eventPlayer.pointHelperState == 0:
-        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-        eventPlayer.pointHelperHud = getLastCreatedText()
-        createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
-        eventPlayer.pointHelperEffect = getLastCreatedEntity()
-        eventPlayer.pointHelperState = 1
-    elif eventPlayer.pointHelperState == 1:
-        destroyEffect(eventPlayer.pointHelperEffect)
-        destroyHudText(eventPlayer.pointHelperHud)
-        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3)), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-        eventPlayer.pointHelperHud = getLastCreatedText()
-        createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
-        eventPlayer.pointHelperEffect = getLastCreatedEntity()
-        eventPlayer.pointHelperState = 2
-    else:
-        destroyEffect(eventPlayer.pointHelperEffect)
-        destroyHudText(eventPlayer.pointHelperHud)
-        eventPlayer.pointHelperState = 0
+# rule "Be mercy":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer.isHoldingButton(Button.CROUCH)
 
-rule "Item visualization":
-    @Event eachPlayer
-    @Condition eventPlayer == hostPlayer
+#     eventPlayer.isMercyUlting = false
+#     eventPlayer.startForcingHero(Hero.MERCY)
 
-    # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-    #     if Id.outerIceBox <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerMinigameSkip:
-    #         createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
+# rule "Toggle infinite mercy ult":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
+#     @Condition eventPlayer.getCurrentHero() == Hero.MERCY
 
-rule "Noclip on":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.MELEE) == true
+#     eventPlayer.isMercyUlting = not eventPlayer.isMercyUlting
 
-    eventPlayer.disableEnvironmentCollision(false)
+# globalvar x
 
-rule "Noclip off":
-    @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.MELEE) == false
+# rule "setup":
+#     @Event global
 
-    eventPlayer.enableEnvironmentCollision()
+#     chase(x, INF, rate=2 * PI / 32, ChaseReeval.NONE)
+
+# rule "trip cam":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
+
+#     # eventPlayer.disableHeroHUD()
+#     # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+#     # GIVE_ITEM("Strong alcohol")
+#     # GIVE_ITEM("Right handed remote")
+#     # eventPlayer.equipped.append(Equip.WINGS)
+#     # manageEquips()
+#     # eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
+#     # doCredits()
+#     eventPlayer.currentCutscene = Cutscene.ENDING
+
+# rule "stop trip cam":
+#     @Event eachPlayer
+#     @Condition not eventPlayer.isHoldingButton(Button.RELOAD)
+
+#     # eventPlayer.enableHeroHud()
+#     # eventPlayer.stopCamera()
+
+# rule "end game state":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.isHoldingButton(Button.ABILITY_1)
+
+#     eventPlayer.molePersonInteractStage = 4
+#     eventPlayer.equipped.append(Equip.WINGS)
+#     manageEquips()
+
+
+# rule "Restart game":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.ULTIMATE)
+
+#     resetGame()
+
+# rule "Mercy infinite ult":
+#     @Event eachPlayer
+#     @Condition eventPlayer.getCurrentHero() == Hero.MERCY
+#     @Condition eventPlayer.isMercyUlting
+#     @Condition not eventPlayer.isUsingUltimate()
+
+#     eventPlayer.setUltCharge(100)
+#     eventPlayer.forceButtonPress(Button.ULTIMATE)
+#     wait(0.1)
+#     eventPlayer.isMercyUlting = true
+
+# rule "Easy restart":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+#     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+
+#     restartMatch()
+
+# rule "Point helper":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.CROUCH)
+
+#     eventPlayer.canBeTheOtherGuy = true
+
+#     if eventPlayer.pointHelperState == 0:
+#         hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+#         eventPlayer.pointHelperHud = getLastCreatedText()
+#         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+#         eventPlayer.pointHelperEffect = getLastCreatedEntity()
+#         eventPlayer.pointHelperState = 1
+#     elif eventPlayer.pointHelperState == 1:
+#         destroyEffect(eventPlayer.pointHelperEffect)
+#         destroyHudText(eventPlayer.pointHelperHud)
+#         hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3)), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+#         eventPlayer.pointHelperHud = getLastCreatedText()
+#         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+#         eventPlayer.pointHelperEffect = getLastCreatedEntity()
+#         eventPlayer.pointHelperState = 2
+#     else:
+#         destroyEffect(eventPlayer.pointHelperEffect)
+#         destroyHudText(eventPlayer.pointHelperHud)
+#         eventPlayer.pointHelperState = 0
+
+# rule "Item visualization":
+#     @Event eachPlayer
+#     @Condition eventPlayer == hostPlayer
+
+#     # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
+#     #     if Id.outerIceBox <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerMinigameSkip:
+#     #         createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
+
+# rule "Noclip on":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.MELEE) == true
+
+#     eventPlayer.disableEnvironmentCollision(false)
+
+# rule "Noclip off":
+#     @Event eachPlayer
+#     @Condition eventPlayer.isHoldingButton(Button.MELEE) == false
+
+#     eventPlayer.enableEnvironmentCollision()
 
 rule "Display stats":
     @Event eachPlayer
@@ -3972,7 +3967,7 @@ rule "Display stats":
     # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
     # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
-    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.NEVER)
-    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.NEVER)
+    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.ALWAYS)
