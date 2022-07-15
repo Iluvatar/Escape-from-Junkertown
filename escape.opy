@@ -467,6 +467,9 @@ playervar bruceTimer
 
 playervar hasFinishedGame
 
+playervar isDoingHint
+playervar hintText
+
 # achievements
 playervar postersFound
 playervar outsideMapFound
@@ -1307,6 +1310,8 @@ def playerInitialState():
 
     eventPlayer.hasFinishedGame = false
 
+    eventPlayer.isDoingHint = false
+
     eventPlayer.postersFound = []
     eventPlayer.outsideMapFound = false
     eventPlayer.timesBruceClicked = 0
@@ -2145,10 +2150,9 @@ rule "do ending cutscene":
     @Condition eventPlayer.currentCutscene == Cutscene.ENDING and not eventPlayer.isCutsceneFinished
 
     freeze()
-    wait(3)
-
     hideUi()
 
+    # walk along path
     eventPlayer.bezier = [
         vect(-37.02, 33.22, -123.09),
         vect(-38.33, 33.22, -121.57),
@@ -2162,42 +2166,73 @@ rule "do ending cutscene":
     eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
     doBezierArray()
 
+    wait(0.5, Wait.ABORT_WHEN_FALSE)
+
+    # look up at ladder
     eventPlayer.tPos = BEZIER_POSITION
     eventPlayer.tEnd = eventPlayer.tPos + vect(-0.84, 0, 0.54)
 
     eventPlayer.startCamera(eventPlayer.tPos, eventPlayer.tEnd, 0)
-    chase(eventPlayer.tEnd, eventPlayer.tPos + vect(0, 10, -1), duration=2, ChaseReeval.NONE)
-    wait(3, Wait.ABORT_WHEN_FALSE)
+    chase(eventPlayer.tEnd, eventPlayer.tPos + vect(0, 10, -1), duration=3, ChaseReeval.NONE)
+    wait(4, Wait.ABORT_WHEN_FALSE)
     stopChasingVariable(eventPlayer.tEnd)
 
+    # climb ladder looking right
     eventPlayer.bezier = [
         vect(-49.22, 33.22, -113.27),
-        vect(-48.90, 35.67, -112.70),
-        vect(-48.58, 38.12, -112.13),
+        vect(-48.90, 35.69, -112.71),
+        vect(-48.58, 38.15, -112.15),
         vect(-48.46, 40.97, -111.93),
-        vect(-48.35, 43.82, -111.72),
-        vect(-48.44, 47.06, -111.87),
+        vect(-48.34, 43.79, -111.71),
+        vect(-48.41, 46.96, -111.83),
         vect(-48.53, 49.74, -112.06),
     ]
     eventPlayer.bezierDuration = 3
     eventPlayer.startCamera(BEZIER_POSITION, BEZIER_POSITION + vect(0.99, 0, -0.16), 10)
     doBezierArray()
 
+    # climb ladder looking up
     eventPlayer.bezier = [
         vect(-48.53, 49.74, -112.06),
-        vect(-48.62, 52.42, -112.25),
-        vect(-48.71, 54.53, -112.47),
-        vect(-49.03, 56.91, -113.07),
-        vect(-49.34, 59.29, -113.66),
-        vect(-49.88, 61.94, -114.64),
-        vect(-50.43, 64.20, -115.66),
+        vect(-48.65, 52.52, -112.29),
+        vect(-48.83, 54.90, -112.63),
+        vect(-49.20, 57.42, -113.32),
+        vect(-49.58, 59.94, -114.01),
+        vect(-50.16, 62.59, -115.05),
+        vect(-50.73, 65.25, -116.09),
     ]
     eventPlayer.bezierDuration = 3
     eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 3)
     doBezierArray()
 
-    wait(2, Wait.ABORT_WHEN_FALSE)
+    wait(0.5, Wait.ABORT_WHEN_FALSE)
 
+    # look to right
+    eventPlayer.tPos = vect(-50.73, 65.25, -116.09)
+    eventPlayer.tEnd = eventPlayer.tPos + vect(-2.068, 8.620, -3.829)
+
+    eventPlayer.startCamera(eventPlayer.tPos, eventPlayer.tEnd, 5)
+    chase(eventPlayer.tEnd, vect(-50.73, 65.25, -116.09) + (vect(-48.03, 65.26, -116.94) - vect(-50.73, 65.25, -116.09)) * 2, duration=1.5, ChaseReeval.NONE)
+    wait(2.5, Wait.ABORT_WHEN_FALSE)
+    stopChasingVariable(eventPlayer.tEnd)
+
+    # walk to jump off point
+    chase(eventPlayer.tPos, vect(-48.03, 65.26, -116.94), duration=1, ChaseReeval.NONE)
+    wait(1.5, Wait.ABORT_WHEN_FALSE)
+
+    # look over city
+    eventPlayer.tEnd = vect(-50.73, 65.25, -116.09) + (vect(-48.03, 65.26, -116.94) - vect(-50.73, 65.25, -116.09)) * 20
+    eventPlayer.startCamera(vect(-48.03, 65.26, -116.94), eventPlayer.tEnd, 5)
+    chase(eventPlayer.tEnd, vect(-30, 25, -36), duration=5, ChaseReeval.NONE)
+    wait(6, Wait.ABORT_WHEN_FALSE)
+
+    chase(eventPlayer.tEnd, vect(23, 33, -80), duration=3, ChaseReeval.NONE)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    chase(eventPlayer.tEnd, vect(-48.03, 65.26, -116.94) + vect(4.80, -30.51, 46.04), duration=2, ChaseReeval.NONE)
+    wait(5, Wait.ABORT_WHEN_FALSE)
+
+    # fly over walls
     eventPlayer.bezier = [
         vect(-48.03, 65.26, -116.94),
         vect(-47.62, 61.24, -110.82),
@@ -2268,6 +2303,7 @@ rule "do ending cutscene cleanup":
     eventPlayer.currentCutscene = Cutscene.NONE
     eventPlayer.isCutsceneFinished = false
 
+    stopChasingVariable(eventPlayer.tPos)
     stopChasingVariable(eventPlayer.tEnd)
     doCredits()
 
@@ -2939,6 +2975,7 @@ rule "Interact":
                     doMoleLeaderInteractionStage4()
                 elif eventPlayer.molePersonInteractStage == 4:
                     eventPlayer.hasFinishedGame = true
+                    wait(3)
                     eventPlayer.currentCutscene = Cutscene.ENDING
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
@@ -3677,6 +3714,41 @@ rule "Mole person cliff away text":
 
 
 
+# HINTS
+
+def initialHintText():
+    eventPlayer.hintText = ["Test 123", "Test 456", "Test 789"]
+
+def generateHintText():
+
+    CREATE_BLACK_TEXT(eventPlayer.hintText[0], -1)
+    CREATE_BLACK_TEXT(eventPlayer.hintText[1], 0)
+    CREATE_BLACK_TEXT(eventPlayer.hintText[2], 1)
+
+def showHintScreen():
+    initialHintText()
+
+    generateHintText()
+
+rule "Toggle hints":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.isHoldingButton(Button.ABILITY_1)
+
+    eventPlayer.isDoingHint = not eventPlayer.isDoingHint
+
+    if eventPlayer.isDoingHint:
+        freeze()
+        FADE_TO_BLACK()
+        hideUi()
+        showHintScreen()
+    else:
+        showUi()
+        popAllTextDeleteQueue()
+        eventPlayer.stopCamera()
+        unfreeze()
+
+
+
 # DEBUG FUNCTIONS
 globalvar debugPlayers = []
 
@@ -3737,21 +3809,22 @@ rule "trip cam":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
 
-    eventPlayer.disableHeroHUD()
-    eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
+    # eventPlayer.disableHeroHUD()
+    # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
     # GIVE_ITEM("Strong alcohol")
     # GIVE_ITEM("Right handed remote")
     # eventPlayer.equipped.append(Equip.WINGS)
     # manageEquips()
     # eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
     # doCredits()
+    eventPlayer.currentCutscene = Cutscene.ENDING
 
 rule "stop trip cam":
     @Event eachPlayer
     @Condition not eventPlayer.isHoldingButton(Button.RELOAD)
 
-    eventPlayer.enableHeroHud()
-    eventPlayer.stopCamera()
+    # eventPlayer.enableHeroHud()
+    # eventPlayer.stopCamera()
 
 rule "end game state":
     @Event eachPlayer
@@ -3776,6 +3849,8 @@ rule "Mercy infinite ult":
 
     eventPlayer.setUltCharge(100)
     eventPlayer.forceButtonPress(Button.ULTIMATE)
+    wait(0.1)
+    eventPlayer.isMercyUlting = true
 
 rule "Easy restart":
     @Event eachPlayer
@@ -3835,7 +3910,8 @@ rule "Display stats":
     hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    # hudHeader(eventPlayer, "q: {0}".format(Q), HudPosition.LEFT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "pos: {0}".format(BEZIER_POSITION), HudPosition.RIGHT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer, "face: {0}".format(((BEZIER_FACING) - (BEZIER_POSITION)) * 1000), HudPosition.RIGHT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "b facing: {0}".format(normalize(BEZIER_POSITION - BEZIER_FACING)), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "B: {0}".format(B), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)

@@ -115,18 +115,16 @@ playervar isMercyUlting = false
 def addInitialPoints():
     eventPlayer.points = [
         vect(-49.22, 33.22, -113.27),
-        vect(-48.44, 43.13, -111.83),
-        vect(-48.67, 53.38, -112.37),
-        vect(-50.39, 63.90, -115.43),
+        vect(-48.46, 40.97, -111.93),
+        vect(-48.53, 49.74, -112.06),
+        vect(-49.03, 56.91, -113.07),
+        vect(-50.43, 65.20, -115.66),
     ]
-    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-49.22, 33.22, -113.27), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-    eventPlayer.pointsEffect.append(getLastCreatedEntity())
-    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-48.44, 43.13, -111.83), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-    eventPlayer.pointsEffect.append(getLastCreatedEntity())
-    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-48.67, 53.38, -112.37), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-    eventPlayer.pointsEffect.append(getLastCreatedEntity())
-    createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, vect(-50.39, 63.90, -115.43), eventPlayer.pointRadius, EffectReeval.VISIBILITY)
-    eventPlayer.pointsEffect.append(getLastCreatedEntity())
+    for eventPlayer.J in range(len(eventPlayer.points)):
+        createEffect(visibility, Effect.ORB, MAIN_POINT_COLOR, eventPlayer.points[eventPlayer.J], eventPlayer.pointRadius, EffectReeval.VISIBILITY)
+        eventPlayer.pointsEffect.append(getLastCreatedEntity())
+
+    eventPlayer.hasChanged = true
 
 
 def renderHandles():
@@ -246,7 +244,7 @@ rule "Player join":
 
     wait(1)
 
-    # addInitialPoints()
+    addInitialPoints()
 
     visibility.append(eventPlayer)
     eventPlayer.disableGamemodeHud()
