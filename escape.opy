@@ -55,6 +55,7 @@ settings {
 }
 
 
+
 #!extension beamEffects
 #!extension beamSounds
 #!extension buffAndDebuffSounds
@@ -985,7 +986,7 @@ rule "Spawn NPCs":
 rule "Global setup":
     @Event global
 
-    disableInspector()
+    # disableInspector()
     disableAnnouncer()
     disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
@@ -1524,7 +1525,7 @@ def playerInitialState():
         [Id.outsideJunkWorkbench, 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
         [Id.outsideSafe, 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
         [Id.outsideIceBox, 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
-        [Id.outsideFridge1, 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a point marked on it"]],
+        [Id.outsideFridge1, 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a the word \"sunglasses\" pointing to a red dot"]],
         [Id.outsideFridge2, 0, vect(-5.68, 13.51, -74.65), 1.2, ["Without electricity, this fridge isn't doing a very good job"], null, true],
         [Id.outsideFridge3, 0, vect(-31.79, 5.62, -28.84), 0.8, ["You can't open the door"], null, true, true],
         [Id.outsideFridge4, 0, vect(-31.72, 5.57, -30.10), 0.8, ["The door won't budge"], null, true, true],
@@ -2122,7 +2123,7 @@ rule "do mole agent interaction":
     CREATE_TEXT("Tell your friend I'm sorry for knocking him out and stuffing\nhim into the safe.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(5, Wait.ABORT_WHEN_FALSE)
 
-    CREATE_TEXT("Gold's the only thing she lets in the vault, so there was no\nother way in.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    CREATE_TEXT("Gold's the only thing the Queen lets in the vault, so there\nwas no other way in.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(5, Wait.ABORT_WHEN_FALSE)
 
     CREATE_TEXT("And that's where she was keeping the Device.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
@@ -2171,6 +2172,20 @@ rule "do ending cutscene":
 
     freeze()
     hideUi()
+
+    eventPlayer.tPos = eventPlayer.getEyePosition() + eventPlayer.getFacingDirection()
+    chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+
+    CREATE_TEXT("      A device, stolen\n Our people, liberated\nAnd you, the way out", DOOR_24_TEXT_LOCATION)
+    wait(0.5)
+
+    stopChasingVariable(eventPlayer.tPos)
+    wait(5)
+    popTextDeleteQueue()
+
+    FADE_TO_BLACK()
+    wait(3)
 
     # walk along path
     eventPlayer.bezier = [
@@ -2287,7 +2302,12 @@ rule "do ending cutscene":
 
 def doCredits():
     FADE_TO_BLACK()
-    wait(4)
+    wait(1)
+
+    bigMessage(eventPlayer, "Achievement get! Escape artist: get out of Junkertown")
+    eventPlayer.achievements.append(Achievement.ESCAPE_ARTIST)
+
+    wait(5)
 
     eventPlayer.tPos = -1.6
     CREATE_MOVABLE_TEXT("Thanks for playing", 0, 1, Color.WHITE)
@@ -2615,14 +2635,6 @@ rule "In a hurry achievement":
 
     bigMessage(eventPlayer, "Achievement get! In a hurry: pester Bruce 60 times")
     eventPlayer.achievements.append(Achievement.IN_A_HURRY)
-    manageAchievements()
-
-rule "Finish game achievement":
-    @Event eachPlayer
-    @Condition eventPlayer.hasFinishedGame
-
-    bigMessage(eventPlayer, "Achievement get! Escape artist: get out of Junkertown")
-    eventPlayer.achievements.append(Achievement.ESCAPE_ARTIST)
     manageAchievements()
 
 
@@ -3010,7 +3022,6 @@ rule "Interact":
                     doMoleLeaderInteractionStage4()
                 elif eventPlayer.molePersonInteractStage == 4:
                     eventPlayer.hasFinishedGame = true
-                    wait(3)
                     eventPlayer.currentCutscene = Cutscene.ENDING
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
