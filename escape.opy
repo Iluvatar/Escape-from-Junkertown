@@ -1004,7 +1004,7 @@ rule "Global setup":
     hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.ABILITY_2)), HudPosition.LEFT, 3, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.SUNGLASES], "{0} Sunglasses".format(abilityIconString(Hero.WINSTON, Button.ULTIMATE)), HudPosition.LEFT, 4, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(equipPlayers[Equip.DISGUISE], "{0} Hilarious Disguise".format(abilityIconString(Hero.LUCIO, Button.ULTIMATE)), HudPosition.LEFT, 5, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.DISGUISE], "{0} Hilarious Costume".format(abilityIconString(Hero.LUCIO, Button.ULTIMATE)), HudPosition.LEFT, 5, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.WINGS], "{0} Mechanical wings".format(abilityIconString(Hero.MERCY, Button.ULTIMATE)), HudPosition.LEFT, 6, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # achievement hud text
@@ -2114,7 +2114,22 @@ rule "do mole agent interaction":
     CREATE_TEXT("It's nothing you need to worry about though.\nThanks for getting the device out of Junkertown.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(6, Wait.ABORT_WHEN_FALSE)
 
+    CREATE_TEXT("Tell your friend I'm sorry for knocking him out and stuffing\nhim into the safe.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(5, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("Gold's the only thing she lets in the vault, so there was no\nother way in.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(5, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("And that's where she was keeping the Device.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    popTextDeleteQueue()
+    wait(2, Wait.ABORT_WHEN_FALSE)
+
     CREATE_TEXT("I'll let the others know you've delivered it.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    CREATE_TEXT("They'll get your friend where he needs to go.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(4, Wait.ABORT_WHEN_FALSE)
 
     popTextDeleteQueue()
@@ -2382,6 +2397,21 @@ rule "Poster achievement":
     bigMessage(eventPlayer, "Achievement get! Most wanted: find all the posters of you")
     eventPlayer.achievements.append(Achievement.MOST_WANTED)
     manageAchievements()
+
+rule "Inner lights reset":
+    @Event eachPlayer
+    @Condition distance(eventPlayer.getEyePosition(), vect(-111.73, 14.04, -137.34)) > 4
+
+    if eventPlayer not in powerPanelPlayers[0]:
+        powerPanelPlayers[0].append(eventPlayer)
+    if eventPlayer not in powerPanelPlayers[1]:
+        powerPanelPlayers[1].append(eventPlayer)
+    if eventPlayer not in powerPanelPlayers[2]:
+        powerPanelPlayers[2].append(eventPlayer)
+    if eventPlayer not in powerPanelPlayers[3]:
+        powerPanelPlayers[3].append(eventPlayer)
+    if eventPlayer not in powerPanelPlayers[4]:
+        powerPanelPlayers[4].append(eventPlayer)
 
 rule "Lights on check":
     @Event eachPlayer
@@ -2954,7 +2984,7 @@ rule "Interact":
 
                     eventPlayer.currentCutscene = Cutscene.COMEDY
                 else:
-                    smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious disguise")
+                    smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious costume")
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
         elif Id.outerDoor21 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerDoor25:
@@ -3079,18 +3109,26 @@ rule "Interact":
             hideUi()
             mapMarkerPlayers.append(eventPlayer)
             eventPlayer.startCamera(vect(-81.29, 50.24, -143.14), vect(-81.29, 50.24, -143.14) + vect(-0.00682, -0.9994, -0.03402), 0)
-            wait(1)
+            wait(0.5)
             mapMarkerPlayers.remove(eventPlayer)
-            wait(1)
+            wait(0.5)
             mapMarkerPlayers.append(eventPlayer)
-            wait(1)
+            wait(0.5)
             mapMarkerPlayers.remove(eventPlayer)
-            wait(1)
+            wait(0.5)
             mapMarkerPlayers.append(eventPlayer)
-            wait(1)
-            showUi()
+            wait(0.5)
+            mapMarkerPlayers.remove(eventPlayer)
+            wait(0.5)
+            mapMarkerPlayers.append(eventPlayer)
+            wait(0.5)
+            mapMarkerPlayers.remove(eventPlayer)
+            wait(0.5)
+            mapMarkerPlayers.append(eventPlayer)
+            wait(0.5)
             mapMarkerPlayers.remove(eventPlayer)
             eventPlayer.stopCamera()
+            showUi()
             unfreeze()
         elif eventPlayer.tValue[Item.ID] == Id.outsideSmuggler:
             if not eventPlayer.canUtilizeSmuggler:
@@ -3906,12 +3944,13 @@ rule "Noclip off":
 
 rule "Display stats":
     @Event eachPlayer
+    @Condition eventPlayer == hostPlayer
 
-    hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    hudHeader(eventPlayer, "pos: {0}".format(BEZIER_POSITION), HudPosition.RIGHT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    hudHeader(eventPlayer, "face: {0}".format(((BEZIER_FACING) - (BEZIER_POSITION)) * 1000), HudPosition.RIGHT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "pos: {0}".format(BEZIER_POSITION), HudPosition.RIGHT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "face: {0}".format(((BEZIER_FACING) - (BEZIER_POSITION)) * 1000), HudPosition.RIGHT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "b facing: {0}".format(normalize(BEZIER_POSITION - BEZIER_FACING)), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "B: {0}".format(B), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
