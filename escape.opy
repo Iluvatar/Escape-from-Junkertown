@@ -1,4 +1,8 @@
 settings {
+    "main": {
+        "description": "Escape from Junkertown!\nYour brilliant plan went wrong, and now you're trapped in Junkertown. Can you find the way out?\nCode: BR6EQ\nv0.9 Made by EruIluvatar",
+        "modeName": "Escape from Junkertown"
+    },
     "lobby": {
         "team2Slots": 0
     },
@@ -981,6 +985,7 @@ rule "Spawn NPCs":
 rule "Global setup":
     @Event global
 
+    disableInspector()
     disableAnnouncer()
     disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
@@ -1178,8 +1183,8 @@ rule "Global setup":
     createEffect(mapMarkerPlayers, Effect.SPHERE, Color.RED, vect(-88.04, 13.37, -158.22), 0.5, EffectReeval.VISIBILITY)
 
     # barn paper clues
-    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(58.30, 8.3, -93.83), 0.3, EffectReeval.VISIBILITY)
-    createEffect(barnHintPlayers, Effect.SPARKLES, Color.BLUE, vect(42.25, 15.3, -71.88), 0.3, EffectReeval.VISIBILITY)
+    createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(58.30, 8.3, -93.83), 0.3, EffectReeval.VISIBILITY)
+    createEffect(barnHintPlayers, Effect.SPARKLES, Color.YELLOW, vect(42.25, 15.3, -71.88), 0.3, EffectReeval.VISIBILITY)
 
     # barn workbench puzzle
     for I in range(len(barnMinigameConnections)):
@@ -3770,7 +3775,7 @@ def showHintScreen():
 
 rule "Toggle hints":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.isHoldingButton(Button.ABILITY_1)
+    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and not eventPlayer.pauseInteraction
 
     eventPlayer.isDoingHint = not eventPlayer.isDoingHint
 
