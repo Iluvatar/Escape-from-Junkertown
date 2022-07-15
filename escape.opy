@@ -3760,13 +3760,13 @@ rule "Mole person cliff away text":
 # HINTS
 
 def initialHintText():
-    eventPlayer.hintText = ["Test 123", "Test 456", "Test 789"]
+    eventPlayer.hintText = ["Test 123", "Coming soon™", "Test 789"]
 
 def generateHintText():
 
-    CREATE_BLACK_TEXT(eventPlayer.hintText[0], -1)
+    # CREATE_BLACK_TEXT(eventPlayer.hintText[0], -1)
     CREATE_BLACK_TEXT(eventPlayer.hintText[1], 0)
-    CREATE_BLACK_TEXT(eventPlayer.hintText[2], 1)
+    # CREATE_BLACK_TEXT(eventPlayer.hintText[2], 1)
 
 def showHintScreen():
     initialHintText()
@@ -3775,10 +3775,9 @@ def showHintScreen():
 
 rule "Toggle hints":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and not eventPlayer.pauseInteraction
+    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
 
     eventPlayer.isDoingHint = not eventPlayer.isDoingHint
-
     if eventPlayer.isDoingHint:
         freeze()
         FADE_TO_BLACK()
