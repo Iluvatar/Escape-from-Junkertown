@@ -4202,7 +4202,7 @@ rule "Noclip off":
 rule "Display stats":
     @Event global
 
-    hudHeader(debugPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
-    hudHeader(debugPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
-    hudHeader(debugPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
-    hudHeader(debugPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
