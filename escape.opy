@@ -472,6 +472,7 @@ playervar molePersonInteractStage
 playervar bruceTimer
 
 playervar hasFinishedGame
+playervar isOnSecondRun = false
 
 playervar isDoingHint
 playervar hintText
@@ -2179,14 +2180,14 @@ rule "do ending cutscene":
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
     CREATE_TEXT("      A device, stolen\n Our people, liberated\nAnd you, the way out", DOOR_24_TEXT_LOCATION)
-    wait(0.5)
+    wait(0.5, Wait.ABORT_WHEN_FALSE)
 
     stopChasingVariable(eventPlayer.tPos)
-    wait(5)
+    wait(5, Wait.ABORT_WHEN_FALSE)
     popTextDeleteQueue()
 
     FADE_TO_BLACK()
-    wait(3)
+    wait(3, Wait.ABORT_WHEN_FALSE)
 
     # walk along path
     eventPlayer.bezier = [
@@ -3187,6 +3188,7 @@ rule "Restart game":
     @Event eachPlayer
     @Condition eventPlayer.hasFinishedGame and eventPlayer.isHoldingButton(Button.INTERACT)
 
+    eventPlayer.isOnSecondRun = true
     resetGame()
 
 
@@ -4035,10 +4037,29 @@ def generateHints():
                                 "4. Go to the two stacked cars by attacker second spawn and apply the device to where you",
                                 "see the shuffling text",
                                 "5. Go to where the cliff meets the city walls near where you contacted Bruce and apply",
-                                "the device to where you see the shuffling text",
+                                "the device to where you see the shuffling text"
                             ]
                         ]
                     ])
+
+    if eventPlayer.isOnSecondRun:
+        eventPlayer.hintText.append(
+            [
+                "Achievements", [
+                    "Hint",
+                    [
+                        "Most wanted: find all the posters of you",
+                        "Infrasight: find the sunglasses without using the map",
+                        "Puzzle master: solve the color puzzle in 5 moves",
+                        "In a hurry: pester Bruce 60 times",
+                        "Master hacker: glitch through the walls and enjoy the view",
+                        "Escape artist: get out of Junkertown"
+                    ],
+                    [
+                        "You'll have to figure these ones out yourself. Good luck!",
+                    ]
+                ]
+            ])
 
 #!define HINT_SPACING_TEXT "\n                                                                                                                                                                                                "
 #!define HINT_SPACING_CONTROLS "\n                                                                                                                                                                                                                                                                "
