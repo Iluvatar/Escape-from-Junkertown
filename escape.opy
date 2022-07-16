@@ -74,7 +74,6 @@ enum Item:
 
 # GLOBAL SETTINGS
 
-#!define COOLDOWN_TIME 0.3
 #!define INTERACT_DISTANCE 4
 #!define WALL_MESSAGE_TIMEOUT 3
 #!define WALL_CHECK_TIME (0.016 * 4)
@@ -398,7 +397,6 @@ playervar tText
 playervar tMinigame
 
 # Player state
-playervar cooldown
 playervar pauseInteraction
 playervar junkPos
 playervar junkFacing
@@ -1017,9 +1015,9 @@ rule "Global setup":
     # tutorial text
     hudSubtext(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 0, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on objects".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
@@ -1233,7 +1231,6 @@ def playerInitialState():
     eventPlayer.clearStatusEffect(Status.ROOTED)
 
     # Player state
-    eventPlayer.cooldown = 0
     eventPlayer.pauseInteraction = false
 
     eventPlayer.junkPos = vect(-95.58, 12.17, -86.79)
@@ -1663,7 +1660,6 @@ rule "Initial player setup":
     eventPlayer.disableMessages()
 
     hudHeader(eventPlayer.inventoryPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    chase(eventPlayer.cooldown, 0, rate=1, ChaseReeval.DESTINATION_AND_RATE)
 
 rule "Cleanup state on player leave":
     @Event playerLeft
@@ -2332,6 +2328,20 @@ def doCredits():
     bigMessage(eventPlayer, "Achievement get! Escape artist: get out of Junkertown")
     eventPlayer.achievements.append(Achievement.ESCAPE_ARTIST)
 
+    eventPlayer.tText = " "
+    if Achievement.MOST_WANTED in eventPlayer.achievements:
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.MCCREE, Button.ULTIMATE))
+    if Achievement.INFRASIGHT in eventPlayer.achievements:
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.WIDOWMAKER, Button.ULTIMATE))
+    if Achievement.PUZZLE_MASTER in eventPlayer.achievements:
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.LUCIO, Button.JUMP))
+    if Achievement.IN_A_HURRY in eventPlayer.achievements:
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.SOLDIER, Button.ABILITY_1))
+    if Achievement.MASTER_HACKER in eventPlayer.achievements:
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.SOMBRA, Button.SECONDARY_FIRE))
+    if Achievement.ESCAPE_ARTIST in eventPlayer.achievements:
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.BAPTISTE, Button.ULTIMATE))
+
     wait(5)
 
     eventPlayer.tPos = -1.6
@@ -2341,14 +2351,14 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 13, 2, Color.PURPLE)
-
+    CREATE_MOVABLE_TEXT(eventPlayer.tText, 14.5, 1.5, Color.PURPLE)
 
     chase(eventPlayer.tPos, 0.8, rate=0.3, ChaseReeval.NONE)
     wait(8)
     stopChasingVariable(eventPlayer.tPos)
 
     wait(3)
-    CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 16, 1.5, Color.WHITE)
+    CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 18, 1.5, Color.WHITE)
     eventPlayer.hasFinishedGame = true
 
 rule "do ending cutscene cleanup":
@@ -2661,9 +2671,7 @@ rule "In a hurry achievement":
 rule "Switch between heroes":
     @Event eachPlayer
     @Condition eventPlayer.canBeTheOtherGuy
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction and eventPlayer.cooldown == 0
-
-    eventPlayer.cooldown = COOLDOWN_TIME
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction
 
     if eventPlayer.isJunk:
         eventPlayer.isJunk = false
@@ -2726,9 +2734,7 @@ distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingD
 
 rule "Interact":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction and eventPlayer.cooldown == 0
-
-    eventPlayer.cooldown = COOLDOWN_TIME
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction
 
     eventPlayer.tValue = [elem for elem in eventPlayer.itemPoints if SHOULD_INTERACT(elem)]
 
@@ -3226,9 +3232,7 @@ def APPLY_ITEM_FAIL():
 
 rule "Apply":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction and eventPlayer.cooldown == 0
-
-    eventPlayer.cooldown = COOLDOWN_TIME
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction
 
     if SHOULD_INTERACT(eventPlayer.tutGate1) or SHOULD_INTERACT(eventPlayer.tutGate2):
         eventPlayer.tValue = GET_ITEM_ENTRY(Id.tutGate1)
@@ -4234,6 +4238,18 @@ rule "Noclip off":
     @Condition eventPlayer.isHoldingButton(Button.MELEE) == false
 
     eventPlayer.enableEnvironmentCollision()
+
+rule "End game state":
+    @Event eachPlayer
+    @Condition eventPlayer == debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1)
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+
+    eventPlayer.molePersonInteractStage = 4
+    eventPlayer.equipped.append(Equip.WINGS)
+    manageEquips()
+    eventPlayer.achievements = [2, 3, 4, 1, 5]
+    manageAchievements()
 
 rule "Display stats":
     @Event global
