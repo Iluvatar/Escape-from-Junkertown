@@ -85,7 +85,7 @@ enum Item:
 
 # GLOBAL SETTINGS
 
-#!define SUNLIGHT_ANGLE 30
+#!define COOLDOWN_TIME 0.3
 #!define INTERACT_DISTANCE 4
 #!define WALL_MESSAGE_TIMEOUT 3
 #!define WALL_CHECK_TIME (0.016 * 4)
@@ -408,6 +408,7 @@ playervar tText
 playervar tMinigame
 
 # Player state
+playervar cooldown
 playervar pauseInteraction
 playervar junkPos
 playervar junkFacing
@@ -648,11 +649,15 @@ def doBezierArray():
 
 # Create text while faded to black
 #!define LINE_SPACING 0.08
-#!define CREATE_BLACK_TEXT(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line, 0, 0), 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
+#!define CREATE_BLACK_TEXT(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * (line), 0, 0), 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
+pushTextDeleteQueue()
+
+# Create text while faded to black that reevaluates
+#!define CREATE_BLACK_TEXT_REEVAL(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * (line), 0, 0), 1, Clip.NONE, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
 
 # Creates text that can be scrolled using eventPlayer.tPos
-#!define CREATE_MOVABLE_TEXT(text, line, size, color) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * line - eventPlayer.tPos, 0, 0), size, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, color, SpecVisibility.NEVER) \
+#!define CREATE_MOVABLE_TEXT(text, line, size, color) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * (line) - eventPlayer.tPos, 0, 0), size, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, color, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
 
 # Increments the state of the item with the given id
@@ -862,7 +867,7 @@ def checkBarnCode():
         eventPlayer.canAccessBarnSecret = true
         barnHintPlayers.remove(eventPlayer)
 
-        # Zen drop
+        # Ashe drop
         async(openSecretDoor(), AsyncBehavior.NOOP)
 
 # Makes a noise for when a switch is pressed
@@ -1024,7 +1029,7 @@ rule "Global setup":
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on objects".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    # createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
     createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tutorialGate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -1236,6 +1241,7 @@ def playerInitialState():
     eventPlayer.stopFacing()
 
     # Player state
+    eventPlayer.cooldown = 0
     eventPlayer.pauseInteraction = false
 
     eventPlayer.junkPos = vect(-95.58, 12.17, -86.79)
@@ -1368,38 +1374,6 @@ def playerInitialState():
     eventPlayer.outsideMolePersonCliff = [Id.outsideMolePersonCliff, 0, MOLE_PERSON_CLIFF_TEXT_LOCATION, 2, null]
 
     eventPlayer.itemPoints = [
-        # item apply points
-        eventPlayer.tutGate1,
-        eventPlayer.tutGate2,
-
-        eventPlayer.innerWires,
-        eventPlayer.innerBarrel2,
-        eventPlayer.innerGenerator,
-        eventPlayer.innerRadio,
-        eventPlayer.innerWorkbench,
-        eventPlayer.innerToolbox2,
-
-        eventPlayer.outerBruce,
-        eventPlayer.outerSmuggler,
-        eventPlayer.outerBartender,
-        eventPlayer.outerNotSmuggler,
-        eventPlayer.outerWorkbench,
-        eventPlayer.outerDoor21,
-        eventPlayer.outerDoor22,
-        eventPlayer.outerDoor23,
-        eventPlayer.outerDoor24,
-        eventPlayer.outerDoor25,
-
-        eventPlayer.barnWorkbench,
-
-        eventPlayer.outsideSatControl,
-        eventPlayer.outsideSmuggler,
-        eventPlayer.outsideHose,
-        eventPlayer.outsideMolePersonRoom,
-        eventPlayer.outsideMolePersonOuthouse,
-        eventPlayer.outsideMolePersonCar,
-        eventPlayer.outsideMolePersonCliff,
-
         # tutorial room
         [Id.tutSafe1, 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
         [Id.tutSafe2, 0, vect(-100.95, 11.28, -80.59), 0.7, ["There's an odd looking coin in here"], "Odd looking coin", true],
@@ -1409,6 +1383,8 @@ def playerInitialState():
         [Id.tutGold, 0, vect(-95.60, 11.38, -86.96), 1.5, ["Is this... how you were brought in here?"]],
 
         # lights on section
+        eventPlayer.innerRadio,
+
         [Id.innerFridge, 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
         [Id.innerChest1, 0, vect(-114.91, 7.07, -124.08), 1.2, ["There's an empty petrol can inside, just free for the taking"], "Empty petrol can", true],
         [Id.innerLocker1, 0, vect(-112.76, 7.55, -134.80), 1.2, ["Whoever's locker this was didn't have the decency to leave easily stolen goods inside"], null, true],
@@ -1547,6 +1523,8 @@ def playerInitialState():
 
 
         # larger outside area
+        eventPlayer.outsideHose, # here for priority reasons
+
         [Id.outsideJunkWorkbench, 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
         [Id.outsideSafe, 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
         [Id.outsideIceBox, 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
@@ -1565,6 +1543,38 @@ def playerInitialState():
 
         [Id.outsidePoster1, 0, vect(-30.90, 6.14, -60.22), 0.8, ["That idiot is always getting you in trouble"], null, null, true],
         [Id.outsidePoster2, 0, vect(-23.46, 6.70, -66.49), 0.8, ["There's not much you need in there, but you'll miss talking to Bruce"], null, null, true],
+
+        # item apply points
+        eventPlayer.tutGate1,
+        eventPlayer.tutGate2,
+
+        eventPlayer.innerWires,
+        eventPlayer.innerBarrel2,
+        eventPlayer.innerGenerator,
+        # eventPlayer.innerRadio, # higher up for priority reasons
+        eventPlayer.innerWorkbench,
+        eventPlayer.innerToolbox2,
+
+        eventPlayer.outerBruce,
+        eventPlayer.outerSmuggler,
+        eventPlayer.outerBartender,
+        eventPlayer.outerNotSmuggler,
+        eventPlayer.outerWorkbench,
+        eventPlayer.outerDoor21,
+        eventPlayer.outerDoor22,
+        eventPlayer.outerDoor23,
+        eventPlayer.outerDoor24,
+        eventPlayer.outerDoor25,
+
+        eventPlayer.barnWorkbench,
+
+        eventPlayer.outsideSatControl,
+        eventPlayer.outsideSmuggler,
+        # eventPlayer.outsideHose, # higher up for priority reasons
+        eventPlayer.outsideMolePersonRoom,
+        eventPlayer.outsideMolePersonOuthouse,
+        eventPlayer.outsideMolePersonCar,
+        eventPlayer.outsideMolePersonCliff,
     ]
 
     eventPlayer.itemIds = [elem[Item.ID] for elem in eventPlayer.itemPoints]
@@ -1662,6 +1672,7 @@ rule "Initial player setup":
     eventPlayer.disableMessages()
 
     hudHeader(eventPlayer.inventoryPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    chase(eventPlayer.cooldown, 0, rate=1, ChaseReeval.DESTINATION_AND_RATE)
 
 
 
@@ -1772,7 +1783,7 @@ rule "show intro cleanup":
 
     resetGame()
 
-#!define SPACING "\n                                                                                                                     "
+#!define INTRO_SPACING "\n                                                                                                                     "
 
 rule "do waking animation":
     @Event eachPlayer
@@ -1783,17 +1794,17 @@ rule "do waking animation":
     FADE_TO_BLACK()
     wait(2, Wait.ABORT_WHEN_FALSE)
 
-    CREATE_BLACK_TEXT("What... happened?" SPACING, -2)
+    CREATE_BLACK_TEXT("What... happened?" INTRO_SPACING, -2)
     wait(3, Wait.ABORT_WHEN_FALSE)
-    CREATE_BLACK_TEXT("The last thing you remember is pushing the cart to the gate" SPACING, -1)
+    CREATE_BLACK_TEXT("The last thing you remember is pushing the cart to the gate" INTRO_SPACING, -1)
     wait(3, Wait.ABORT_WHEN_FALSE)
-    CREATE_BLACK_TEXT("Then a pain from behind" SPACING, 0)
+    CREATE_BLACK_TEXT("Then a pain from behind" INTRO_SPACING, 0)
     wait(3, Wait.ABORT_WHEN_FALSE)
-    CREATE_BLACK_TEXT("And..." SPACING, 1)
+    CREATE_BLACK_TEXT("And..." INTRO_SPACING, 1)
     wait(2, Wait.ABORT_WHEN_FALSE)
     destroyInWorldText(eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1])
     del eventPlayer.textDeleteQueue[len(eventPlayer.textDeleteQueue) - 1]
-    CREATE_BLACK_TEXT("And... a fuzzy face?" SPACING, 1)
+    CREATE_BLACK_TEXT("And... a fuzzy face?" INTRO_SPACING, 1)
     wait(6, Wait.ABORT_WHEN_FALSE)
 
     eventPlayer.isCutsceneFinished = true
@@ -2636,7 +2647,9 @@ rule "In a hurry achievement":
 rule "Switch between heroes":
     @Event eachPlayer
     @Condition eventPlayer.canBeTheOtherGuy
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame and eventPlayer.cooldown == 0
+
+    eventPlayer.cooldown = COOLDOWN_TIME
 
     if eventPlayer.isJunk:
         eventPlayer.isJunk = false
@@ -2699,7 +2712,9 @@ distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingD
 
 rule "Interact":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame and eventPlayer.cooldown == 0
+
+    eventPlayer.cooldown = COOLDOWN_TIME
 
     eventPlayer.tValue = [elem for elem in eventPlayer.itemPoints if SHOULD_INTERACT(elem)]
 
@@ -3197,7 +3212,9 @@ def APPLY_ITEM_FAIL():
 
 rule "Apply":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame and eventPlayer.cooldown == 0
+
+    eventPlayer.cooldown = COOLDOWN_TIME
 
     if SHOULD_INTERACT(eventPlayer.tutGate1) or SHOULD_INTERACT(eventPlayer.tutGate2):
         eventPlayer.tValue = GET_ITEM_ENTRY(Id.tutGate1)
@@ -3655,7 +3672,7 @@ rule "Create dvd logo":
 
     chase(dvdLogoPos, dvdLogoPos + dvdLogoDir, rate=0.5, ChaseReeval.DESTINATION_AND_RATE)
     createEffect(dvdLogoPlayers, Effect.SPHERE, Color.VIOLET, updateEveryTick(OUTSIDE_SAT_TO_WORLD(dvdLogoPos)), 0.17, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createEffect(getAllPlayers(), Effect.BAPTISTE_IMMORTALITY_FIELD_PROTECTED_SOUND, null, localPlayer.getPosition(), (5 - distance(vect(-3.30, 14.20, -83.94), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(dvdLogoPlayers, Effect.BAPTISTE_IMMORTALITY_FIELD_PROTECTED_SOUND, null, localPlayer.getPosition(), (8 - distance(vect(-3.30, 14.20, -83.94), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
 rule "DVD logo bounce x":
     @Event global
@@ -3765,35 +3782,370 @@ rule "Mole person cliff away text":
 
 # HINTS
 
-def initialHintText():
-    eventPlayer.hintText = ["Test 123", "Coming soon™", "Test 789"]
+enum HintState:
+    INTRO,
+    OPTION,
+    HINT,
+    ANSWER
+
+def generateHints():
+    if eventPlayer.isJunk:
+        if not eventPlayer.lightsOn:
+            # Lights out area
+            eventPlayer.hintText = ["Option"]
+            if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
+                eventPlayer.hintText.append(
+                    [
+                        "Power the generator", [
+                            "Hint",
+                            ["It's not enough to generate power, you also have to get it to the panel"],
+                            [
+                                "1. Find the empty petrol can in the chest near the bottom of the stairs",
+                                "2. Apply it to the barrel next to the downstairs window to fill it with petrol",
+                                "3. Find the extension cord in one of the lockers",
+                                "4. Apply the extension cord to the sparking wires upstairs",
+                                "5. Apply the fuel filled petrol can to the ceiling high machine next to the wires",
+                            ]
+                        ]
+                    ])
+            else:
+                eventPlayer.hintText.append(
+                    [
+                        "Turn on the lights", [
+                            "Hint",
+                            ["The lights need to be green. But what color is the broken switch?"],
+                            [
+                                "1. Look for the control panel with red lights next to the generator",
+                                "2. Hit each of the five switches on the panel exactly once",
+                                "If you see only the red lights floating in the air, your graphics level is set to low",
+                                "instead of medium"
+                            ]
+                        ]
+                    ])
+        elif not eventPlayer.canGoOutside:
+            # Inside area
+            eventPlayer.hintText = ["Option"]
+            if not eventPlayer.canBeTheOtherGuy:
+                eventPlayer.hintText.append(
+                    [
+                        "Fix the radio", [
+                            "Hint",
+                            ["There are lots of random parts in the mech repair room, it might be useful to snoop around"],
+                            [
+                                "1. Find the fiddly part in the small toolbox in the mech room",
+                                "2. Apply it to the workbench nearby and solve the puzzle",
+                                "3. Apply the reverse polarity fiddly part to the radio microphone next to the",
+                                "Queen's throne"
+                            ]
+                        ]
+                    ])
+            if Equip.SUNSCREEN not in eventPlayer.equipped:
+                eventPlayer.hintText.append(
+                    [
+                        "Find the vent key", [
+                            "Hint",
+                            ["Three whole valves? You might even have to leave the room to do this one"],
+                            [
+                                "1. Turn off the three valves: the first one is in the mech room, next to the left exit",
+                                "2. Follow the left wall out of the mech room until you see a second valve, just before",
+                                "exiting into the payload area",
+                                "3. Find the last valve in the room left of second checkpoint, with the stalled car outside",
+                                "4. Look in the vent on the other side of the wall from the third valve and find the vent key",
+                                "5. Use the vent key on the lower large toolbox in the mech room, next to the workbench"
+                            ]
+                        ]
+                    ])
+            if Equip.SUNGLASES not in eventPlayer.equipped:
+                eventPlayer.hintText.append(
+                    [
+                        "Find a way to protect your eyes", [
+                            "Hint",
+                            ["You left a map back at your place, but there's no way to get it without going outside the walls"],
+                            [
+                                "1. You must have already fixed the radio and escaped the barn as Hog",
+                                "2. Switch to Hog",
+                                "3. Find a map in the fridge inside Junk's house (the one with the big crown)",
+                                "4. Switch to Junk and find the sunglasses where the flashing red dot was"
+                            ]
+                        ]
+                    ])
+        else:
+            # Inner area
+            eventPlayer.hintText = ["Option"]
+            if eventPlayer.money == 0 and not eventPlayer.canUtilizeSmuggler:
+                eventPlayer.hintText.append(
+                    [
+                        "Make some money", [
+                            "Hint",
+                            ["Bars are always looking for entertainment"],
+                            [
+                                "1. Find a hilarious costume in the toolbox in the tattoo parlor (attacker third spawn)",
+                                "2. Talk to the not smuggler in the bar (defender first spawn)",
+                                "3. Interact with the radio on the stage",
+                                "4. Talk to the not smuggler"
+                            ]
+                        ]
+                    ])
+            if not eventPlayer.canUtilizeSmuggler:
+                eventPlayer.hintText.append(
+                    [
+                        "Hire the smuggler", [
+                            "Hint",
+                            ["Did you try looking up?"],
+                            [
+                                "1. Make sure you've already made some money",
+                                "2. Apply money to the smuggler above Bruce's place"
+                            ]
+                        ]
+                    ])
+            eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerBruce)
+            if eventPlayer.tValue[Item.STATE] == 0:
+                eventPlayer.hintText.append(
+                    [
+                        "Contact Bruce", [
+                            "Hint",
+                            ["Bruce doesn't like strangers, but maybe an old friend could vouch for you"],
+                            [
+                                "1. Make sure you've already hired the smuggler and escaped the barn as Hog",
+                                "2. Find the right handed remote in one of the toolboxes in Bruce's place",
+                                "3. Give the remote to the smuggler",
+                                "4. Switch to Hog and retrieve the remote",
+                                "5. Check the hints as Hog for the rest of the solution"
+                            ]
+                        ]
+                    ])
+            if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and eventPlayer.tValue[Item.STATE] % 2 == 1:
+                eventPlayer.hintText.append(
+                    [
+                        "Find a black battery", [
+                            "Hint",
+                            ["Tattoo parlors can do some amazing things with inks these days"],
+                            [
+                                "1. Find a red battery in a chest in the mech room by third point",
+                                "2. Apply the red battery to the workbench in the tattoo parlor (attacker third spawn)",
+                                "and solve the puzzle",
+                            ]
+                        ]
+                    ])
+            if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and (eventPlayer.tValue[Item.STATE] - 1) % 4 < 2:
+                eventPlayer.hintText.append(
+                    [
+                        "Find water", [
+                            "Hint",
+                            ["They say there's no clean water in Junkertown. Is it any better outside?"],
+                            [
+                                "1. Make sure you've already hired the smuggler",
+                                "2. Give the empty petrol can to the smuggler",
+                                "3. Switch to Hog and retrieve the empty petrol can",
+                                "4. Apply the empty petrol can to the hose leading down from the nearby water tower",
+                                "5. Give the resulting water filled petrol can back to the smuggler",
+                                "6. Switch to Junk and retrieve the empty petrol can"
+                            ]
+                        ]
+                    ])
+            if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 4:
+                eventPlayer.hintText.append(
+                    [
+                        "Find strong alcohol", [
+                            "Hint",
+                            ["What's the point of a bar again?"],
+                            [
+                                "1. Make sure you've already made some money",
+                                "2. Apply money to the bartender behind the bar (defender first spawn)"
+                            ]
+                        ]
+                    ])
+            if Equip.WINGS in eventPlayer.equipped:
+                eventPlayer.hintText.append(
+                    [
+                        "Find a way out", [
+                            "Hint",
+                            ["They talk in riddles, but it seems you need to give the coin to the right door"],
+                            [
+                                "1. Make sure you have the odd looking coin, which can be found in the green safe in",
+                                "the starting room",
+                                "2. Find the doors on the second floor above the Chinese place and tattoo parlor",
+                                "3. Apply the odd looking coin to door 24",
+                                "4. Give the Anathema Device to the smuggler",
+                                "5. Check the hints as Hog for the rest of the solution",
+                                "6. When you've completed Hog's tasks, interact with door 24 again"
+                            ]
+                        ]
+                    ])
+    else:
+        if not eventPlayer.canLeaveBarn:
+            # Barn
+            eventPlayer.hintText = [
+                "Option",
+                "Leave the barn", [
+                    "Hint",
+                    ["You swear you wrote the code down somewhere, but you lost the papers"],
+                    [
+                        "1. You need find the code to unlock the secret area under the stairs",
+                        "2. Find the first two digits on the sparkling paper by the right exit",
+                        "3. Find the middle digit on the motorbike",
+                        "4. Find the last two digits on the sparkling paper by the upstairs exit",
+                        "5. Input the code in the panel by hitting the switches where 1 is the top switch",
+                        "and 5 is the bottom switch",
+                        "6. Find your little buddy in the open safe in the hidden area"
+                    ]
+                ]
+            ]
+        else:
+            # Outside area
+            eventPlayer.hintText = ["Option"]
+            if Equip.SUNGLASES not in eventPlayer.junkEquipped:
+                eventPlayer.hintText.append(
+                    [
+                        "Find a way to protect Junk's eyes", [
+                            "Hint",
+                            ["It's amazing what Junk will leave in his refrigerator"],
+                            [
+                                "1. Find a map in the fridge inside Junk's house (the one with the big crown)",
+                                "2. Switch to Junk and find the sunglasses where the flashing red dot was"
+                            ]
+                        ]
+                    ])
+            eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerBruce)
+            if eventPlayer.canGoOutside and eventPlayer.tValue[Item.STATE] == 0:
+                eventPlayer.hintText.append(
+                    [
+                        "Contact Bruce", [
+                            "Hint",
+                            ["Maybe you could get Bruce's spare remote, but you'd still have to mess with it in your shop"],
+                            [
+                                "1. Make sure you've escaped the barn, and have the right handed remote (check hints as Junk)",
+                                "2. Apply the right handed remote to the workbench in the barn and solve the puzzle",
+                                "3. Find the TV with the bouncing logo in the room above the car garage",
+                                "4. Apply the left handed remote to the TV"
+                            ]
+                        ]
+                    ])
+            if Equip.WINGS in eventPlayer.junkEquipped:
+                eventPlayer.hintText.append(
+                    [
+                        "Track down the mole", [
+                            "Hint",
+                            ["They keep running away, but maybe the ones inside know where they went?"],
+                            [
+                                "1. Make sure you have the Anathema Device (check hints as Junk, \"Find a way out\")",
+                                "2. Go to attacker second spawn and apply the device to where you see the shuffling text",
+                                "3. Go to the outhouse to the left when exiting the barn and apply the device to where",
+                                "you see the shuffling text",
+                                "4. Go to the two stacked cars by attacker second spawn and apply the device to where you",
+                                "see the shuffling text",
+                                "5. Go to where the cliff meets the city walls near where you contacted Bruce and apply",
+                                "the device to where you see the shuffling text",
+                            ]
+                        ]
+                    ])
+
+#!define HINT_SPACING_TEXT "\n                                                                                                                                                                                                "
+#!define HINT_SPACING_CONTROLS "\n                                                                                                                                                                                                                                                                "
+#!define HINT_LINE_OFFSET 5
 
 def generateHintText():
+    popAllTextDeleteQueue()
 
-    # CREATE_BLACK_TEXT(eventPlayer.hintText[0], -1)
-    CREATE_BLACK_TEXT(eventPlayer.hintText[1], 0)
-    # CREATE_BLACK_TEXT(eventPlayer.hintText[2], 1)
+    if eventPlayer.hintText[0] == "Option":
+        eventPlayer.tValue = HintState.OPTION
+
+        CREATE_BLACK_TEXT_REEVAL("{0} / {1}: scroll{2}".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2), HINT_SPACING_CONTROLS), -3 - HINT_LINE_OFFSET)
+        CREATE_BLACK_TEXT_REEVAL("{0}: select{1}".format(buttonString(Button.JUMP), HINT_SPACING_CONTROLS), -2 - HINT_LINE_OFFSET)
+
+        eventPlayer.tIndex = 0
+        eventPlayer.tPos = 0
+        CREATE_MOVABLE_TEXT(">" HINT_SPACING_TEXT "        ", eventPlayer.tIndex - HINT_LINE_OFFSET, 1, Color.RED)
+
+        for eventPlayer.I in range(1, len(eventPlayer.hintText), 2):
+            CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[eventPlayer.I], HINT_SPACING_TEXT), (eventPlayer.I - 1) / 2 - HINT_LINE_OFFSET)
+    elif eventPlayer.hintText[0] == "Hint":
+        eventPlayer.tValue = HintState.HINT
+
+        for eventPlayer.I in range(len(eventPlayer.hintText[1])):
+            CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[1][eventPlayer.I], HINT_SPACING_TEXT), eventPlayer.I - HINT_LINE_OFFSET)
+
+        CREATE_BLACK_TEXT_REEVAL("{0}: Just give me the answer{1}".format(buttonString(Button.INTERACT), HINT_SPACING_CONTROLS), 4)
+    else:
+        eventPlayer.tValue = HintState.ANSWER
+
+        for eventPlayer.I in range(len(eventPlayer.hintText)):
+            CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[eventPlayer.I], HINT_SPACING_TEXT), eventPlayer.I - HINT_LINE_OFFSET)
+
+    CREATE_BLACK_TEXT_REEVAL("{0}: exit{1}".format(buttonString(Button.MELEE), HINT_SPACING_CONTROLS), 5)
+
+
+def showHintIntro():
+    FADE_TO_BLACK()
+    CREATE_BLACK_TEXT("Use hints to help you out if you get stuck", -2)
+    CREATE_BLACK_TEXT("Hints change based on your progress and location", 0)
+    CREATE_BLACK_TEXT_REEVAL("{0} to continue".format(buttonString(Button.PRIMARY_FIRE)), 2)
 
 def showHintScreen():
-    initialHintText()
-
+    generateHints()
     generateHintText()
 
-# rule "Toggle hints":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
+rule "Toggle hints":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
 
-#     eventPlayer.isDoingHint = not eventPlayer.isDoingHint
-#     if eventPlayer.isDoingHint:
-#         freeze()
-#         FADE_TO_BLACK()
-#         hideUi()
-#         showHintScreen()
-#     else:
-#         showUi()
-#         popAllTextDeleteQueue()
-#         eventPlayer.stopCamera()
-#         unfreeze()
+    eventPlayer.isDoingHint = not eventPlayer.isDoingHint
+    if eventPlayer.isDoingHint:
+        freeze()
+        hideUi()
+        eventPlayer.tValue = HintState.INTRO
+        showHintIntro()
+    else:
+        showUi()
+        popAllTextDeleteQueue()
+        eventPlayer.stopCamera()
+        unfreeze()
+
+rule "Pass hint intro":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingHint
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition eventPlayer.tValue == HintState.INTRO
+
+    showHintScreen()
+
+rule "Select hint option":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingHint
+    @Condition eventPlayer.isHoldingButton(Button.JUMP)
+    @Condition eventPlayer.tValue == HintState.OPTION
+
+    eventPlayer.hintText = eventPlayer.hintText[eventPlayer.tIndex * 2 + 2]
+    generateHintText()
+
+rule "Scroll hint option down":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingHint
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
+    @Condition eventPlayer.tValue == HintState.OPTION
+
+    eventPlayer.tIndex++
+    if eventPlayer.tIndex >= (len(eventPlayer.hintText) - 1) / 2:
+        eventPlayer.tIndex = 0
+
+rule "Scroll hint option up":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingHint
+    @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
+    @Condition eventPlayer.tValue == HintState.OPTION
+
+    eventPlayer.tIndex--
+    if eventPlayer.tIndex < 0:
+        eventPlayer.tIndex = (len(eventPlayer.hintText) - 1) / 2 - 1
+
+rule "Show answer":
+    @Event eachPlayer
+    @Condition eventPlayer.isDoingHint
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
+    @Condition eventPlayer.tValue == HintState.HINT
+
+    eventPlayer.hintText = eventPlayer.hintText[2]
+    generateHintText()
 
 
 
@@ -3959,8 +4311,8 @@ rule "Display stats":
     # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
-    # hudHeader(eventPlayer, "pos: {0}".format(BEZIER_POSITION), HudPosition.RIGHT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "face: {0}".format(((BEZIER_FACING) - (BEZIER_POSITION)) * 1000), HudPosition.RIGHT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "bruce dist: {0}".format(distance(eventPlayer, BRUCE_TEXT_LOCATION)), HudPosition.RIGHT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    # hudHeader(eventPlayer, "smuggler dist: {0}".format(distance(eventPlayer, INSIDE_SMUGGLER_TEXT_LOCATION)), HudPosition.RIGHT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "b facing: {0}".format(normalize(BEZIER_POSITION - BEZIER_FACING)), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     # hudHeader(eventPlayer, "B: {0}".format(B), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
