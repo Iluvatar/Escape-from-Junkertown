@@ -1230,6 +1230,7 @@ def playerInitialState():
     stopChasingVariable(eventPlayer.skipAlpha)
 
     eventPlayer.stopFacing()
+    eventPlayer.clearStatusEffect(Status.ROOTED)
 
     # Player state
     eventPlayer.cooldown = 0
@@ -1657,13 +1658,45 @@ rule "Initial player setup":
     eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF)
     eventPlayer.setInvisibility(Invis.ENEMIES)
     eventPlayer.disableGamemodeHud()
-    if hostPlayer != eventPlayer:
-        eventPlayer.disableScoreboard()
+    eventPlayer.disableScoreboard()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
 
     hudHeader(eventPlayer.inventoryPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
     chase(eventPlayer.cooldown, 0, rate=1, ChaseReeval.DESTINATION_AND_RATE)
+
+rule "Cleanup state on player leave":
+    @Event playerLeft
+
+    skipCutscenePlayers.remove(eventPlayer)
+    introStage1Players.remove(eventPlayer)
+    introStage2Players.remove(eventPlayer)
+    tutorialPlayers.remove(eventPlayer)
+    graphicsQualityPlayers.remove(eventPlayer)
+    playersInDark.remove(eventPlayer)
+    innerWirePlayers.remove(eventPlayer)
+    innerMinigamePlayers.remove(eventPlayer)
+    radioSmokePlayers.remove(eventPlayer)
+    outerMinigamePlayers.remove(eventPlayer)
+    barnHintPlayers.remove(eventPlayer)
+    mapMarkerPlayers.remove(eventPlayer)
+    barnMinigamePlayers.remove(eventPlayer)
+    dvdLogoPlayers.remove(eventPlayer)
+    satControlPlayers.remove(eventPlayer)
+    insideMailTextPlayers.remove(eventPlayer)
+    outsideMailTextPlayers.remove(eventPlayer)
+
+    for eventPlayer.I in range(len(powerPanelPlayers)):
+        powerPanelPlayers[eventPlayer.I].remove(eventPlayer)
+
+    for eventPlayer.I in range(len(tutorialTextPlayers)):
+        tutorialTextPlayers[eventPlayer.I].remove(eventPlayer)
+
+    for eventPlayer.I in range(len(equipPlayers)):
+        equipPlayers[eventPlayer.I].remove(eventPlayer)
+
+    for eventPlayer.I in range(len(achievementPlayers)):
+        achievementPlayers[eventPlayer.I].remove(eventPlayer)
 
 
 
@@ -4159,9 +4192,12 @@ rule "Set debug player":
 
     if debugPlayer:
         debugPlayer = 0
+        eventPlayer.disableScoreboard()
+        eventPlayer.setMoveSpeed(100)
         smallMessage(eventPlayer, "Debug player unset")
     else:
         debugPlayer = eventPlayer
+        eventPlayer.enableScoreboard()
         smallMessage(eventPlayer, "Debug player set")
 
 playervar isGoingFast = false
