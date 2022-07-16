@@ -31,17 +31,6 @@ settings {
                 "enableMelee": false,
                 "enableUlt": false
             },
-            "mercy": {
-                "jumpVerticalSpeed%": 250,
-                "movementSpeed%": 200,
-                "enableInfiniteAmmo": true,
-                "enableMelee": false,
-                "enableSpawningWithUlt": true,
-                "combatUltGen%": 500,
-                "passiveUltGen%": 500,
-                "ultGen%": 500,
-                "weaponsEnabled": "blaster"
-            },
             "roadhog": {
                 "enablePrimaryFire": false,
                 "enableSecondaryFire": false,
@@ -392,6 +381,7 @@ globalvar moleLeaderRiddle = [
     "and has no place to wipe your feet."
 ]
 
+globalvar debugPlayer
 
 # PLAYER VARIABLES
 
@@ -4097,7 +4087,7 @@ def showHintScreen():
 
 rule "Toggle hints":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
+    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction) and eventPlayer != debugPlayer
 
     eventPlayer.isDoingHint = not eventPlayer.isDoingHint
     if eventPlayer.isDoingHint:
@@ -4159,177 +4149,60 @@ rule "Show answer":
 
 
 
-# # DEBUG FUNCTIONS
-# globalvar debugPlayers = []
+# DEBUG FUNCTIONS
 
-# playervar pointHelperEffect
-# playervar pointHelperHud
-# playervar pointHelperState = 0
+rule "Set debug player":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.JUMP)
 
+    wait(5, Wait.ABORT_WHEN_FALSE)
 
-# rule "test":
-#     @Event global
+    if debugPlayer:
+        debugPlayer = 0
+        smallMessage(eventPlayer, "Debug player unset")
+    else:
+        debugPlayer = eventPlayer
+        smallMessage(eventPlayer, "Debug player set")
 
-#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(5.77, 16.46, -44.27), vect(-1.10, 15.52, -59.41), null, EffectReeval.VISIBILITY)
-#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(-1.10, 15.52, -59.41), vect(12.34, 17.12, -88.35), null, EffectReeval.VISIBILITY)
-#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(12.34, 17.12, -88.35), vect(20.92, 15.01, -86.41), null, EffectReeval.VISIBILITY)
-#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(20.92, 15.01, -86.41), vect(26.18, 15.70, -90.36), null, EffectReeval.VISIBILITY)
-#     createBeam(getAllPlayers(), Beam.GRAPPLE, vect(26.18, 15.70, -90.36), vect(29.31, 16.27, -90.89), null, EffectReeval.VISIBILITY)
+playervar isGoingFast = false
 
+rule "Toggle zoomies":
+    @Event eachPlayer
+    @Condition eventPlayer == debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer.isHoldingButton(Button.CROUCH)
 
-# rule "trigger all npcs":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.RELOAD)
+    eventPlayer.isGoingFast = not eventPlayer.isGoingFast
+    if eventPlayer.isGoingFast:
+        eventPlayer.setMoveSpeed(200)
+    else:
+        eventPlayer.setMoveSpeed(100)
 
-#     INCREMENT_STATE(Id.outerBruce)
+rule "Easy restart":
+    @Event eachPlayer
+    @Condition eventPlayer == debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD)
+    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
 
-# rule "Debug on":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ULTIMATE)
+    restartMatch()
 
-#     if eventPlayer in debugPlayers:
-#         debugPlayers.remove(eventPlayer)
-#     else:
-#         debugPlayers.append(eventPlayer)
+rule "Noclip on":
+    @Event eachPlayer
+    @Condition eventPlayer == debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.MELEE) == true
 
-# playervar isMercyUlting = false
+    eventPlayer.disableEnvironmentCollision(false)
 
-# rule "Be mercy":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer.isHoldingButton(Button.CROUCH)
+rule "Noclip off":
+    @Event eachPlayer
+    @Condition eventPlayer == debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.MELEE) == false
 
-#     eventPlayer.isMercyUlting = false
-#     eventPlayer.startForcingHero(Hero.MERCY)
-
-# rule "Toggle infinite mercy ult":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
-#     @Condition eventPlayer.getCurrentHero() == Hero.MERCY
-
-#     eventPlayer.isMercyUlting = not eventPlayer.isMercyUlting
-
-# globalvar x
-
-# rule "setup":
-#     @Event global
-
-#     chase(x, INF, rate=2 * PI / 32, ChaseReeval.NONE)
-
-# rule "trip cam":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and not eventPlayer.isHoldingButton(Button.ABILITY_1)
-
-#     # eventPlayer.disableHeroHUD()
-#     # eventPlayer.startCamera(vect(-81.25, 14.6, -143.31), vect(-81.25 - sin(x - 0.18), 14.6, -143.31 + cos(x - 0.18)), 0)
-#     # GIVE_ITEM("Strong alcohol")
-#     # GIVE_ITEM("Right handed remote")
-#     # eventPlayer.equipped.append(Equip.WINGS)
-#     # manageEquips()
-#     # eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
-#     # doCredits()
-#     eventPlayer.currentCutscene = Cutscene.ENDING
-
-# rule "stop trip cam":
-#     @Event eachPlayer
-#     @Condition not eventPlayer.isHoldingButton(Button.RELOAD)
-
-#     # eventPlayer.enableHeroHud()
-#     # eventPlayer.stopCamera()
-
-# rule "end game state":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.isHoldingButton(Button.ABILITY_1)
-
-#     eventPlayer.molePersonInteractStage = 4
-#     eventPlayer.equipped.append(Equip.WINGS)
-#     manageEquips()
-
-
-# rule "Restart game":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.ULTIMATE)
-
-#     resetGame()
-
-# rule "Mercy infinite ult":
-#     @Event eachPlayer
-#     @Condition eventPlayer.getCurrentHero() == Hero.MERCY
-#     @Condition eventPlayer.isMercyUlting
-#     @Condition not eventPlayer.isUsingUltimate()
-
-#     eventPlayer.setUltCharge(100)
-#     eventPlayer.forceButtonPress(Button.ULTIMATE)
-#     wait(0.1)
-#     eventPlayer.isMercyUlting = true
-
-# rule "Easy restart":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
-#     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
-
-#     restartMatch()
-
-# rule "Point helper":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.CROUCH)
-
-#     eventPlayer.canBeTheOtherGuy = true
-
-#     if eventPlayer.pointHelperState == 0:
-#         hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-#         eventPlayer.pointHelperHud = getLastCreatedText()
-#         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
-#         eventPlayer.pointHelperEffect = getLastCreatedEntity()
-#         eventPlayer.pointHelperState = 1
-#     elif eventPlayer.pointHelperState == 1:
-#         destroyEffect(eventPlayer.pointHelperEffect)
-#         destroyHudText(eventPlayer.pointHelperHud)
-#         hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3)), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-#         eventPlayer.pointHelperHud = getLastCreatedText()
-#         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
-#         eventPlayer.pointHelperEffect = getLastCreatedEntity()
-#         eventPlayer.pointHelperState = 2
-#     else:
-#         destroyEffect(eventPlayer.pointHelperEffect)
-#         destroyHudText(eventPlayer.pointHelperHud)
-#         eventPlayer.pointHelperState = 0
-
-# rule "Item visualization":
-#     @Event eachPlayer
-#     @Condition eventPlayer == hostPlayer
-
-#     # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-#     #     if Id.outerIceBox <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerMinigameSkip:
-#     #         createEffect(debugPlayers, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
-
-# rule "Noclip on":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.MELEE) == true
-
-#     eventPlayer.disableEnvironmentCollision(false)
-
-# rule "Noclip off":
-#     @Event eachPlayer
-#     @Condition eventPlayer.isHoldingButton(Button.MELEE) == false
-
-#     eventPlayer.enableEnvironmentCollision()
+    eventPlayer.enableEnvironmentCollision()
 
 rule "Display stats":
-    @Event eachPlayer
-    @Condition eventPlayer == hostPlayer
+    @Event global
 
-    # hudHeader(eventPlayer, "pos: {0}".format(eventPlayer.getEyePosition()), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "facing: {0}".format(eventPlayer.getFacingDirection() * 1000), HudPosition.LEFT, 0, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-
-    # hudHeader(eventPlayer, "bruce dist: {0}".format(distance(eventPlayer, BRUCE_TEXT_LOCATION)), HudPosition.RIGHT, 6, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "smuggler dist: {0}".format(distance(eventPlayer, INSIDE_SMUGGLER_TEXT_LOCATION)), HudPosition.RIGHT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "mv2: {0} / {1}".format(eventPlayer.innerMinigameValue2 % (2 * PI / 3), PI/6), HudPosition.LEFT, 7, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "b facing: {0}".format(normalize(BEZIER_POSITION - BEZIER_FACING)), HudPosition.LEFT, 8, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "B: {0}".format(B), HudPosition.LEFT, 9, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-    # hudHeader(eventPlayer, "colors: {0} {1} {2} {3} {4} {5} {6} {7} {8}".format(eventPlayer.barnMinigameColorState[0], eventPlayer.barnMinigameColorState[1], eventPlayer.barnMinigameColorState[2], eventPlayer.barnMinigameColorState[3], eventPlayer.barnMinigameColorState[4], eventPlayer.barnMinigameColorState[5], eventPlayer.barnMinigameColorState[6], eventPlayer.barnMinigameColorState[7], eventPlayer.barnMinigameColorState[8]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
-    # hudHeader(eventPlayer, "pos: {0} {1} {2} {3} {4} {5} {6} {7}".format(eventPlayer.barnMinigamePosState[0], eventPlayer.barnMinigamePosState[1], eventPlayer.barnMinigamePosState[2], eventPlayer.barnMinigamePosState[3], eventPlayer.barnMinigamePosState[4], eventPlayer.barnMinigamePosState[5], eventPlayer.barnMinigamePosState[6], eventPlayer.barnMinigamePosState[7]), HudPosition.RIGHT, 1000, Color.ORANGE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
-
-    hudHeader(eventPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
-    hudHeader(eventPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
-    hudHeader(eventPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
-    hudHeader(eventPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "load {0}".format(getServerLoad()), HudPosition.RIGHT, 11, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.STRING, SpecVisibility.ALWAYS)
