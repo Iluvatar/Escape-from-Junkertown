@@ -2326,17 +2326,7 @@ def doCredits():
 
     wait(3)
     CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 16, 1.5, Color.WHITE)
-
-    wait(10)
-    # eventPlayer.stopCamera()
-    # eventPlayer.enableHeroHud()
-    # popTextDeleteQueue()
-    # popTextDeleteQueue()
-    # popTextDeleteQueue()
-    # popTextDeleteQueue()
-    # popTextDeleteQueue()
-    # popTextDeleteQueue()
-    # popTextDeleteQueue()
+    eventPlayer.hasFinishedGame = true
 
 rule "do ending cutscene cleanup":
     @Event eachPlayer
@@ -2648,7 +2638,7 @@ rule "In a hurry achievement":
 rule "Switch between heroes":
     @Event eachPlayer
     @Condition eventPlayer.canBeTheOtherGuy
-    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame and eventPlayer.cooldown == 0
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT) and not eventPlayer.pauseInteraction and eventPlayer.cooldown == 0
 
     eventPlayer.cooldown = COOLDOWN_TIME
 
@@ -2713,7 +2703,7 @@ distance(item[Item.POINT], eventPlayer.getEyePosition() + eventPlayer.getFacingD
 
 rule "Interact":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame and eventPlayer.cooldown == 0
+    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE) and not eventPlayer.pauseInteraction and eventPlayer.cooldown == 0
 
     eventPlayer.cooldown = COOLDOWN_TIME
 
@@ -3029,7 +3019,6 @@ rule "Interact":
                 elif eventPlayer.molePersonInteractStage == 3:
                     doMoleLeaderInteractionStage4()
                 elif eventPlayer.molePersonInteractStage == 4:
-                    eventPlayer.hasFinishedGame = true
                     eventPlayer.currentCutscene = Cutscene.ENDING
                 else:
                     CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
@@ -3214,7 +3203,7 @@ def APPLY_ITEM_FAIL():
 
 rule "Apply":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction and not eventPlayer.hasFinishedGame and eventPlayer.cooldown == 0
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and not eventPlayer.pauseInteraction and eventPlayer.cooldown == 0
 
     eventPlayer.cooldown = COOLDOWN_TIME
 
