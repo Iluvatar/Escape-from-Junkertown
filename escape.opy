@@ -1,6 +1,6 @@
 settings {
     "main": {
-        "description": "Escape from Junkertown!\nYour brilliant plan went wrong, and now you're trapped in Junkertown. Can you find the way out?\nCode: 4K66K\nv0.10 Made by EruIluvatar",
+        "description": "Escape from Junkertown!\nYour brilliant plan went wrong, and now you're trapped in Junkertown. Can you find the way out?\nCode: 4K66K\nv0.11 Made by EruIluvatar",
         "modeName": "Escape from Junkertown"
     },
     "lobby": {
@@ -4130,9 +4130,15 @@ def generateHintText():
 
 def showHintIntro():
     FADE_TO_BLACK()
-    CREATE_BLACK_TEXT("Use hints to help you out if you get stuck", -2)
-    CREATE_BLACK_TEXT("Hints change based on your progress and location", 0)
-    CREATE_BLACK_TEXT_REEVAL("{0} to continue".format(buttonString(Button.PRIMARY_FIRE)), 2)
+    CREATE_BLACK_TEXT("Use hints to help you out if you get stuck", -4)
+    CREATE_BLACK_TEXT("Hints change based on your progress and location", -2)
+
+    CREATE_BLACK_TEXT("Game controls:", 0)
+    CREATE_BLACK_TEXT_REEVAL("{0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), 1)
+    CREATE_BLACK_TEXT_REEVAL("{0} to apply inventory items to objects".format(buttonString(Button.SECONDARY_FIRE)), 2)
+
+    CREATE_BLACK_TEXT_REEVAL("{0} to continue".format(buttonString(Button.INTERACT)), 5)
+    CREATE_BLACK_TEXT_REEVAL("{0} to exit".format(buttonString(Button.RELOAD)), 6)
 
 def showHintScreen():
     generateHints()
@@ -4157,7 +4163,7 @@ rule "Toggle hints":
 rule "Pass hint intro":
     @Event eachPlayer
     @Condition eventPlayer.isDoingHint
-    @Condition eventPlayer.isHoldingButton(Button.PRIMARY_FIRE)
+    @Condition eventPlayer.isHoldingButton(Button.INTERACT)
     @Condition eventPlayer.tValue == HintState.INTRO
 
     showHintScreen()
@@ -4313,3 +4319,9 @@ rule "Display stats":
     hudHeader(debugPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
     hudHeader(debugPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
     hudHeader(debugPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
+
+rule "Entity test":
+    @Event eachPlayer
+    @Team 1
+
+    createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, vect(0, 100, 0), 0.1, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
