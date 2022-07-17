@@ -3831,10 +3831,11 @@ def generateHints():
                     [
                         "Power the generator", [
                             "Hint",
-                            ["It's not enough to generate power, you also have to get it to the panel"],
+                            ["How can you get fuel to the generator? And someone should fix those sparking wires."],
                             [
                                 "1. Find the empty petrol can in the chest near the bottom of the stairs",
-                                "2. Apply it to the barrel next to the downstairs window to fill it with petrol",
+                                "2. Apply it to the barrel next to the downstairs window under the TV screen to fill",
+                                "it with petrol",
                                 "3. Find the extension cord in one of the lockers",
                                 "4. Apply the extension cord to the sparking wires upstairs",
                                 "5. Apply the fuel filled petrol can to the ceiling high machine next to the wires",
@@ -3877,7 +3878,7 @@ def generateHints():
                     [
                         "Find the vent key", [
                             "Hint",
-                            ["Three whole valves? You might even have to leave the room to do this one"],
+                            ["Three whole valves to turn? You might even have to leave the room to do this one"],
                             [
                                 "1. Turn off the three valves: the first one is in the mech room, next to the left exit",
                                 "2. Follow the left wall out of the mech room until you see a second valve, just before",
@@ -4117,7 +4118,7 @@ def generateHintText():
         for eventPlayer.I in range(len(eventPlayer.hintText[1])):
             CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[1][eventPlayer.I], HINT_SPACING_TEXT), eventPlayer.I - HINT_LINE_OFFSET)
 
-        CREATE_BLACK_TEXT_REEVAL("{0}: Show full answer{1}".format(buttonString(Button.INTERACT), HINT_SPACING_CONTROLS), 4)
+        CREATE_BLACK_TEXT_REEVAL("{0}: Show answer{1}".format(buttonString(Button.INTERACT), HINT_SPACING_CONTROLS), 4)
     else:
         eventPlayer.tValue = HintState.ANSWER
 
