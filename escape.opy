@@ -380,8 +380,6 @@ globalvar moleLeaderRiddle = [
     "and has no place to wipe your feet."
 ]
 
-globalvar debugPlayer
-
 # PLAYER VARIABLES
 
 playervar effectDeleteQueue = []
@@ -1018,7 +1016,7 @@ rule "Global setup":
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.MELEE)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.RELOAD)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
     createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tutorialGate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -2818,7 +2816,7 @@ rule "Interact":
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             elif not eventPlayer.powerSwitched:
-                smallMessage(eventPlayer, "There's power, so the switches next to the lights should work")
+                smallMessage(eventPlayer, "There's power, so the switches next to these red lights should work")
             else:
                 smallMessage(eventPlayer, "The pretty green lights make you giddy")
         elif eventPlayer.tValue[Item.ID] == Id.innerGenerator:
@@ -4109,7 +4107,7 @@ def generateHintText():
         for eventPlayer.I in range(len(eventPlayer.hintText)):
             CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[eventPlayer.I], HINT_SPACING_TEXT), eventPlayer.I - HINT_LINE_OFFSET)
 
-    CREATE_BLACK_TEXT_REEVAL("{0}: exit{1}".format(buttonString(Button.MELEE), HINT_SPACING_CONTROLS), 5)
+    CREATE_BLACK_TEXT_REEVAL("{0}: exit{1}".format(buttonString(Button.RELOAD), HINT_SPACING_CONTROLS), 5)
 
 
 def showHintIntro():
@@ -4124,7 +4122,7 @@ def showHintScreen():
 
 rule "Toggle hints":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction) and eventPlayer != debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
 
     eventPlayer.isDoingHint = not eventPlayer.isDoingHint
     if eventPlayer.isDoingHint:
@@ -4187,6 +4185,8 @@ rule "Show answer":
 
 
 # DEBUG FUNCTIONS
+
+globalvar debugPlayer
 
 rule "Set debug player":
     @Event eachPlayer
