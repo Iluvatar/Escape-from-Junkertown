@@ -210,6 +210,13 @@ enum Id:
     tutSafe4,
     tutSafe5,
     tutGold,
+    tutBarrel1,
+    tutBarrel2,
+    tutBarrel3,
+    tutBarrel4,
+    tutBarrel5,
+    tutBarrel6,
+    tutBarrel7,
     # lights on section
     innerFridge,
     innerChest1,
@@ -221,6 +228,7 @@ enum Id:
     innerPowerDistributor,
     innerBarrel1,
     innerBarrel3,
+    innerNotBarrel,
     innerSwitch1,
     innerSwitch2,
     innerSwitch3,
@@ -1369,9 +1377,15 @@ def playerInitialState():
         [Id.tutSafe5, 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], null, true],
         [Id.tutGold, 0, vect(-95.60, 11.38, -86.96), 1.5, ["Is this... how you were brought in here?"]],
 
-        # lights on section
-        eventPlayer.innerRadio,
+        [Id.tutBarrel1, 0, vect(-100.70, 11.04, -77.17), 0.5, ["All of the barrels in here seem to be empty"]],
+        [Id.tutBarrel2, 0, vect(-101.63, 11.30, -76.47), 0.5, ["All of the barrels in here seem to be empty"]],
+        [Id.tutBarrel3, 0, vect(-101.72, 11.70, -75.09), 0.5, ["All of the barrels in here seem to be empty"]],
+        [Id.tutBarrel4, 0, vect(-88.59, 11.70, -73.35), 0.5, ["All of the barrels in here seem to be empty"]],
+        [Id.tutBarrel5, 0, vect(-83.85, 11.78, -80.16), 0.5, ["All of the barrels in here seem to be empty"]],
+        [Id.tutBarrel6, 0, vect(-87.39, 11.07, -84.29), 0.5, ["All of the barrels in here seem to be empty"]],
+        [Id.tutBarrel7, 0, vect(-88.16, 10.97, -85.22), 0.5, ["All of the barrels in here seem to be empty"]],
 
+        # lights on section
         [Id.innerFridge, 0, vect(-110.04, 6.97, -111.51), 1.1, ["All that's inside are fish heads and moldy leftovers"], null, true],
         [Id.innerChest1, 0, vect(-114.91, 7.07, -124.08), 1.2, ["There's an empty petrol can inside, just free for the taking"], "Empty petrol can", true],
         [Id.innerLocker1, 0, vect(-112.76, 7.55, -134.80), 1.2, ["Whoever's locker this was didn't have the decency to leave easily stolen goods inside"], null, true],
@@ -1383,6 +1397,7 @@ def playerInitialState():
 
         [Id.innerBarrel1, 0, vect(-113.43, 7.02, -116.14), 0.5, ["The barrel is as dry as a day in December"], null, true],
         [Id.innerBarrel3, 0, vect(-105.32, 12.79, -132.71), 0.5, ["It's as empty as the depths of your soul"], null, true],
+        [Id.innerNotBarrel, 0, vect(-104.5, 7.64, -121.27), 1, ["This doesn't hold petrol, but maybe if you look nearby"]],
 
         [Id.innerSwitch1, 0, vect(-111.46, 14.145, -137.47), 0.05, null],
         [Id.innerSwitch2, 0, vect(-111.46, 14.071, -137.47), 0.05, null],
@@ -1392,6 +1407,8 @@ def playerInitialState():
         [Id.innerPowerBox, 0, vect(-111.73, 14.04, -137.34), 0.5, ["This is the power switching box for the whole area", "Maybe if you get the generator running you can turn the lights on", "There's no power going to the box"]],
 
         # larger inner section
+        eventPlayer.innerRadio, # higher up for priority reasons
+
         [Id.innerThrone, 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
         [Id.innerChest2, 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
@@ -4100,7 +4117,7 @@ def generateHintText():
         for eventPlayer.I in range(len(eventPlayer.hintText[1])):
             CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[1][eventPlayer.I], HINT_SPACING_TEXT), eventPlayer.I - HINT_LINE_OFFSET)
 
-        CREATE_BLACK_TEXT_REEVAL("{0}: Just give me the answer{1}".format(buttonString(Button.INTERACT), HINT_SPACING_CONTROLS), 4)
+        CREATE_BLACK_TEXT_REEVAL("{0}: Show full answer{1}".format(buttonString(Button.INTERACT), HINT_SPACING_CONTROLS), 4)
     else:
         eventPlayer.tValue = HintState.ANSWER
 
@@ -4203,6 +4220,43 @@ rule "Set debug player":
         debugPlayer = eventPlayer
         eventPlayer.enableScoreboard()
         smallMessage(eventPlayer, "Debug player set")
+
+playervar pointHelperEffect
+playervar pointHelperHud
+playervar pointHelperState = 0
+
+rule "Point helper":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer == debugPlayer
+
+    eventPlayer.canBeTheOtherGuy = true
+
+    if eventPlayer.pointHelperState == 0:
+        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        eventPlayer.pointHelperHud = getLastCreatedText()
+        createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+        eventPlayer.pointHelperEffect = getLastCreatedEntity()
+        eventPlayer.pointHelperState = 1
+    elif eventPlayer.pointHelperState == 1:
+        destroyEffect(eventPlayer.pointHelperEffect)
+        destroyHudText(eventPlayer.pointHelperHud)
+        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3)), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        eventPlayer.pointHelperHud = getLastCreatedText()
+        createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+        eventPlayer.pointHelperEffect = getLastCreatedEntity()
+        eventPlayer.pointHelperState = 2
+    else:
+        destroyEffect(eventPlayer.pointHelperEffect)
+        destroyHudText(eventPlayer.pointHelperHud)
+        eventPlayer.pointHelperState = 0
+
+rule "Item visualization":
+    @Event eachPlayer
+    @Condition eventPlayer == debugPlayer
+
+    # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
+    #     if Id.innerFridge <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] and eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.innerPowerBox:
+    #         createEffect(debugPlayer, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 playervar isGoingFast = false
 
