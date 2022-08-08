@@ -118,6 +118,7 @@ globalvar graphicsQualityPlayers = []
 globalvar playersInDark = []
 globalvar innerWirePlayers = []
 globalvar powerPanelPlayers = [[], [], [], [], []]
+globalvar graphicsWarningPlayers = []
 globalvar innerMinigamePlayers = []
 globalvar radioSmokePlayers = []
 globalvar outerMinigamePlayers = []
@@ -1023,8 +1024,8 @@ rule "Global setup":
     hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things".format(buttonString(Button.SECONDARY_FIRE)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to activate the hint system".format(buttonString(Button.RELOAD)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n                     {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to toggle the hint system".format(buttonString(Button.RELOAD)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
     createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tutorialGate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -1082,6 +1083,9 @@ rule "Global setup":
     createEffect(powerPanelPlayers[4], Effect.SPHERE, POWER_OFF_COLOR, vect(-111.398, 13.835, -137.334), 0.013, EffectReeval.VISIBILITY)
     createEffect(powerPanelPlayers[4], Effect.SPHERE, POWER_OFF_COLOR, vect(-111.400, 13.835, -137.343), 0.013, EffectReeval.VISIBILITY)
     createEffect(powerPanelPlayers[4], Effect.SPHERE, POWER_OFF_COLOR, vect(-111.402, 13.835, -137.352), 0.013, EffectReeval.VISIBILITY)
+
+    # graphics warning
+    createInWorldText(graphicsWarningPlayers, "If you can see this,\nyour graphics level\nis set to low.\n\nPlease set to\nmedium or higher.", vect(-111.67, 13.65, -137.37), 0.08, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # window 0
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-80.91, 8.29, -97.13), 5, EffectReeval.VISIBILITY)
@@ -2499,6 +2503,18 @@ rule "Set inner power box state":
     wait(3)
     smallMessage(eventPlayer, "If you could just get the power panel all green, maybe the lights would turn on")
 
+rule "Add graphics warning text":
+    @Event eachPlayer
+    @Condition distance(eventPlayer, vect(-111.67, 13.65, -137.37)) < 4
+
+    graphicsWarningPlayers.append(eventPlayer)
+
+rule "Remove graphics warning text":
+    @Event eachPlayer
+    @Condition distance(eventPlayer, vect(-111.67, 13.65, -137.37)) >= 4
+
+    graphicsWarningPlayers.remove(eventPlayer)
+
 rule "Inner workbench minigame start":
     @Event eachPlayer
     @Condition eventPlayer.isDoingInnerMinigame
@@ -3532,7 +3548,7 @@ rule "Apply":
             INCREMENT_STATE(Id.outerBruce)
             doBruceContact()
         elif eventPlayer.inventory[0] == "Right handed remote":
-            smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed")
+            smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed\n                        Maybe you can switch this at your workbench")
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outsideMolePersonRoom):
@@ -4136,9 +4152,10 @@ def showHintIntro():
     CREATE_BLACK_TEXT("Game controls:", 0)
     CREATE_BLACK_TEXT_REEVAL("{0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), 1)
     CREATE_BLACK_TEXT_REEVAL("{0} to apply inventory items to objects".format(buttonString(Button.SECONDARY_FIRE)), 2)
+    CREATE_BLACK_TEXT_REEVAL("{0} to apply inventory items to objects".format(buttonString(Button.SECONDARY_FIRE)), 2)
 
-    CREATE_BLACK_TEXT_REEVAL("{0} to continue".format(buttonString(Button.INTERACT)), 5)
-    CREATE_BLACK_TEXT_REEVAL("{0} to exit".format(buttonString(Button.RELOAD)), 6)
+    CREATE_BLACK_TEXT_REEVAL("{0} to continue".format(buttonString(Button.INTERACT)), 6)
+    CREATE_BLACK_TEXT_REEVAL("{0} to exit".format(buttonString(Button.RELOAD)), 7)
 
 def showHintScreen():
     generateHints()
@@ -4320,8 +4337,8 @@ rule "Display stats":
     hudHeader(debugPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
     hudHeader(debugPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
 
-rule "Entity test":
+rule "Show other player inventory":
     @Event eachPlayer
     @Team 1
 
-    createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, vect(0, 100, 0), 0.1, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createInWorldText(debugPlayer, eventPlayer.inventory, eventPlayer.getEyePosition() + vect(0, 0.5, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
