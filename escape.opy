@@ -451,7 +451,11 @@ playervar canLeaveBarn
 playervar canAccessBarnSecret
 
 playervar isDoingOuterMinigame
-playervar outerMinigameState
+playervar outerMinigameRotState1
+playervar outerMinigameRotState2
+playervar outerMinigameRotState3
+playervar outerMinigameColorState
+playervar outerMinigamePosState
 playervar hasFinishedOuterMinigame
 
 playervar canUtilizeSmuggler
@@ -775,6 +779,37 @@ def checkPowerPanel():
 #!define OUTER_MINIGAME_2D_TO_3D(vect2d) OUTER_MINIGAME_X_0 + (OUTER_MINIGAME_X_MAX - OUTER_MINIGAME_X_0) * vect2d.x / distance(OUTER_MINIGAME_X_0, OUTER_MINIGAME_X_MAX) + vect(0, vect2d.y + OUTER_MINIGAME_Y_0, 0)
 #!define OUTER_MINIGAME_3D_TO_2D(vect3d) vect(distance(OUTER_MINIGAME_X_0, vect(vect3d.x, 0, vect3d.z)), vect3d.y - OUTER_MINIGAME_Y_0, 0)
 
+# Toggle outer minigame state
+#!define OUTER_MINIGAME_TOGGLE(num) eventPlayer.tPos = num \
+outerMinigameToggle()
+
+def outerMinigameToggle():
+    eventPlayer.tMinigame = eventPlayer.outerMinigamePosState[eventPlayer.tPos]
+    eventPlayer.outerMinigameColorState[eventPlayer.tMinigame]++
+    eventPlayer.outerMinigameColorState[eventPlayer.tMinigame] %= 2
+
+def outerMinigameClick():
+    if eventPlayer.tPos == 1:
+        chase(eventPlayer.outerMinigameRotState1, eventPlayer.outerMinigameRotState1 + 2 * PI / 3, duration=0.3, ChaseReeval.NONE)
+        eventPlayer.tMinigame = eventPlayer.outerMinigamePosState[1]
+        eventPlayer.outerMinigamePosState[1] = eventPlayer.outerMinigamePosState[2]
+        eventPlayer.outerMinigamePosState[2] = eventPlayer.outerMinigamePosState[3]
+        eventPlayer.outerMinigamePosState[3] = eventPlayer.tMinigame
+    elif eventPlayer.tPos == 2:
+        chase(eventPlayer.outerMinigameRotState2, eventPlayer.outerMinigameRotState2 + 2 * PI / 3, duration=0.3, ChaseReeval.NONE)
+        eventPlayer.tMinigame = eventPlayer.outerMinigamePosState[4]
+        eventPlayer.outerMinigamePosState[4] = eventPlayer.outerMinigamePosState[7]
+        eventPlayer.outerMinigamePosState[7] = eventPlayer.outerMinigamePosState[8]
+        eventPlayer.outerMinigamePosState[8] = eventPlayer.tMinigame
+    else:
+        chase(eventPlayer.outerMinigameRotState3, eventPlayer.outerMinigameRotState3 + 2 * PI / 3, duration=0.3, ChaseReeval.NONE)
+        eventPlayer.tMinigame = eventPlayer.outerMinigamePosState[6]
+        eventPlayer.outerMinigamePosState[6] = eventPlayer.outerMinigamePosState[9]
+        eventPlayer.outerMinigamePosState[9] = eventPlayer.outerMinigamePosState[10]
+        eventPlayer.outerMinigamePosState[10] = eventPlayer.tMinigame
+
+    wait(0.3)
+
 # Converts between 2D and 3D coordinate locations for the barn workbench minigame
 #!define BARN_MINIGAME_X_0 vect(48.95, 0, -80.60)
 #!define BARN_MINIGAME_X_MAX vect(48.77, 0, -82.33)
@@ -827,7 +862,6 @@ def barnMinigameClick():
     if eventPlayer.tIndex >= 0:
         eventPlayer.tMinigame = [e for e in barnMinigameConnections[eventPlayer.tPos] if eventPlayer.barnMinigameColorState[e] == 0]
         if len(eventPlayer.tMinigame) > 0:
-
             eventPlayer.tStart = barnMinigamePoints[eventPlayer.barnMinigamePosState[eventPlayer.tIndex]]
             createEffect(eventPlayer, Effect.SPHERE, Color.BLACK if eventPlayer.barnMinigameColorState[eventPlayer.tPos] == 1 else Color.BLUE, BARN_MINIGAME_2D_TO_3D(eventPlayer.tStart), 0.05, EffectReeval.POSITION_AND_RADIUS)
             eventPlayer.tEnd = getLastCreatedEntity()
@@ -847,10 +881,6 @@ def barnMinigameClick():
 # Converts between coords for the outside satellite control minigame
 #!define OUTSIDE_SAT_CONTROL_ORIGIN vect(-4.106, 13.825, -83.328)
 #!define OUTSIDE_SAT_TO_WORLD(pos) OUTSIDE_SAT_CONTROL_ORIGIN + vect(dotProduct(pos, vect(0.789, 0.120, -0.603)), dotProduct(pos, vect(-0.151, 0.989, 0)), dotProduct(pos, vect(-0.596, -0.091, -0.798)))
-
-# Toggle outer minigame state
-#!define OUTER_MINIGAME_TOGGLE(num) eventPlayer.outerMinigameState[num]++ \
-eventPlayer.outerMinigameState[num] %= 2
 
 # Enters a digit to the barn code
 #!define ENTER_BARN_DIGIT(digit) eventPlayer.barnCodeInputted.append(digit) \
@@ -1213,7 +1243,11 @@ def innerMinigameInitialState():
 
 def outerMinigameInitialState():
     eventPlayer.isDoingOuterMinigame = false
-    eventPlayer.outerMinigameState = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    eventPlayer.outerMinigameRotState1 = 0
+    eventPlayer.outerMinigameRotState2 = 0
+    eventPlayer.outerMinigameRotState3 = 0
+    eventPlayer.outerMinigameColorState = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    eventPlayer.outerMinigamePosState = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     eventPlayer.outerMinigameMovesMade = 0
 
 def barnMinigameInitialState():
@@ -2568,30 +2602,33 @@ rule "Outer workbench minigame start":
     @Event eachPlayer
     @Condition eventPlayer.isDoingOuterMinigame
 
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[1]], OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[1]], OUTER_MINIGAME_2D_TO_3D(vect(0.72 + sin(eventPlayer.outerMinigameRotState1) * 0.17 * 2 / 3, 0.08 + 0.17 * 2 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState1) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[2]], OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[2]], OUTER_MINIGAME_2D_TO_3D(vect(0.72 + sin(eventPlayer.outerMinigameRotState1 + 4 * PI / 3) * 0.17 * 2 / 3, 0.08 + 0.17 * 2 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState1 + 4 * PI / 3) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[3]], OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08 + 0.17 * 2, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[3]], OUTER_MINIGAME_2D_TO_3D(vect(0.72 + sin(eventPlayer.outerMinigameRotState1 + 2 * PI / 3) * 0.17 * 2 / 3, 0.08 + 0.17 * 2 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState1 + 2 * PI / 3) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[4]], OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[4]], OUTER_MINIGAME_2D_TO_3D(vect(0.52 + sin(eventPlayer.outerMinigameRotState2) * 0.17 * 2 / 3, 0.08 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState2) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[5]], OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[7]], OUTER_MINIGAME_2D_TO_3D(vect(0.52 + sin(eventPlayer.outerMinigameRotState2 + 4 * PI / 3) * 0.17 * 2 / 3, 0.08 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState2 + 4 * PI / 3) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[6]], OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[8]], OUTER_MINIGAME_2D_TO_3D(vect(0.52 + sin(eventPlayer.outerMinigameRotState2 + 2 * PI / 3) * 0.17 * 2 / 3, 0.08 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState2 + 2 * PI / 3) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[7]], OUTER_MINIGAME_2D_TO_3D(vect(0.42, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[6]], OUTER_MINIGAME_2D_TO_3D(vect(0.92 + sin(eventPlayer.outerMinigameRotState3) * 0.17 * 2 / 3, 0.08 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState3) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[8]], OUTER_MINIGAME_2D_TO_3D(vect(0.62, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[9]], OUTER_MINIGAME_2D_TO_3D(vect(0.92 + sin(eventPlayer.outerMinigameRotState3 + 4 * PI / 3) * 0.17 * 2 / 3, 0.08 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState3 + 4 * PI / 3) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[9]], OUTER_MINIGAME_2D_TO_3D(vect(0.82, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[10]], OUTER_MINIGAME_2D_TO_3D(vect(0.92 + sin(eventPlayer.outerMinigameRotState3 + 2 * PI / 3) * 0.17 * 2 / 3, 0.08 + 0.17 / 3 + cos(eventPlayer.outerMinigameRotState3 + 2 * PI / 3) * 0.17 * 2 / 3, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
-    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameState[10]], OUTER_MINIGAME_2D_TO_3D(vect(1.02, 0.08, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.COLOR)
+
+    createEffect(eventPlayer, Effect.SPHERE, outerMinigameColors[eventPlayer.outerMinigameColorState[5]], OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17, 0)), OUTER_MINIGAME_BALL_SIZE, EffectReeval.POSITION_RADIUS_AND_COLOR)
     pushEffectDeleteQueue()
 
 rule "Outer workbench minigame success":
     @Event eachPlayer
-    @Condition all([e == 1 for e in eventPlayer.outerMinigameState])
+    @Condition all([e == 1 for e in eventPlayer.outerMinigameColorState])
 
     eventPlayer.hasFinishedOuterMinigame = true
     SET_STATE(Id.outerWorkbench, 1)
@@ -3029,22 +3066,16 @@ rule "Interact":
                 OUTER_MINIGAME_TOGGLE(9)
                 OUTER_MINIGAME_TOGGLE(10)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameRotate1:
-                eventPlayer.tMinigame = eventPlayer.outerMinigameState[1]
-                eventPlayer.outerMinigameState[1] = eventPlayer.outerMinigameState[2]
-                eventPlayer.outerMinigameState[2] = eventPlayer.outerMinigameState[3]
-                eventPlayer.outerMinigameState[3] = eventPlayer.tMinigame
+                eventPlayer.tPos = 1
+                outerMinigameClick()
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameRotate2:
-                eventPlayer.tMinigame = eventPlayer.outerMinigameState[4]
-                eventPlayer.outerMinigameState[4] = eventPlayer.outerMinigameState[7]
-                eventPlayer.outerMinigameState[7] = eventPlayer.outerMinigameState[8]
-                eventPlayer.outerMinigameState[8] = eventPlayer.tMinigame
+                eventPlayer.tPos = 2
+                outerMinigameClick()
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameRotate3:
-                eventPlayer.tMinigame = eventPlayer.outerMinigameState[6]
-                eventPlayer.outerMinigameState[6] = eventPlayer.outerMinigameState[9]
-                eventPlayer.outerMinigameState[9] = eventPlayer.outerMinigameState[10]
-                eventPlayer.outerMinigameState[10] = eventPlayer.tMinigame
+                eventPlayer.tPos = 3
+                outerMinigameClick()
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameSkip:
-                eventPlayer.outerMinigameState = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                eventPlayer.outerMinigameColorState = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
                 eventPlayer.outerMinigameMovesMade = INF
             else:
                 eventPlayer.outerMinigameMovesMade--
@@ -4228,6 +4259,9 @@ rule "Show answer":
 # DEBUG FUNCTIONS
 
 globalvar debugPlayer
+playervar pointHelperEffect
+playervar pointHelperHud
+playervar pointHelperState = 2
 
 rule "Set debug player":
     @Event eachPlayer
@@ -4239,15 +4273,14 @@ rule "Set debug player":
         debugPlayer = 0
         eventPlayer.disableScoreboard()
         eventPlayer.setMoveSpeed(100)
+        destroyEffect(eventPlayer.pointHelperEffect)
+        destroyHudText(eventPlayer.pointHelperHud)
+        eventPlayer.pointHelperState = 2
         smallMessage(eventPlayer, "Debug player unset")
     else:
         debugPlayer = eventPlayer
         eventPlayer.enableScoreboard()
         smallMessage(eventPlayer, "Debug player set")
-
-playervar pointHelperEffect
-playervar pointHelperHud
-playervar pointHelperState = 0
 
 rule "Point helper":
     @Event eachPlayer
