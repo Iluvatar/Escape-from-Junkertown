@@ -1013,7 +1013,6 @@ rule "Spawn NPCs":
 rule "Global setup":
     @Event global
 
-    # disableInspector()
     disableAnnouncer()
     disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
@@ -1054,7 +1053,7 @@ rule "Global setup":
     hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n                     {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                  {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to toggle the hint system".format(buttonString(Button.RELOAD)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
@@ -1431,7 +1430,7 @@ def playerInitialState():
         [Id.innerLocker3, 0, vect(-112.58, 7.55, -141.24), 1.2, ["The locker is completely devoid of utility"], null, true],
         [Id.innerLocker4, 0, vect(-108.08, 7.55, -142.79), 1.2, ["There's an old extension cord hidden in the back"], "Extension cord", true],
         [Id.innerLocker5, 0, vect(-106.71, 7.55, -141.16), 1.2, ["You don't even want to think about whose swimsuit that is"], null, true],
-        [Id.innerPowerDistributor, 0, vect(-110.71, 13.19, -136.03), 0.8, ["This power distribution unit sends power from the generator to the panel above"]],
+        [Id.innerPowerDistributor, 0, vect(-110.71, 13.19, -136.03), 0.8, null],
 
         [Id.innerBarrel1, 0, vect(-113.43, 7.02, -116.14), 0.5, ["The barrel is as dry as a day in December"], null, true],
         [Id.innerBarrel3, 0, vect(-105.32, 12.79, -132.71), 0.5, ["It's as empty as the depths of your soul"], null, true],
@@ -2880,6 +2879,18 @@ rule "Interact":
                 eventPlayer.inventory.append("Rusty key")
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+        elif eventPlayer.tValue[Item.ID] == Id.innerPowerDistributor:
+            if not eventPlayer.wiresConnected and not eventPlayer.generatorOn:
+                smallMessage(eventPlayer, "This power distribution unit sends power from the generator to the panel above")
+            elif not eventPlayer.wiresConnected:
+                smallMessage(eventPlayer, "The generator is on, but it's not connected to anything yet")
+            elif not eventPlayer.generatorOn:
+                smallMessage(eventPlayer, "The generator is connected, but it's not on")
+            else:
+                if eventPlayer.lightsOn:
+                    smallMessage(eventPlayer, "The generator is sending power through here to keep the lights on")
+                else:
+                    smallMessage(eventPlayer, "Power is being sent from the generator to the panel above, but not all the lights are green")
         elif eventPlayer.tValue[Item.ID] == Id.innerPowerBox:
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 if eventPlayer.tValue[Item.STATE] < 2:
@@ -3355,6 +3366,10 @@ rule "Apply":
             wait(2)
             popEffectDeleteQueue()
             eventPlayer.generatorOn = true
+            createEffect(eventPlayer, Effect.TORBJORN_OVERLOADING_SOUND, null, eventPlayer, 100, EffectReeval.NONE)
+            pushEffectDeleteQueue()
+            wait(3)
+            popEffectDeleteQueue()
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.innerWorkbench):
