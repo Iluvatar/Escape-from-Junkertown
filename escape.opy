@@ -808,6 +808,7 @@ def outerMinigameClick():
         eventPlayer.outerMinigamePosState[9] = eventPlayer.outerMinigamePosState[10]
         eventPlayer.outerMinigamePosState[10] = eventPlayer.tMinigame
 
+    playEffect(eventPlayer, DynamicEffect.BRIGITTE_REPAIR_PACK_ARMOR_SOUND, null, eventPlayer, 50)
     wait(0.3)
 
 # Converts between 2D and 3D coordinate locations for the barn workbench minigame
@@ -865,11 +866,14 @@ def barnMinigameClick():
             eventPlayer.tStart = barnMinigamePoints[eventPlayer.barnMinigamePosState[eventPlayer.tIndex]]
             createEffect(eventPlayer, Effect.SPHERE, Color.BLACK if eventPlayer.barnMinigameColorState[eventPlayer.tPos] == 1 else Color.BLUE, BARN_MINIGAME_2D_TO_3D(eventPlayer.tStart), 0.05, EffectReeval.POSITION_AND_RADIUS)
             eventPlayer.tEnd = getLastCreatedEntity()
+            createEffect(eventPlayer, Effect.JUNKRAT_TRAP_CHAIN_SOUND, null, eventPlayer, 30, EffectReeval.NONE)
+            eventPlayer.tText = getLastCreatedEntity()
             wait(RACE_CONDITION_DELAY)
             eventPlayer.barnMinigamePosState[eventPlayer.tIndex] = 9
             chase(eventPlayer.tStart, barnMinigamePoints[eventPlayer.tMinigame[0]], duration=0.3, ChaseReeval.NONE)
             wait(0.3)
             destroyEffect(eventPlayer.tEnd)
+            destroyEffect(eventPlayer.tText)
             stopChasingVariable(eventPlayer.tStart)
 
             eventPlayer.barnMinigamePosState[eventPlayer.tIndex] = eventPlayer.tMinigame[0]
@@ -2576,6 +2580,10 @@ rule "Stop inner workbench minigame controls":
     stopChasingVariable(eventPlayer.innerMinigameValue1)
     stopChasingVariable(eventPlayer.innerMinigameValue2)
 
+    if len(eventPlayer.effectDeleteQueue) > 4:
+        destroyEffect(eventPlayer.effectDeleteQueue[4])
+        del eventPlayer.effectDeleteQueue[4]
+
 rule "Inner workbench minigame success":
     @Event eachPlayer
     @Condition abs(eventPlayer.innerMinigameValue1 % (2 * PI) - 3 * PI / 2) < 0.1 and abs(eventPlayer.innerMinigameValue2 % (2 * PI / 3) - PI / 6) < 0.05
@@ -2595,10 +2603,7 @@ rule "Inner workbench minigame stop":
     @Condition eventPlayer.isDoingInnerMinigame and distance(eventPlayer, eventPlayer.innerWorkbench[Item.POINT]) > 3
 
     innerMinigamePlayers.remove(eventPlayer)
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
+    popAllEffectDeleteQueue()
     innerMinigameInitialState()
 
 rule "Outer workbench minigame start":
@@ -2919,10 +2924,14 @@ rule "Interact":
             eventPlayer.isHoldingInnerMinigameControl1 = true
             chase(eventPlayer.innerMinigameValue1, INF, rate=1, ChaseReeval.NONE)
             chase(eventPlayer.innerMinigameValue2, INF, rate=1.8, ChaseReeval.NONE)
+            createEffect(eventPlayer, Effect.LUCIO_SOUND_BARRIER_PROTECTED_SOUND, null, eventPlayer.getPosition(), 200, EffectReeval.NONE)
+            pushEffectDeleteQueue()
         elif eventPlayer.tValue[Item.ID] == Id.innerMinigameControl2 and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl2 = true
             chase(eventPlayer.innerMinigameValue1, INF, rate=1.8, ChaseReeval.NONE)
             chase(eventPlayer.innerMinigameValue2, INF, rate=1, ChaseReeval.NONE)
+            createEffect(eventPlayer, Effect.WRECKING_BALL_PILEDRIVER_FIRE_SOUND, null, eventPlayer.getPosition(), 200, EffectReeval.NONE)
+            pushEffectDeleteQueue()
         elif eventPlayer.tValue[Item.ID] == Id.innerMinigameSkip and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.innerMinigameValue1 = 3 * PI / 2
             eventPlayer.innerMinigameValue2 = PI / 6
@@ -3030,22 +3039,26 @@ rule "Interact":
         elif Id.outerMinigameDot1 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerMinigameSkip and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
             eventPlayer.outerMinigameMovesMade++
             if eventPlayer.tValue[Item.ID] == Id.outerMinigameDot1:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(3)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot2:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(5)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot3:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(1)
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(6)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot4:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(2)
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(5)
@@ -3055,28 +3068,33 @@ rule "Interact":
                 playEffect(eventPlayer, DynamicEffect.EXPLOSION_SOUND, null, eventPlayer, 30)
                 eventPlayer.outerMinigameMovesMade--
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot6:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(3)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(6)
                 OUTER_MINIGAME_TOGGLE(9)
                 OUTER_MINIGAME_TOGGLE(10)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot7:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(7)
                 OUTER_MINIGAME_TOGGLE(8)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot8:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(4)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(7)
                 OUTER_MINIGAME_TOGGLE(8)
                 OUTER_MINIGAME_TOGGLE(9)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot9:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(5)
                 OUTER_MINIGAME_TOGGLE(6)
                 OUTER_MINIGAME_TOGGLE(8)
                 OUTER_MINIGAME_TOGGLE(9)
                 OUTER_MINIGAME_TOGGLE(10)
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameDot10:
+                playEffect(eventPlayer, DynamicEffect.BAPTISTE_BIOTIC_LAUNCHER_EXPLOSION_SOUND, null, eventPlayer, 30)
                 OUTER_MINIGAME_TOGGLE(6)
                 OUTER_MINIGAME_TOGGLE(9)
                 OUTER_MINIGAME_TOGGLE(10)
