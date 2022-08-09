@@ -2386,6 +2386,7 @@ def doCredits():
     wait(1)
 
     bigMessage(eventPlayer, "Achievement get! Escape artist: get out of Junkertown")
+    playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, BLACK_SCREEN_POS, 200)
     eventPlayer.achievements.append(Achievement.ESCAPE_ARTIST)
 
     eventPlayer.tText = " "
@@ -2505,6 +2506,7 @@ rule "Poster achievement":
     @Condition len(eventPlayer.postersFound) == 12
 
     bigMessage(eventPlayer, "Achievement get! Most wanted: find all the posters of you")
+    playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, eventPlayer.getPosition(), 200)
     eventPlayer.achievements.append(Achievement.MOST_WANTED)
     manageAchievements()
 
@@ -2647,6 +2649,7 @@ rule "Outer workbench minigame success":
     if eventPlayer.outerMinigameMovesMade <= 5:
         wait(3) # wait for small message to disappear
         bigMessage(eventPlayer, "Achievement get! Puzzle master: solve the color puzzle in 5 moves")
+        playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, eventPlayer.getPosition(), 200)
         eventPlayer.achievements.append(Achievement.PUZZLE_MASTER)
         manageAchievements()
 
@@ -2737,6 +2740,7 @@ rule "In a hurry achievement":
     @Condition eventPlayer.timesBruceClicked == 60
 
     bigMessage(eventPlayer, "Achievement get! In a hurry: pester Bruce 60 times")
+    playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, eventPlayer.getPosition(), 200)
     eventPlayer.achievements.append(Achievement.IN_A_HURRY)
     manageAchievements()
 
@@ -2944,7 +2948,9 @@ rule "Interact":
                 if not eventPlayer.outsideMapFound:
                     wait(3) # wait for small message to disappear
                     bigMessage(eventPlayer, "Achievement get! Infrasight: find the sunglasses without using the map")
+                    playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, eventPlayer.getPosition(), 200)
                     eventPlayer.achievements.append(Achievement.INFRASIGHT)
+                    # wait(15)
                     manageAchievements()
         elif eventPlayer.tValue[Item.STATE] == 0 and (eventPlayer.tValue[Item.ID] == Id.innerValve1 or eventPlayer.tValue[Item.ID] == Id.innerValve2 or eventPlayer.tValue[Item.ID] == Id.innerValve3):
             eventPlayer.tValue[Item.STATE]++
@@ -3157,6 +3163,8 @@ rule "Interact":
 
             if Achievement.MASTER_HACKER not in eventPlayer.achievements:
                 bigMessage(eventPlayer, "Achievement get! Master hacker: glitch through the walls and enjoy the view")
+                wait(RACE_CONDITION_DELAY)
+                playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, eventPlayer.getPosition(), 200)
                 eventPlayer.achievements.append(Achievement.MASTER_HACKER)
                 manageAchievements()
 
