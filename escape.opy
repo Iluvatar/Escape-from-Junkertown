@@ -1903,6 +1903,8 @@ rule "do inner radio conversation":
     @Condition eventPlayer.currentCutscene == Cutscene.INNER_RADIO and not eventPlayer.isCutsceneFinished
 
     freeze()
+    hideUi()
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), RADIO_TEXT_POS), 60, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
     smallMessage(eventPlayer, "You attempt to contact the other guy")
 
@@ -1973,6 +1975,8 @@ rule "do inner radio conversation cleanup":
     if eventPlayer not in radioSmokePlayers:
         radioSmokePlayers.append(eventPlayer)
     unfreeze()
+    showUi()
+    eventPlayer.stopFacing()
     popAllEffectDeleteQueue()
     popAllTextDeleteQueue()
 
