@@ -1712,8 +1712,10 @@ rule "Initial player setup":
     eventPlayer.setInvisibility(Invis.ENEMIES)
     eventPlayer.disableGamemodeHud()
     eventPlayer.disableScoreboard()
+    eventPlayer.disableKillFeed()
     eventPlayer.disableGamemodeInWorldUi()
     eventPlayer.disableMessages()
+    eventPlayer.disablePlayerCollision()
 
     hudHeader(eventPlayer.inventoryPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
 
@@ -2011,9 +2013,14 @@ rule "do comedy routine cleanup":
     manageEquips()
 
 def doBruceContact():
+    eventPlayer.pauseInteraction = true
+
     dvdLogoPlayers.remove(eventPlayer)
     wait(0.5)
     satControlPlayers.append(eventPlayer)
+
+    createEffect(eventPlayer, Effect.ECHO_CLONING_SOUND, null, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), 50, EffectReeval.NONE)
+    pushEffectDeleteQueue()
 
     eventPlayer.tStart = 0 # beam angle
     eventPlayer.tEnd = 0.1 # center sphere radius
@@ -2030,7 +2037,14 @@ def doBruceContact():
     wait(1)
     chase(eventPlayer.tStart, 1.107, duration=3, ChaseReeval.NONE)
 
-    wait(3)
+    wait(0.9)
+
+    eventPlayer.tPos = 0
+    createEffect(eventPlayer, Effect.SIGMA_GRAVITIC_FLUX_TARGET_SOUND, null, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), eventPlayer.tPos, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    chase(eventPlayer.tPos, 200, duration=4.1, ChaseReeval.NONE)
+
+    wait(2.1)
     createEffect(eventPlayer, Effect.SPHERE, Color.WHITE, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), updateEveryTick(eventPlayer.tEnd), EffectReeval.POSITION_AND_RADIUS)
     pushEffectDeleteQueue()
 
@@ -2039,15 +2053,23 @@ def doBruceContact():
     popEffectDeleteQueue()
     popEffectDeleteQueue()
     popEffectDeleteQueue()
+    popEffectDeleteQueue()
+    popEffectDeleteQueue()
     satControlPlayers.remove(eventPlayer)
 
     chase(eventPlayer.tEnd, 0, duration=0.3, ChaseReeval.NONE)
+    playEffect(eventPlayer, DynamicEffect.MOIRA_FADE_DISAPPEAR_SOUND, null, OUTSIDE_SAT_TO_WORLD(vect(0.9, 0.5, 0)), 50)
 
     wait(0.3)
     popEffectDeleteQueue()
 
     stopChasingVariable(eventPlayer.tStart)
     stopChasingVariable(eventPlayer.tEnd)
+
+    wait(2)
+    smallMessage(eventPlayer, "You tell Bruce to expect an annoying little rat with a smug grin")
+
+    eventPlayer.pauseInteraction = false
 
 def doMoleLeaderInteractionStage1():
     freeze()
@@ -3797,7 +3819,7 @@ rule "Create dvd logo":
 
     chase(dvdLogoPos, dvdLogoPos + dvdLogoDir, rate=0.5, ChaseReeval.DESTINATION_AND_RATE)
     createEffect(dvdLogoPlayers, Effect.SPHERE, Color.VIOLET, updateEveryTick(OUTSIDE_SAT_TO_WORLD(dvdLogoPos)), 0.17, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
-    createEffect(dvdLogoPlayers, Effect.BAPTISTE_IMMORTALITY_FIELD_PROTECTED_SOUND, null, localPlayer.getPosition(), (8 - distance(vect(-3.30, 14.20, -83.94), localPlayer.getPosition())) * 30, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
+    createEffect(dvdLogoPlayers, Effect.BAPTISTE_IMMORTALITY_FIELD_PROTECTED_SOUND, null, localPlayer.getPosition(), min((8 - distance(vect(-3.30, 14.20, -83.94), localPlayer.getPosition())) * 15, 70), EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
 rule "DVD logo bounce x":
     @Event global
