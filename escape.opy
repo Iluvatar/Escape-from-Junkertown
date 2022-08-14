@@ -1024,7 +1024,7 @@ rule "Global setup":
     getAllPlayers().disableNameplatesFor(getAllPlayers())
 
     # cutscene skip text
-    hudSubtext(skipCutscenePlayers, "Press {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(skipCutscenePlayers, "Hold {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
 
     # intro text
     createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
@@ -1773,6 +1773,7 @@ rule "skip cutscene":
     @Condition eventPlayer.currentCutscene != Cutscene.NONE
     @Condition eventPlayer.isHoldingButton(Button.JUMP)
 
+    wait(1, Wait.ABORT_WHEN_FALSE)
     eventPlayer.isCutsceneFinished = true
     skipCutscenePlayers.remove(eventPlayer)
 
