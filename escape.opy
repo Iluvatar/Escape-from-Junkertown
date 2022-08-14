@@ -1788,6 +1788,7 @@ rule "show intro":
     FADE_TO_BLACK()
 
     wait(3.5, Wait.ABORT_WHEN_FALSE)
+    wait(1, Wait.ABORT_WHEN_FALSE)
 
     # Stage 1, view of plan
     eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
