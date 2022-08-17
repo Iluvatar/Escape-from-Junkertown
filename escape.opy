@@ -4,6 +4,8 @@ settings {
         "modeName": "Escape from Junkertown"
     },
     "lobby": {
+        "allowPlayersInQueue": true,
+        "team1Slots": 8,
         "team2Slots": 0
     },
     "gamemodes": {
@@ -18,6 +20,9 @@ settings {
             "respawnTime%": 0,
             "spawnHealthPacks": "disabled"
         },
+        "general": {
+            "enableSkins": false
+        }
     },
     "heroes": {
         "allTeams": {
@@ -51,6 +56,7 @@ settings {
 #!extension explosionSounds
 #!extension kineticExplosionEffects
 #!extension playMoreEffects
+#!extension spawnMoreDummyBots
 
 #!define PI 3.1415926535
 #!define INF 100000000
@@ -91,7 +97,7 @@ enum Item:
 #!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 13.48 + 1.6, -88.07)
 #!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 4.49 + 1.6, -49.63)
 #!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 1.8, -131.02)
-#!define NOT_SMUGGLER_TEXT_LOCATION vect(-35.02, 1.48 + 1.6, -126.33)
+#!define SHADY_CHARACTER_TEXT_LOCATION vect(-35.02, 1.48 + 1.8, -126.33)
 
 #!define DOOR_21_TEXT_LOCATION vect(-50.47, 13.63 + 0.6, -84.74)
 #!define DOOR_22_TEXT_LOCATION vect(-54.41, 13.63 + 0.6, -84.09)
@@ -188,7 +194,7 @@ enum Id:
     outerBruce,
     outerSmuggler,
     outerBartender,
-    outerNotSmuggler,
+    outerShadyCharacter,
     outerDoor21,
     outerDoor22,
     outerDoor23,
@@ -357,12 +363,13 @@ globalvar achievementPlayers = [[], [], [], [], [], [], []]
 
 # NPCs
 
-globalvar cartNpc
+globalvar shadyCharacter
 globalvar bruceNpc
 globalvar outsideSmugglerNpc
 globalvar insideSmugglerNpc
 globalvar bartenderNpc
 globalvar barnNpc
+globalvar cartNpc
 
 # other
 globalvar outerMinigameColors = [Color.RED, Color.BLACK]
@@ -502,7 +509,7 @@ playervar innerToolbox2
 playervar outerBruce
 playervar outerSmuggler
 playervar outerBartender
-playervar outerNotSmuggler
+playervar outerShadyCharacter
 playervar outerWorkbench
 playervar outerDoor21
 playervar outerDoor22
@@ -963,10 +970,8 @@ rule "Move payload to the end":
     # wait for starting player to get through intro so the sound doesn't interfere
     wait(15)
 
-    createDummy(Hero.TRACER, Team.2, -1, vect(28.66, 10.54, -81.27), vect(-1, 0, 0))
+    createDummy(Hero.REAPER, Team.2, -1, vect(29.09, 10.54, -81.34), vect(0.34, -0.77, 0.53))
     cartNpc = getLastCreatedEntity()
-    cartNpc.startForcingName("Not a smuggler")
-    cartNpc.setStatusEffect(null, Status.INVINCIBLE, INF)
 
 rule "Stop payload after first point":
     @Event global
@@ -974,8 +979,12 @@ rule "Stop payload after first point":
 
     pauseMatchTime()
 
-    cartNpc.teleport(vect(-35.02, 1.48, -126.33))
-    cartNpc.setFacing(vect(0.42, 0.10, -0.90), Relativity.TO_WORLD)
+    cartNpc.teleport(BARN_NPC_HIDE_LOCATION)
+    wait(15)
+    cartNpc.teleport(vect(-45.75, 4.35, -73.84))
+    cartNpc.setFacing(vect(-0.43, 0.39, -0.81), Relativity.TO_WORLD)
+    cartNpc.startScalingSize(1.2, false)
+    cartNpc.disableEnvironmentCollision(false)
 
 rule "Keep match time high to prevent time based voice lines":
     @Event global
@@ -988,29 +997,49 @@ rule "Spawn NPCs":
     @Event global
     @Condition isGameInProgress()
 
-    createDummy(Hero.ASHE, Team.2, -1, vect(-46, 14, -70), vect(-0.98, 0, -0.07))
+    # barn door opener
+    createDummy(Hero.ZENYATTA, Team.2, -1, BARN_NPC_HIDE_LOCATION, vect(-0.98, 0, -0.07))
     barnNpc = getLastCreatedEntity()
-    wait(RACE_CONDITION_DELAY)
     barnNpc.setInvisibility(Invis.ALL)
     barnNpc.disablePlayerCollision()
-    barnNpc.setUltCharge(100)
-    # barnNpc.forceButtonPress(Button.ULTIMATE)
-    barnNpc.teleport(BARN_NPC_HIDE_LOCATION)
+    barnNpc.disableEnvironmentCollision(false)
 
+    # Bruce
     createDummy(Hero.TORBJORN, Team.2, -1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
     bruceNpc = getLastCreatedEntity()
     bruceNpc.startForcingName("Bruce")
+    bruceNpc.disableEnvironmentCollision(false)
 
+    # smugglers
     createDummy(Hero.TRACER, Team.2, -1, vect(-19.06, 13.48, -88.07), vect(0.23, 0, -0.97))
     insideSmugglerNpc = getLastCreatedEntity()
     insideSmugglerNpc.startForcingName("Smuggler")
+    insideSmugglerNpc.disableEnvironmentCollision(false)
     createDummy(Hero.TRACER, Team.2, -1, vect(-44.52, 4.49, -49.63), vect(0.54, 0, 0.84))
     outsideSmugglerNpc = getLastCreatedEntity()
     outsideSmugglerNpc.startForcingName("Smuggler")
+    outsideSmugglerNpc.disableEnvironmentCollision(false)
 
+    # bartender
     createDummy(Hero.ASHE, Team.2, -1, vect(-54.65, 1.73, -131.02), vect(0.87, 0, -0.49))
     bartenderNpc = getLastCreatedEntity()
     bartenderNpc.startForcingName("Bartender")
+    bartenderNpc.disableEnvironmentCollision(false)
+
+    # shady character
+    createDummy(Hero.SOMBRA, Team.2, -1, vect(-35.02, 1.48, -126.33), vect(0.7, 0.10, -0.71))
+    shadyCharacter = getLastCreatedEntity()
+    shadyCharacter.startForcingName("Shady character")
+    shadyCharacter.startScalingSize(1.1, false)
+    shadyCharacter.disableEnvironmentCollision(false)
+
+    # guards
+    createDummy(Hero.REAPER, Team.2, -1, vect(-21.66, 4.49, -69.87), vect(-0.96, 0, 0.27))
+    getLastCreatedEntity().startScalingSize(1.2, false)
+    getLastCreatedEntity().disableEnvironmentCollision(false)
+    createDummy(Hero.REAPER, Team.2, -1, vect(-31.92, 12.48, -66.16), vect(0.45, 0, 0.89))
+    getLastCreatedEntity().startScalingSize(1.2, false)
+    getLastCreatedEntity().disableEnvironmentCollision(false)
 
     getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, INF)
 
@@ -1392,7 +1421,7 @@ def playerInitialState():
     eventPlayer.outerBruce = [Id.outerBruce, 0, vect(-21.62, 7.48, -104.95), 1, null]
     eventPlayer.outerSmuggler = [Id.outerSmuggler, 0, vect(-19.06, 14.48, -88.07), 1, null]
     eventPlayer.outerBartender = [Id.outerBartender, 0, vect(-54.65, 2.73, -131.02), 1, null]
-    eventPlayer.outerNotSmuggler = [Id.outerNotSmuggler, 0, vect(-35.02, 2.48, -126.33), 1, null]
+    eventPlayer.outerShadyCharacter = [Id.outerShadyCharacter, 0, vect(-35.02, 2.48, -126.33), 1, null]
     eventPlayer.outerDoor21 = [Id.outerDoor21, 0, vect(-50.47, 13.63, -84.74), 1.1, null]
     eventPlayer.outerDoor22 = [Id.outerDoor22, 0, vect(-54.41, 13.63, -84.09), 1.1, null]
     eventPlayer.outerDoor23 = [Id.outerDoor23, 0, vect(-59.72, 13.63, -85.31), 1.1, null]
@@ -1603,7 +1632,7 @@ def playerInitialState():
         eventPlayer.outerBruce,
         eventPlayer.outerSmuggler,
         eventPlayer.outerBartender,
-        eventPlayer.outerNotSmuggler,
+        eventPlayer.outerShadyCharacter,
         eventPlayer.outerWorkbench,
         eventPlayer.outerDoor21,
         eventPlayer.outerDoor22,
@@ -1995,11 +2024,11 @@ rule "do comedy routine":
     freeze()
     smallMessage(eventPlayer, "You walk up on stage and everyone starts laughing")
     wait(5, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "But you haven't even told any jokes yet?")
+    smallMessage(eventPlayer, "But you haven't even told any jokes yet!")
     wait(5, Wait.ABORT_WHEN_FALSE)
     smallMessage(eventPlayer, "You rip the mask off in disgust")
     wait(5, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "She tells you that's enough and waves you over")
+    smallMessage(eventPlayer, "Your employer tells you that's enough and waves you over")
 
     eventPlayer.isCutsceneFinished = true
 
@@ -2512,7 +2541,7 @@ rule "Hide npc text":
     @Condition distance(eventPlayer, INSIDE_SMUGGLER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, OUTSIDE_SMUGGLER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, BARTENDER_TEXT_LOCATION) > 5
-    @Condition distance(eventPlayer, NOT_SMUGGLER_TEXT_LOCATION) > 5
+    @Condition distance(eventPlayer, SHADY_CHARACTER_TEXT_LOCATION) > 5
     @Condition distance(eventPlayer, vect(-49.37, 13.63, -86.90)) > 12 or eventPlayer.getPosition().y < 12.40
     @Condition distance(eventPlayer, MOLE_PERSON_ROOM_TEXT_LOCATION) > 16
     @Condition distance(eventPlayer, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION) > 12
@@ -3043,18 +3072,18 @@ rule "Interact":
                 CREATE_TEXT("You've cleaned me right out of liquor.", BARTENDER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the Chinese place. They all tend to talk in riddles though.", BARTENDER_TEXT_LOCATION)
-        elif eventPlayer.tValue[Item.ID] == Id.outerNotSmuggler:
+        elif eventPlayer.tValue[Item.ID] == Id.outerShadyCharacter:
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay you in cash.", NOT_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay you in cash.", SHADY_CHARACTER_TEXT_LOCATION)
                 SET_STATE(Id.outerMic, 1)
             elif eventPlayer.tValue[Item.STATE] == 1:
-                CREATE_TEXT("Alright, you've earned your pay.", NOT_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You certainly have a face made for radio.\n\nAlright, you've earned your pay.", SHADY_CHARACTER_TEXT_LOCATION)
                 GIVE_ITEM("{0} dollars".format(ALCOHOL_COST + SMUGGLER_COST))
                 eventPlayer.money = ALCOHOL_COST + SMUGGLER_COST
                 eventPlayer.tValue[Item.STATE]++
                 SAVE_STATE(eventPlayer.tValue)
             else:
-                CREATE_TEXT("Did you know there's legends of a hidden race in Junkertown?\nSome say they go around stealing small objects, hiding things in vents.\nEh- but it's probably nothing right?", NOT_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Did you know there's legends of a hidden race in Junkertown?\nSome say they go around stealing small objects, hiding things in vents.\nEh- but it's probably nothing right?", SHADY_CHARACTER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == Id.outerToolbox1:
             if eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.equipped.append(Equip.DISGUISE)
@@ -3149,7 +3178,7 @@ rule "Interact":
                 if Equip.DISGUISE in eventPlayer.equipped:
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-                    SET_STATE(Id.outerNotSmuggler, 1)
+                    SET_STATE(Id.outerShadyCharacter, 1)
 
                     eventPlayer.currentCutscene = Cutscene.COMEDY
                 else:
@@ -3770,7 +3799,7 @@ rule "Inner radio help message":
 
 # Junkertown exit wall
 
-#!define JUNKERTOWN_EXIT_WALL_MESSAGE "The guard will see you if you go any further"
+#!define JUNKERTOWN_EXIT_WALL_MESSAGE "The guards will see you if you go any further"
 
 rule "Junkertown entry wall":
     @Event eachPlayer
@@ -3967,7 +3996,7 @@ def generateHints():
                             [
                                 "1. Look for the control panel with red lights next to the generator",
                                 "2. Hit each of the five switches (not the lights, next to them) on the panel exactly once",
-                                "If you see only the red lights floating in the air, your graphics level is set to low",
+                                "> If you see only the red lights floating in the air, your graphics level is set to low",
                                 "instead of medium"
                             ]
                         ]
@@ -4030,9 +4059,9 @@ def generateHints():
                             ["Bars are always looking for entertainment"],
                             [
                                 "1. Find a hilarious costume in the toolbox in the tattoo parlor (attacker third spawn)",
-                                "2. Talk to the not smuggler in the bar (defender first spawn)",
+                                "2. Talk to the shady character in the bar (defender first spawn)",
                                 "3. Interact with the radio on the stage",
-                                "4. Talk to the not smuggler"
+                                "4. Talk to the shady character"
                             ]
                         ]
                     ])
@@ -4330,6 +4359,7 @@ rule "Show answer":
 globalvar debugPlayer
 playervar pointHelperEffect
 playervar pointHelperHud
+playervar pointHelperDirHud
 playervar pointHelperState = 2
 
 rule "Set debug player":
@@ -4344,6 +4374,7 @@ rule "Set debug player":
         eventPlayer.setMoveSpeed(100)
         destroyEffect(eventPlayer.pointHelperEffect)
         destroyHudText(eventPlayer.pointHelperHud)
+        destroyHudText(eventPlayer.pointHelperDirHud)
         eventPlayer.pointHelperState = 2
         smallMessage(eventPlayer, "Debug player unset")
     else:
@@ -4358,22 +4389,28 @@ rule "Point helper":
     eventPlayer.canBeTheOtherGuy = true
 
     if eventPlayer.pointHelperState == 0:
-        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 98, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
         eventPlayer.pointHelperHud = getLastCreatedText()
+        hudHeader(eventPlayer, "Facing: {0}".format(updateEveryTick(eventPlayer.getFacingDirection())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        eventPlayer.pointHelperDirHud = getLastCreatedText()
         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
         eventPlayer.pointHelperEffect = getLastCreatedEntity()
         eventPlayer.pointHelperState = 1
     elif eventPlayer.pointHelperState == 1:
         destroyEffect(eventPlayer.pointHelperEffect)
         destroyHudText(eventPlayer.pointHelperHud)
-        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3)), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        destroyHudText(eventPlayer.pointHelperDirHud)
+        hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3)), HudPosition.LEFT, 98, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
         eventPlayer.pointHelperHud = getLastCreatedText()
+        hudHeader(eventPlayer, "Facing: {0}".format(updateEveryTick(eventPlayer.getFacingDirection())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+        eventPlayer.pointHelperDirHud = getLastCreatedText()
         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
         eventPlayer.pointHelperEffect = getLastCreatedEntity()
         eventPlayer.pointHelperState = 2
     else:
         destroyEffect(eventPlayer.pointHelperEffect)
         destroyHudText(eventPlayer.pointHelperHud)
+        destroyHudText(eventPlayer.pointHelperDirHud)
         eventPlayer.pointHelperState = 0
 
 rule "Item visualization":
