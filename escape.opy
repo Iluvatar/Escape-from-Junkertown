@@ -972,6 +972,7 @@ rule "Move payload to the end":
 
     createDummy(Hero.REAPER, Team.2, -1, vect(29.09, 10.54, -81.34), vect(0.34, -0.77, 0.53))
     cartNpc = getLastCreatedEntity()
+    cartNpc.startForcingName("Larry")
 
 rule "Stop payload after first point":
     @Event global
@@ -1037,9 +1038,11 @@ rule "Spawn NPCs":
     createDummy(Hero.REAPER, Team.2, -1, vect(-21.66, 4.49, -69.87), vect(-0.96, 0, 0.27))
     getLastCreatedEntity().startScalingSize(1.2, false)
     getLastCreatedEntity().disableEnvironmentCollision(false)
+    getLastCreatedEntity().startForcingName("Moe")
     createDummy(Hero.REAPER, Team.2, -1, vect(-31.92, 12.48, -66.16), vect(0.45, 0, 0.89))
     getLastCreatedEntity().startScalingSize(1.2, false)
     getLastCreatedEntity().disableEnvironmentCollision(false)
+    getLastCreatedEntity().startForcingName("Curly")
 
     getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, INF)
 
@@ -1431,7 +1434,7 @@ def playerInitialState():
     eventPlayer.barnWorkbench = [Id.barnWorkbench, 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
     eventPlayer.outsideHose = [Id.outsideHose, 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with water"]]
-    eventPlayer.outsideSatControl = [Id.outsideSatControl, 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the necessary remote at his place", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
+    eventPlayer.outsideSatControl = [Id.outsideSatControl, 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the remote control at his place", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = [Id.outsideSmuggler, 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outsideMolePersonRoom = [Id.outsideMolePersonRoom, 0, vect(-50.68, 5.97, -4.12), 2, null]
     eventPlayer.outsideMolePersonOuthouse = [Id.outsideMolePersonOuthouse, 0, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION, 2, null]
