@@ -2244,6 +2244,8 @@ rule "do mole agent interaction":
     @Condition eventPlayer.currentCutscene == Cutscene.MOLE_AGENT_INTERACTION and not eventPlayer.isCutsceneFinished
 
     freeze()
+    hideUi()
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), MOLE_PERSON_CLIFF_TEXT_LOCATION), 60, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
     CREATE_TEXT("Eep! Is that what I think it is?", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(3, Wait.ABORT_WHEN_FALSE)
@@ -2294,6 +2296,8 @@ rule "do mole agent interaction cleanup":
 
     popTextDeleteQueue()
     unfreeze()
+    showUi()
+    eventPlayer.stopFacing()
 
 rule "do ending cutscene":
     @Event eachPlayer
@@ -4594,7 +4598,7 @@ rule "End game state":
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1)
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
 
-    eventPlayer.molePersonInteractStage = 4
+    eventPlayer.molePersonInteractStage = 3
     eventPlayer.equipped.append(Equip.WINGS)
     manageEquips()
     eventPlayer.achievements = [2, 3, 4, 1, 5]
