@@ -1340,8 +1340,6 @@ def playerInitialState():
 
     eventPlayer.money = 0
 
-    eventPlayer.achievements = []
-
     # Game state
     eventPlayer.tutorialFinished = false
     eventPlayer.wiresConnected = false
@@ -1745,6 +1743,7 @@ rule "Initial player setup":
     @Team 1
 
     playerInitialState()
+    eventPlayer.achievements = [] # achievements aren't reset on game finish
 
     eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF)
     eventPlayer.setInvisibility(Invis.ENEMIES)
@@ -4601,7 +4600,7 @@ rule "End game state":
     eventPlayer.molePersonInteractStage = 3
     eventPlayer.equipped.append(Equip.WINGS)
     manageEquips()
-    eventPlayer.achievements = [2, 3, 4, 1, 5]
+    eventPlayer.achievements = [2, 3]
     manageAchievements()
 
 rule "Display stats":
