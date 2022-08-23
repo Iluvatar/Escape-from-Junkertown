@@ -4360,10 +4360,10 @@ rule "Show answer":
 # DEBUG FUNCTIONS
 
 globalvar debugPlayer
-playervar pointHelperEffect
-playervar pointHelperHud
-playervar pointHelperDirHud
-playervar pointHelperState = 2
+globalvar pointHelperEffect
+globalvar pointHelperHud
+globalvar pointHelperDirHud
+globalvar pointHelperState = 2
 
 rule "Set debug player":
     @Event eachPlayer
@@ -4375,10 +4375,10 @@ rule "Set debug player":
         debugPlayer = 0
         eventPlayer.disableScoreboard()
         eventPlayer.setMoveSpeed(100)
-        destroyEffect(eventPlayer.pointHelperEffect)
-        destroyHudText(eventPlayer.pointHelperHud)
-        destroyHudText(eventPlayer.pointHelperDirHud)
-        eventPlayer.pointHelperState = 2
+        destroyEffect(pointHelperEffect)
+        destroyHudText(pointHelperHud)
+        destroyHudText(pointHelperDirHud)
+        pointHelperState = 2
         smallMessage(eventPlayer, "Debug player unset")
     else:
         debugPlayer = eventPlayer
@@ -4391,30 +4391,30 @@ rule "Point helper":
 
     eventPlayer.canBeTheOtherGuy = true
 
-    if eventPlayer.pointHelperState == 0:
+    if pointHelperState == 0:
         hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 98, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-        eventPlayer.pointHelperHud = getLastCreatedText()
+        pointHelperHud = getLastCreatedText()
         hudHeader(eventPlayer, "Facing: {0}".format(updateEveryTick(eventPlayer.getFacingDirection())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-        eventPlayer.pointHelperDirHud = getLastCreatedText()
+        pointHelperDirHud = getLastCreatedText()
         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
-        eventPlayer.pointHelperEffect = getLastCreatedEntity()
-        eventPlayer.pointHelperState = 1
-    elif eventPlayer.pointHelperState == 1:
-        destroyEffect(eventPlayer.pointHelperEffect)
-        destroyHudText(eventPlayer.pointHelperHud)
-        destroyHudText(eventPlayer.pointHelperDirHud)
+        pointHelperEffect = getLastCreatedEntity()
+        pointHelperState = 1
+    elif pointHelperState == 1:
+        destroyEffect(pointHelperEffect)
+        destroyHudText(pointHelperHud)
+        destroyHudText(pointHelperDirHud)
         hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3)), HudPosition.LEFT, 98, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-        eventPlayer.pointHelperHud = getLastCreatedText()
+        pointHelperHud = getLastCreatedText()
         hudHeader(eventPlayer, "Facing: {0}".format(updateEveryTick(eventPlayer.getFacingDirection())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
-        eventPlayer.pointHelperDirHud = getLastCreatedText()
+        pointHelperDirHud = getLastCreatedText()
         createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
-        eventPlayer.pointHelperEffect = getLastCreatedEntity()
-        eventPlayer.pointHelperState = 2
+        pointHelperEffect = getLastCreatedEntity()
+        pointHelperState = 2
     else:
-        destroyEffect(eventPlayer.pointHelperEffect)
-        destroyHudText(eventPlayer.pointHelperHud)
-        destroyHudText(eventPlayer.pointHelperDirHud)
-        eventPlayer.pointHelperState = 0
+        destroyEffect(pointHelperEffect)
+        destroyHudText(pointHelperHud)
+        destroyHudText(pointHelperDirHud)
+        pointHelperState = 0
 
 rule "Item visualization":
     @Event eachPlayer
