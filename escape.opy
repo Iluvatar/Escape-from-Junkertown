@@ -1274,11 +1274,16 @@ def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
     eventPlayer.isHoldingInnerMinigameControl1 = false
     eventPlayer.isHoldingInnerMinigameControl2 = false
+    stopChasingVariable(eventPlayer.innerMinigameValue1)
+    stopChasingVariable(eventPlayer.innerMinigameValue2)
     eventPlayer.innerMinigameValue1 = PI / 2
     eventPlayer.innerMinigameValue2 = PI / 2
 
 def outerMinigameInitialState():
     eventPlayer.isDoingOuterMinigame = false
+    stopChasingVariable(eventPlayer.outerMinigameRotState1)
+    stopChasingVariable(eventPlayer.outerMinigameRotState2)
+    stopChasingVariable(eventPlayer.outerMinigameRotState3)
     eventPlayer.outerMinigameRotState1 = 0
     eventPlayer.outerMinigameRotState2 = 0
     eventPlayer.outerMinigameRotState3 = 0
@@ -2649,6 +2654,7 @@ rule "Inner workbench minigame stop":
 
     innerMinigamePlayers.remove(eventPlayer)
     popAllEffectDeleteQueue()
+    wait(RACE_CONDITION_DELAY) # prevents flashes
     innerMinigameInitialState()
 
 rule "Outer workbench minigame start":
@@ -2701,16 +2707,7 @@ rule "Outer workbench minigame stop":
     @Condition eventPlayer.isDoingOuterMinigame and distance(eventPlayer, eventPlayer.outerWorkbench[Item.POINT]) > 3
 
     outerMinigamePlayers.remove(eventPlayer)
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
+    popAllEffectDeleteQueue()
     wait(RACE_CONDITION_DELAY) # prevents flashes
     outerMinigameInitialState()
 
@@ -2750,14 +2747,7 @@ rule "Barn workbench minigame stop":
     @Condition eventPlayer.isDoingBarnMinigame and distance(eventPlayer, eventPlayer.barnWorkbench[Item.POINT]) > 3
 
     barnMinigamePlayers.remove(eventPlayer)
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
-    popEffectDeleteQueue()
+    popAllEffectDeleteQueue()
     wait(RACE_CONDITION_DELAY) # prevents flashes
     barnMinigameInitialState()
 
@@ -4396,6 +4386,7 @@ def checkDebugEntry():
         else:
             debugPlayer = eventPlayer
             eventPlayer.enableScoreboard()
+            eventPlayer.canBeTheOtherGuy = true
 
             hudSubtext(eventPlayer, "Toggle speed: Ctrl + Space", HudPosition.LEFT, 50, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
@@ -4525,8 +4516,6 @@ rule "Prevent kicked rejoin":
 rule "Point helper":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.CROUCH) and eventPlayer == debugPlayer
-
-    eventPlayer.canBeTheOtherGuy = true
 
     if pointHelperState == 0:
         hudHeader(eventPlayer, "Position: {0}".format(updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition())), HudPosition.LEFT, 98, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
