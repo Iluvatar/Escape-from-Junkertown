@@ -2278,20 +2278,6 @@ rule "do mole agent interaction":
 
     popTextDeleteQueue()
 
-    # eventPlayer.tPos = MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 1, 0)
-    # createBeam(eventPlayer, Beam.ECHO_FOCUSING, MOLE_PERSON_CLIFF_TEXT_LOCATION, eventPlayer.tPos, Color.TEAM_1, EffectReeval.POSITION_AND_RADIUS)
-    # pushEffectDeleteQueue()
-    # wait(2)
-    # chase(eventPlayer.tPos, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), rate=10, ChaseReeval.NONE)
-
-    # wait(4)
-
-    # popEffectDeleteQueue()
-    # createBeam(eventPlayer, Beam.TORBJORN_TURRET_SIGHT, MOLE_PERSON_CLIFF_TEXT_LOCATION, MOLE_PERSON_CLIFF_TEXT_LOCATION + vect(0, 100, 0), Color.TEAM_1, EffectReeval.NONE)
-    # pushEffectDeleteQueue()
-
-    # wait(5)
-
     eventPlayer.isCutsceneFinished = true
 
 rule "do mole agent interaction cleanup":
