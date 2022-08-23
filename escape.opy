@@ -2261,7 +2261,7 @@ rule "do mole agent interaction":
     CREATE_TEXT("*Sigh*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(2, Wait.ABORT_WHEN_FALSE)
     popTextDeleteQueue()
-    wait(1, Wait.ABORT_WHEN_FALSE)
+    wait(2, Wait.ABORT_WHEN_FALSE)
 
     CREATE_TEXT("It's nothing you need to worry about though.\nThanks for getting the device out of Junkertown.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(6, Wait.ABORT_WHEN_FALSE)
