@@ -4377,7 +4377,7 @@ rule "Set debug stage 1":
 
     wait(5, Wait.ABORT_WHEN_FALSE)
 
-    smallMessage(eventPlayer, "stage 1")
+    smallMessage(eventPlayer, "set")
     eventPlayer.debugStage1 = true
 
 def pruneDebugEntry():
@@ -4420,7 +4420,7 @@ def checkDebugEntry():
             controlHudArray.append(getLastCreatedText())
             hudSubtext(eventPlayer, "    Scroll kick player: Q", HudPosition.LEFT, 54, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
-            hudSubtext(eventPlayer, "    Confirm kick player: Shift + E + Space", HudPosition.LEFT, 55, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            hudSubtext(eventPlayer, "    Confirm kick player (hold to ban): Shift + E + Space", HudPosition.LEFT, 55, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
             hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 56, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
@@ -4499,21 +4499,33 @@ rule "Kick player scroll":
 
 rule "Kick player":
     @Event eachPlayer
-    @Condition kickIndex >= 0 and eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer == debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer == debugPlayer
 
-    if eventPlayer == kickPlayer:
-        bigMessage(eventPlayer, "Can't kick yourself")
+    if kickIndex < 0:
         return
 
-    bigMessage(eventPlayer, "Kicking {0}".format(kickPlayer))
+    if eventPlayer == kickPlayer:
+        smallMessage(eventPlayer, "Can't kick yourself")
+        return
+
+    eventPlayer.tValue = "{0}".format(kickPlayer)
+    smallMessage(eventPlayer, "Kicking {0}".format(eventPlayer.tValue))
 
     wait(3, Wait.ABORT_WHEN_FALSE)
 
-    banList.append("{0}".format(kickPlayer))
+    smallMessage(eventPlayer, "{0} kicked".format(eventPlayer.tValue))
     removeFromGame(kickPlayer)
-    wait(RACE_CONDITION_DELAY)
     kickIndex = -1
     kickPlayer = null
+
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    smallMessage(eventPlayer, "Banning {0}".format(eventPlayer.tValue))
+
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    smallMessage(eventPlayer, "{0} banned".format(eventPlayer.tValue))
+    banList.append("{0}".format(eventPlayer.tValue))
 
 rule "Prevent kicked rejoin":
     @Event playerJoined
