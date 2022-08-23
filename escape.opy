@@ -1049,6 +1049,7 @@ rule "Spawn NPCs":
 rule "Global setup":
     @Event global
 
+    disableInspector()
     disableAnnouncer()
     disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
