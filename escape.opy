@@ -2260,6 +2260,8 @@ rule "do mole agent interaction":
 
     CREATE_TEXT("*Sigh*", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(2, Wait.ABORT_WHEN_FALSE)
+    popTextDeleteQueue()
+    wait(1, Wait.ABORT_WHEN_FALSE)
 
     CREATE_TEXT("It's nothing you need to worry about though.\nThanks for getting the device out of Junkertown.", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(6, Wait.ABORT_WHEN_FALSE)
@@ -2824,15 +2826,15 @@ rule "Scroll inventory forwards":
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_2) and not eventPlayer.pauseInteraction
 
     if len(eventPlayer.inventory) > 1:
-        eventPlayer.inventory.append(eventPlayer.inventory[0])
-        del eventPlayer.inventory[0]
+        eventPlayer.inventory = eventPlayer.inventory.last().concat(eventPlayer.inventory.slice(0, len(eventPlayer.inventory) - 1))
 
 rule "Scroll inventory backwards":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE) and not eventPlayer.pauseInteraction
 
     if len(eventPlayer.inventory) > 1:
-        eventPlayer.inventory = eventPlayer.inventory.last().concat(eventPlayer.inventory.slice(0, len(eventPlayer.inventory) - 1))
+        eventPlayer.inventory.append(eventPlayer.inventory[0])
+        del eventPlayer.inventory[0]
 
 # Interact
 def playGetItem():
