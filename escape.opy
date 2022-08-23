@@ -4364,6 +4364,7 @@ globalvar pointHelperEffect
 globalvar pointHelperHud
 globalvar pointHelperDirHud
 globalvar pointHelperState = 2
+globalvar controlHudArray = []
 
 rule "Set debug player":
     @Event eachPlayer
@@ -4379,11 +4380,72 @@ rule "Set debug player":
         destroyHudText(pointHelperHud)
         destroyHudText(pointHelperDirHud)
         pointHelperState = 2
+        while len(controlHudArray) > 0:
+            destroyHudText(controlHudArray[0])
+            del controlHudArray[0]
         smallMessage(eventPlayer, "Debug player unset")
     else:
         debugPlayer = eventPlayer
         eventPlayer.enableScoreboard()
+
+        hudSubtext(eventPlayer, "Toggle speed: Ctrl + Space", HudPosition.LEFT, 50, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+        controlHudArray.append(getLastCreatedText())
+        hudSubtext(eventPlayer, "Toggle point helper: Ctrl + Shift", HudPosition.LEFT, 51, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+        controlHudArray.append(getLastCreatedText())
+        hudSubtext(eventPlayer, "Noclip: V", HudPosition.LEFT, 52, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+        controlHudArray.append(getLastCreatedText())
+        hudSubtext(eventPlayer, "Player kick: Shift + E + V", HudPosition.LEFT, 53, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+        controlHudArray.append(getLastCreatedText())
+        hudSubtext(eventPlayer, "    Scroll kick player: Q", HudPosition.LEFT, 54, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+        controlHudArray.append(getLastCreatedText())
+        hudSubtext(eventPlayer, "    Confirm kick player: Shift + E + Space", HudPosition.LEFT, 55, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+        controlHudArray.append(getLastCreatedText())
+        hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 56, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+        controlHudArray.append(getLastCreatedText())
+
         smallMessage(eventPlayer, "Debug player set")
+
+globalvar kickPlayer
+globalvar kickIndex = -1
+globalvar banList = []
+
+rule "Kick player start":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.MELEE) and eventPlayer == debugPlayer
+
+    if kickIndex < 0:
+        kickIndex = 0
+        kickPlayer = getPlayers(Team.1)[kickIndex]
+    else:
+        kickIndex = -1
+        kickPlayer = null
+
+rule "Kick player scroll":
+    @Event eachPlayer
+    @Condition kickIndex >= 0 and eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer == debugPlayer
+
+    kickIndex = (kickIndex + 1) % len(getPlayers(Team.1))
+    kickPlayer = getPlayers(Team.1)[kickIndex]
+
+rule "Kick player":
+    @Event eachPlayer
+    @Condition kickIndex >= 0 and eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer == debugPlayer
+
+    bigMessage(eventPlayer, "Kicking {0}".format(kickPlayer))
+
+    wait(3, Wait.ABORT_WHEN_FALSE)
+
+    banList.append("{0}".format(kickPlayer))
+    removeFromGame(kickPlayer)
+    wait(RACE_CONDITION_DELAY)
+    kickIndex = -1
+    kickPlayer = null
+
+rule "Prevent kicked rejoin":
+    @Event playerJoined
+
+    if "{0}".format(eventPlayer) in banList:
+        removeFromGame(eventPlayer)
 
 rule "Point helper":
     @Event eachPlayer
@@ -4424,15 +4486,15 @@ rule "Item visualization":
     #     if Id.innerFridge <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] and eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.innerPowerBox:
     #         createEffect(debugPlayer, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
-playervar isGoingFast = false
+globalvar isGoingFast = false
 
 rule "Toggle zoomies":
     @Event eachPlayer
     @Condition eventPlayer == debugPlayer
     @Condition eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer.isHoldingButton(Button.CROUCH)
 
-    eventPlayer.isGoingFast = not eventPlayer.isGoingFast
-    if eventPlayer.isGoingFast:
+    isGoingFast = not isGoingFast
+    if isGoingFast:
         eventPlayer.setMoveSpeed(200)
     else:
         eventPlayer.setMoveSpeed(100)
@@ -4442,6 +4504,9 @@ rule "Easy restart":
     @Condition eventPlayer == debugPlayer
     @Condition eventPlayer.isHoldingButton(Button.RELOAD)
     @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+
+    bigMessage(eventPlayer, "Restarting")
+    wait(2, Wait.ABORT_WHEN_FALSE)
 
     restartMatch()
 
@@ -4478,6 +4543,7 @@ rule "Display stats":
     hudHeader(debugPlayer, "peak {0}".format(getPeakServerLoad()), HudPosition.RIGHT, 12, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
     hudHeader(debugPlayer, "avg {0}".format(getAverageServerLoad()), HudPosition.RIGHT, 13, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
     hudHeader(debugPlayer, "effects {0}".format(getNumberOfEntityIds()), HudPosition.RIGHT, 14, Color.VIOLET, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.ALWAYS)
+    hudHeader(debugPlayer, "{0}".format(kickPlayer if kickPlayer else ""), HudPosition.TOP, 10, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
 rule "Show other player inventory":
     @Event eachPlayer
