@@ -1949,7 +1949,7 @@ rule "do inner radio conversation":
 
     freeze()
     hideUi()
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), RADIO_TEXT_POS), 60, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), RADIO_TEXT_POS - vect(0, 0.2, 0)), 60, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
     smallMessage(eventPlayer, "You attempt to contact the other guy")
 
@@ -2244,7 +2244,7 @@ rule "do mole agent interaction":
 
     freeze()
     hideUi()
-    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), MOLE_PERSON_CLIFF_TEXT_LOCATION), 60, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
+    eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), MOLE_PERSON_CLIFF_TEXT_LOCATION - vect(0, 0.3, 0)), 60, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
     CREATE_TEXT("Eep! Is that what I think it is?", MOLE_PERSON_CLIFF_TEXT_LOCATION)
     wait(3, Wait.ABORT_WHEN_FALSE)
@@ -3174,7 +3174,7 @@ rule "Interact":
                 CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
             else:
                 if "Odd looking coin" in eventPlayer.inventory:
-                    CREATE_COLORED_TEXT(moleLeaderRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
+                    CREATE_TEXT(moleLeaderRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleLeaderRiddle)
                 elif eventPlayer.molePersonInteractStage == 0:
                     doMoleLeaderInteractionStage1()
@@ -3187,7 +3187,7 @@ rule "Interact":
                 elif eventPlayer.molePersonInteractStage == 4:
                     eventPlayer.currentCutscene = Cutscene.ENDING
                 else:
-                    CREATE_COLORED_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0), rgb(52, 152, 219))
+                    CREATE_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
         elif eventPlayer.tValue[Item.ID] == Id.outerBinoculars:
             freeze()
