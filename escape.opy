@@ -4420,9 +4420,11 @@ def checkDebugEntry():
             controlHudArray.append(getLastCreatedText())
             hudSubtext(eventPlayer, "    Scroll kick player: Q", HudPosition.LEFT, 54, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
-            hudSubtext(eventPlayer, "    Confirm kick player (hold to ban): Shift + E + Space", HudPosition.LEFT, 55, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            hudSubtext(eventPlayer, "    Confirm kick player: Shift + E + Space", HudPosition.LEFT, 55, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
-            hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 56, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            hudSubtext(eventPlayer, "    Hold above to ban", HudPosition.LEFT, 56, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 57, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
 
             smallMessage(eventPlayer, "Debug player set")
