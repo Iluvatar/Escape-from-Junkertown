@@ -4366,44 +4366,114 @@ globalvar pointHelperDirHud
 globalvar pointHelperState = 2
 globalvar controlHudArray = []
 
-rule "Set debug player":
+playervar debugStage1 = false
+playervar debugEntry = []
+
+# rule "REFERRER VEQ":
+
+rule "Set debug stage 1":
     @Event eachPlayer
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ULTIMATE) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.JUMP)
 
     wait(5, Wait.ABORT_WHEN_FALSE)
 
-    if debugPlayer:
-        debugPlayer = 0
-        eventPlayer.disableScoreboard()
-        eventPlayer.setMoveSpeed(100)
-        destroyEffect(pointHelperEffect)
-        destroyHudText(pointHelperHud)
-        destroyHudText(pointHelperDirHud)
-        pointHelperState = 2
-        while len(controlHudArray) > 0:
-            destroyHudText(controlHudArray[0])
-            del controlHudArray[0]
-        smallMessage(eventPlayer, "Debug player unset")
-    else:
-        debugPlayer = eventPlayer
-        eventPlayer.enableScoreboard()
+    smallMessage(eventPlayer, "stage 1")
+    eventPlayer.debugStage1 = true
 
-        hudSubtext(eventPlayer, "Toggle speed: Ctrl + Space", HudPosition.LEFT, 50, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
-        controlHudArray.append(getLastCreatedText())
-        hudSubtext(eventPlayer, "Toggle point helper: Ctrl + Shift", HudPosition.LEFT, 51, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
-        controlHudArray.append(getLastCreatedText())
-        hudSubtext(eventPlayer, "Noclip: V", HudPosition.LEFT, 52, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
-        controlHudArray.append(getLastCreatedText())
-        hudSubtext(eventPlayer, "Player kick: Shift + E + V", HudPosition.LEFT, 53, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
-        controlHudArray.append(getLastCreatedText())
-        hudSubtext(eventPlayer, "    Scroll kick player: Q", HudPosition.LEFT, 54, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
-        controlHudArray.append(getLastCreatedText())
-        hudSubtext(eventPlayer, "    Confirm kick player: Shift + E + Space", HudPosition.LEFT, 55, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
-        controlHudArray.append(getLastCreatedText())
-        hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 56, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
-        controlHudArray.append(getLastCreatedText())
+def pruneDebugEntry():
+    if len(eventPlayer.debugEntry) > 12:
+        del eventPlayer.debugEntry[0]
 
-        smallMessage(eventPlayer, "Debug player set")
+def checkDebugEntry():
+    eventPlayer.tValue = 5381
+    for eventPlayer.tIndex in range(len(eventPlayer.debugEntry)):
+        eventPlayer.tValue = (eventPlayer.tValue * 13 + eventPlayer.debugEntry[eventPlayer.tIndex] * 2718) % 1000000
+
+    eventPlayer.tEnd = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tValue / 1000) / 10, 10, -200 + (eventPlayer.tValue % 1000) / 10 * 2))
+
+    printLog("{0} {1}".format(vect(-100 + floor(eventPlayer.tValue / 1000) / 10, 10, -200 + (eventPlayer.tValue % 1000) / 10 * 2), eventPlayer.tEnd))
+
+    if distance(eventPlayer.tEnd, vect(-90.13, 7.70, -198.13)) < 0.01:
+        if debugPlayer:
+            debugPlayer = 0
+            eventPlayer.disableScoreboard()
+            eventPlayer.setMoveSpeed(100)
+            destroyEffect(pointHelperEffect)
+            destroyHudText(pointHelperHud)
+            destroyHudText(pointHelperDirHud)
+            pointHelperState = 2
+            while len(controlHudArray) > 0:
+                destroyHudText(controlHudArray[0])
+                del controlHudArray[0]
+            smallMessage(eventPlayer, "Debug player unset")
+        else:
+            debugPlayer = eventPlayer
+            eventPlayer.enableScoreboard()
+
+            hudSubtext(eventPlayer, "Toggle speed: Ctrl + Space", HudPosition.LEFT, 50, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "Toggle point helper: Ctrl + Shift", HudPosition.LEFT, 51, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "Noclip: V", HudPosition.LEFT, 52, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "Player kick: Shift + E + V", HudPosition.LEFT, 53, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "    Scroll kick player: Q", HudPosition.LEFT, 54, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "    Confirm kick player: Shift + E + Space", HudPosition.LEFT, 55, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 56, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+
+            smallMessage(eventPlayer, "Debug player set")
+
+rule "":
+    @Event eachPlayer
+    @Condition eventPlayer.debugStage1 and eventPlayer.isHoldingButton(Button.ULTIMATE)
+
+    eventPlayer.debugEntry.append(2)
+    pruneDebugEntry()
+    checkDebugEntry()
+
+rule "":
+    @Event eachPlayer
+    @Condition eventPlayer.debugStage1 and eventPlayer.isHoldingButton(Button.ABILITY_2)
+
+    eventPlayer.debugEntry.append(3)
+    pruneDebugEntry()
+    checkDebugEntry()
+
+rule "":
+    @Event eachPlayer
+    @Condition eventPlayer.debugStage1 and eventPlayer.isHoldingButton(Button.RELOAD)
+
+    eventPlayer.debugEntry.append(5)
+    pruneDebugEntry()
+    checkDebugEntry()
+
+rule "":
+    @Event eachPlayer
+    @Condition eventPlayer.debugStage1 and eventPlayer.isHoldingButton(Button.INTERACT)
+
+    eventPlayer.debugEntry.append(7)
+    pruneDebugEntry()
+    checkDebugEntry()
+
+rule "":
+    @Event eachPlayer
+    @Condition eventPlayer.debugStage1 and eventPlayer.isHoldingButton(Button.MELEE)
+
+    eventPlayer.debugEntry.append(11)
+    pruneDebugEntry()
+    checkDebugEntry()
+
+rule "":
+    @Event eachPlayer
+    @Condition eventPlayer.debugStage1 and eventPlayer.isHoldingButton(Button.JUMP)
+
+    eventPlayer.debugEntry.append(13)
+    pruneDebugEntry()
+    checkDebugEntry()
 
 globalvar kickPlayer
 globalvar kickIndex = -1
@@ -4430,6 +4500,10 @@ rule "Kick player scroll":
 rule "Kick player":
     @Event eachPlayer
     @Condition kickIndex >= 0 and eventPlayer.isHoldingButton(Button.ABILITY_1) and eventPlayer.isHoldingButton(Button.ABILITY_2) and eventPlayer.isHoldingButton(Button.JUMP) and eventPlayer == debugPlayer
+
+    if eventPlayer == kickPlayer:
+        bigMessage(eventPlayer, "Can't kick yourself")
+        return
 
     bigMessage(eventPlayer, "Kicking {0}".format(kickPlayer))
 
