@@ -2442,6 +2442,8 @@ def doCredits():
     playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, BLACK_SCREEN_POS, 200)
     eventPlayer.achievements.append(Achievement.ESCAPE_ARTIST)
 
+    bigMessage([p for p in getAllPlayers() if p.currentCutscene == Cutscene.NONE], "{0} has escaped Junkertown!".format(eventPlayer))
+
     eventPlayer.tText = " "
     if Achievement.MOST_WANTED in eventPlayer.achievements:
         eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.MCCREE, Button.ULTIMATE))
