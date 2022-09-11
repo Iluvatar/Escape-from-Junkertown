@@ -4357,13 +4357,15 @@ rule "Sombra respawn hack":
     @Condition "{0}".format(shadyCharacter) == "???"
     @Condition isGameInProgress()
 
-    wait(5, Wait.ABORT_WHEN_FALSE)
+    while true:
+        wait(5)
 
-    createDummy(Hero.SOMBRA, Team.2, -1, vect(-35.02, 1.48, -126.33), vect(0.7, 0.10, -0.71))
-    shadyCharacter = getLastCreatedEntity()
-    shadyCharacter.startForcingName("Shady character")
-    shadyCharacter.startScalingSize(1.1, false)
-    shadyCharacter.disableEnvironmentCollision(false)
+        if "{0}".format(shadyCharacter) == "???":
+            createDummy(Hero.SOMBRA, Team.2, -1, vect(-35.02, 1.48, -126.33), vect(0.7, 0.10, -0.71))
+            shadyCharacter = getLastCreatedEntity()
+            shadyCharacter.startForcingName("Shady character")
+            shadyCharacter.startScalingSize(1.1, false)
+            shadyCharacter.disableEnvironmentCollision(false)
 
 globalvar debugPlayer
 globalvar pointHelperEffect
