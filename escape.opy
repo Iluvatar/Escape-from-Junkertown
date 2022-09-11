@@ -3171,7 +3171,6 @@ rule "Interact":
             else:
                 smallMessage(eventPlayer, "You're done with comedy for today")
         elif Id.outerDoor21 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerDoor25:
-            printLog("{0} {1} {2}".format(Id.outerDoor21, Id.outerDoor25, eventPlayer.tValue[Item.ID]))
             if Equip.WINGS not in eventPlayer.equipped:
                 CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
             else:
@@ -4341,6 +4340,27 @@ rule "Show answer":
 
 # DEBUG FUNCTIONS
 
+rule "Sombra respawn hack":
+    @Condition not shadyCharacter
+    @Condition isGameInProgress()
+
+    wait(5, Wait.ABORT_WHEN_FALSE)
+
+    createDummy(Hero.SOMBRA, Team.2, -1, vect(-35.02, 1.48, -126.33), vect(0.7, 0.10, -0.71))
+    shadyCharacter = getLastCreatedEntity()
+    shadyCharacter.startForcingName("Shady character")
+    shadyCharacter.startScalingSize(1.1, false)
+    shadyCharacter.disableEnvironmentCollision(false)
+
+rule "print sombra":
+    @Condition isGameInProgress()
+
+    while true:
+        wait(10)
+        printLog(shadyCharacter)
+
+
+
 globalvar debugPlayer
 globalvar pointHelperEffect
 globalvar pointHelperHud
@@ -4372,8 +4392,6 @@ def checkDebugEntry():
         eventPlayer.tValue = (eventPlayer.tValue * 13 + eventPlayer.debugEntry[eventPlayer.tIndex] * 2718) % 1000000
 
     eventPlayer.tEnd = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tValue / 1000) / 10, 10, -200 + (eventPlayer.tValue % 1000) / 10 * 2))
-
-    printLog("{0} {1}".format(vect(-100 + floor(eventPlayer.tValue / 1000) / 10, 10, -200 + (eventPlayer.tValue % 1000) / 10 * 2), eventPlayer.tEnd))
 
     if distance(eventPlayer.tEnd, vect(-90.13, 7.70, -198.13)) < 0.01:
         if debugPlayer:
@@ -4407,7 +4425,9 @@ def checkDebugEntry():
             controlHudArray.append(getLastCreatedText())
             hudSubtext(eventPlayer, "    Hold above to ban", HudPosition.LEFT, 56, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
-            hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 57, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            hudSubtext(eventPlayer, "Toggle inspector: Ctrl + E", HudPosition.LEFT, 57, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
+            controlHudArray.append(getLastCreatedText())
+            hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 58, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
 
             smallMessage(eventPlayer, "Debug player set")
@@ -4527,7 +4547,7 @@ rule "Point helper":
         pointHelperHud = getLastCreatedText()
         hudHeader(eventPlayer, "Facing: {0}".format(updateEveryTick(eventPlayer.getFacingDirection())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
         pointHelperDirHud = getLastCreatedText()
-        createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+        createEffect(getAllPlayers(), Effect.SPHERE, Color.RED, updateEveryTick(raycast(eventPlayer.getEyePosition(), eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3, getAllPlayers(), eventPlayer, true).getHitPosition()), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
         pointHelperEffect = getLastCreatedEntity()
         pointHelperState = 1
     elif pointHelperState == 1:
@@ -4538,7 +4558,7 @@ rule "Point helper":
         pointHelperHud = getLastCreatedText()
         hudHeader(eventPlayer, "Facing: {0}".format(updateEveryTick(eventPlayer.getFacingDirection())), HudPosition.LEFT, 99, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
         pointHelperDirHud = getLastCreatedText()
-        createEffect(eventPlayer, Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
+        createEffect(getAllPlayers(), Effect.SPHERE, Color.RED, updateEveryTick(eventPlayer.getEyePosition() + eventPlayer.getFacingDirection() * 3), 0.05, EffectReeval.VISIBILITY_POSITION_RADIUS_AND_COLOR)
         pointHelperEffect = getLastCreatedEntity()
         pointHelperState = 2
     else:
@@ -4567,6 +4587,23 @@ rule "Toggle zoomies":
         eventPlayer.setMoveSpeed(200)
     else:
         eventPlayer.setMoveSpeed(100)
+
+globalvar inspectorOn = false
+
+rule "Toggle inspector":
+    @Event eachPlayer
+    @Condition eventPlayer == debugPlayer
+    @Condition eventPlayer.isHoldingButton(Button.CROUCH)
+    @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
+
+    inspectorOn = not inspectorOn
+
+    if inspectorOn:
+        enableInspector()
+        bigMessage(eventPlayer, "Workshop inspector enabled")
+    else:
+        bigMessage(eventPlayer, "Workshop inspector disbled")
+        disableInspector()
 
 rule "Easy restart":
     @Event eachPlayer
