@@ -5,7 +5,7 @@ settings {
     },
     "lobby": {
         "allowPlayersInQueue": true,
-        "team1Slots": 8,
+        "team1Slots": 7,
         "team2Slots": 0
     },
     "gamemodes": {
@@ -4341,7 +4341,7 @@ rule "Show answer":
 # DEBUG FUNCTIONS
 
 rule "Sombra respawn hack":
-    @Condition not shadyCharacter
+    @Condition "{0}".format(shadyCharacter) == "???"
     @Condition isGameInProgress()
 
     wait(5, Wait.ABORT_WHEN_FALSE)
@@ -4351,15 +4351,6 @@ rule "Sombra respawn hack":
     shadyCharacter.startForcingName("Shady character")
     shadyCharacter.startScalingSize(1.1, false)
     shadyCharacter.disableEnvironmentCollision(false)
-
-rule "print sombra":
-    @Condition isGameInProgress()
-
-    while true:
-        wait(10)
-        printLog(shadyCharacter)
-
-
 
 globalvar debugPlayer
 globalvar pointHelperEffect
@@ -4602,8 +4593,8 @@ rule "Toggle inspector":
         enableInspector()
         bigMessage(eventPlayer, "Workshop inspector enabled")
     else:
-        bigMessage(eventPlayer, "Workshop inspector disbled")
         disableInspector()
+        bigMessage(eventPlayer, "Workshop inspector disbled")
 
 rule "Easy restart":
     @Event eachPlayer
