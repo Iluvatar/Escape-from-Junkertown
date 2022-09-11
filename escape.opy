@@ -4268,7 +4268,9 @@ def showHintIntro():
     CREATE_BLACK_TEXT("Game controls:", 0)
     CREATE_BLACK_TEXT_REEVAL("{0} to interact with objects".format(buttonString(Button.PRIMARY_FIRE)), 1)
     CREATE_BLACK_TEXT_REEVAL("{0} to apply inventory items to objects".format(buttonString(Button.SECONDARY_FIRE)), 2)
-    CREATE_BLACK_TEXT_REEVAL("{0} to apply inventory items to objects".format(buttonString(Button.SECONDARY_FIRE)), 2)
+
+    if eventPlayer.canBeTheOtherGuy:
+        CREATE_BLACK_TEXT_REEVAL("{0} to switch characters".format(buttonString(Button.INTERACT)), 3)
 
     CREATE_BLACK_TEXT_REEVAL("{0} to continue".format(buttonString(Button.INTERACT)), 6)
     CREATE_BLACK_TEXT_REEVAL("{0} to exit".format(buttonString(Button.RELOAD)), 7)
