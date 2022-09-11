@@ -409,6 +409,7 @@ playervar tEnd
 playervar tPos
 playervar tText
 playervar tMinigame
+playervar tDebug
 
 # Player state
 playervar pauseInteraction
@@ -4381,11 +4382,11 @@ def pruneDebugEntry():
         del eventPlayer.debugEntry[0]
 
 def checkDebugEntry():
-    eventPlayer.tValue = 5381
+    eventPlayer.tDebug = 5381
     for eventPlayer.tIndex in range(len(eventPlayer.debugEntry)):
-        eventPlayer.tValue = (eventPlayer.tValue * 13 + eventPlayer.debugEntry[eventPlayer.tIndex] * 2718) % 1000000
+        eventPlayer.tDebug = (eventPlayer.tDebug * 13 + eventPlayer.debugEntry[eventPlayer.tIndex] * 2718) % 1000000
 
-    eventPlayer.tEnd = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tValue / 1000) / 10, 10, -200 + (eventPlayer.tValue % 1000) / 10 * 2))
+    eventPlayer.tEnd = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tDebug / 1000) / 10, 10, -200 + (eventPlayer.tDebug % 1000) / 10 * 2))
 
     if distance(eventPlayer.tEnd, vect(-90.13, 7.70, -198.13)) < 0.01:
         if debugPlayer:
