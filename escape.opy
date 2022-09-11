@@ -372,6 +372,7 @@ globalvar barnNpc
 globalvar cartNpc
 
 # other
+globalvar timer = 0
 globalvar outerMinigameColors = [Color.RED, Color.BLACK]
 globalvar moleCoinRiddle = [
     "Retrieve the gold device...",
@@ -432,6 +433,8 @@ playervar money
 playervar achievements
 
 # Game state
+playervar timeStarted
+
 playervar tutorialFinished
 playervar wiresConnected
 playervar generatorOn
@@ -1056,6 +1059,8 @@ rule "Global setup":
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
     startForcingSpawn(Team.2, 2)
     getAllPlayers().disableNameplatesFor(getAllPlayers())
+
+    chase(timer, 10000000, rate=1, ChaseReeval.NONE)
 
     # cutscene skip text
     hudSubtext(skipCutscenePlayers, "Hold {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
@@ -1730,6 +1735,7 @@ def resetGame():
     popAllTextDeleteQueue()
     playerInitialState()
 
+    eventPlayer.timeStarted = timer
     eventPlayer.currentCutscene = Cutscene.WAKING
 
 rule "Show intro cutscenes":
@@ -2467,15 +2473,16 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
     CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
-    CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 13, 2, Color.PURPLE)
-    CREATE_MOVABLE_TEXT(eventPlayer.tText, 14.5, 1.5, Color.PURPLE)
+    CREATE_MOVABLE_TEXT("Finish time: {0}m {1}s".format(floor((timer - eventPlayer.timeStarted) / 60), (timer - eventPlayer.timeStarted) % 60), 13, 1.5, Color.WHITE)
+    CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 16, 2, Color.PURPLE)
+    CREATE_MOVABLE_TEXT(eventPlayer.tText, 17.5, 1.5, Color.PURPLE)
 
     chase(eventPlayer.tPos, 0.8, rate=0.3, ChaseReeval.NONE)
     wait(8)
     stopChasingVariable(eventPlayer.tPos)
 
     wait(3)
-    CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 18, 1.5, Color.WHITE)
+    CREATE_MOVABLE_TEXT("Press {0} to restart".format(buttonString(Button.INTERACT)), 21, 1.5, Color.WHITE)
     eventPlayer.hasFinishedGame = true
 
 rule "do ending cutscene cleanup":
