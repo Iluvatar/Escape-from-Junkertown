@@ -2705,7 +2705,7 @@ rule "Outer workbench minigame success":
 
     if eventPlayer.outerMinigameMovesMade <= 5:
         wait(3) # wait for small message to disappear
-        bigMessage(eventPlayer, "Achievement get! Puzzle master: solve the color puzzle in 5 moves")
+        bigMessage(eventPlayer, "Achievement get! Puzzle master: solve the battery puzzle in 5 moves")
         playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, eventPlayer.getPosition(), 200)
         eventPlayer.achievements.append(Achievement.PUZZLE_MASTER)
         manageAchievements()
@@ -4214,7 +4214,7 @@ def generateHints():
                     [
                         "Most wanted: find all the posters of you",
                         "Infrasight: find the sunglasses without using the map",
-                        "Puzzle master: solve the color puzzle in 5 moves",
+                        "Puzzle master: solve the battery puzzle in 5 moves",
                         "In a hurry: pester Bruce 60 times",
                         "Master hacker: glitch through the walls and enjoy the view",
                         "Escape artist: get out of Junkertown"
