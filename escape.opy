@@ -4343,6 +4343,7 @@ rule "Show answer":
 # DEBUG FUNCTIONS
 
 rule "Sombra respawn hack":
+    @Event global
     @Condition "{0}".format(shadyCharacter) == "???"
     @Condition isGameInProgress()
 
