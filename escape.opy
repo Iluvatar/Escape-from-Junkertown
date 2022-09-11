@@ -4354,7 +4354,6 @@ rule "Show answer":
 
 rule "Sombra respawn hack":
     @Event global
-    @Condition "{0}".format(shadyCharacter) == "???"
     @Condition isGameInProgress()
 
     while true:
