@@ -5,7 +5,7 @@ settings {
     },
     "lobby": {
         "allowPlayersInQueue": true,
-        "team1Slots": 7,
+        "team1Slots": 8,
         "team2Slots": 0
     },
     "gamemodes": {
