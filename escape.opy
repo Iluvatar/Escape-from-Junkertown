@@ -2477,7 +2477,7 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
     CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
-    CREATE_MOVABLE_TEXT("Finish time: {0}m {1}s".format(floor(eventPlayer.timeStarted / 60), eventPlayer.timeStarted % 60), 13, 1.5, Color.WHITE)
+    CREATE_MOVABLE_TEXT("Finish time: {0}m {1}s".format(floor(eventPlayer.timeStarted / 60), eventPlayer.timeStarted % 60), 13, 1.5, Color.WHITE if eventPlayer.timeStarted >= 420 else Color.GREEN)
     CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 16, 2, Color.PURPLE)
     CREATE_MOVABLE_TEXT(eventPlayer.tText, 17.5, 1.5, Color.PURPLE)
 
