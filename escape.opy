@@ -410,7 +410,9 @@ playervar tEnd
 playervar tPos
 playervar tText
 playervar tMinigame
-playervar tDebug
+playervar tDebugHash
+playervar tDebugIndex
+playervar tDebugPos
 
 # Player state
 playervar pauseInteraction
@@ -2442,6 +2444,8 @@ rule "do ending cutscene":
     eventPlayer.isCutsceneFinished = true
 
 def doCredits():
+    eventPlayer.timeStarted = timer - eventPlayer.timeStarted
+
     FADE_TO_BLACK()
     wait(1)
 
@@ -2473,7 +2477,7 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
     CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
-    CREATE_MOVABLE_TEXT("Finish time: {0}m {1}s".format(floor((timer - eventPlayer.timeStarted) / 60), (timer - eventPlayer.timeStarted) % 60), 13, 1.5, Color.WHITE)
+    CREATE_MOVABLE_TEXT("Finish time: {0}m {1}s".format(floor(eventPlayer.timeStarted / 60), eventPlayer.timeStarted % 60), 13, 1.5, Color.WHITE)
     CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 16, 2, Color.PURPLE)
     CREATE_MOVABLE_TEXT(eventPlayer.tText, 17.5, 1.5, Color.PURPLE)
 
@@ -4392,13 +4396,13 @@ def pruneDebugEntry():
         del eventPlayer.debugEntry[0]
 
 def checkDebugEntry():
-    eventPlayer.tDebug = 5381
-    for eventPlayer.tIndex in range(len(eventPlayer.debugEntry)):
-        eventPlayer.tDebug = (eventPlayer.tDebug * 13 + eventPlayer.debugEntry[eventPlayer.tIndex] * 2718) % 1000000
+    eventPlayer.tDebugHash = 5381
+    for eventPlayer.tDebugIndex in range(len(eventPlayer.debugEntry)):
+        eventPlayer.tDebugHash = (eventPlayer.tDebugHash * 13 + eventPlayer.debugEntry[eventPlayer.tDebugIndex] * 2718) % 1000000
 
-    eventPlayer.tEnd = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tDebug / 1000) / 10, 10, -200 + (eventPlayer.tDebug % 1000) / 10 * 2))
+    eventPlayer.tDebugPos = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tDebugHash / 1000) / 10, 10, -200 + (eventPlayer.tDebugHash % 1000) / 10 * 2))
 
-    if distance(eventPlayer.tEnd, vect(-90.13, 7.70, -198.13)) < 0.01:
+    if distance(eventPlayer.tDebugPos, vect(-90.13, 7.70, -198.13)) < 0.01:
         if debugPlayer:
             debugPlayer = 0
             eventPlayer.disableScoreboard()
@@ -4643,6 +4647,7 @@ rule "End game state":
 
     eventPlayer.molePersonInteractStage = 3
     eventPlayer.equipped.append(Equip.WINGS)
+    eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
     manageEquips()
     eventPlayer.achievements = [2, 3]
     manageAchievements()
