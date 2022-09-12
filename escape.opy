@@ -1948,7 +1948,10 @@ rule "do waking animation cleanup":
     eventPlayer.stopCamera()
     popAllTextDeleteQueue()
     wait(3)
-    graphicsQualityPlayers.append(eventPlayer)
+    if eventPlayer.isOnSecondRun:
+        smallMessage(eventPlayer, "Achievement hints now available")
+    else:
+        graphicsQualityPlayers.append(eventPlayer)
 
 #!define RADIO_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
 
@@ -4292,7 +4295,7 @@ def showHintScreen():
 
 rule "Toggle hints":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.RELOAD) and eventPlayer.tutorialFinished and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
+    @Condition eventPlayer.isHoldingButton(Button.RELOAD) and (eventPlayer.tutorialFinished or eventPlayer.isOnSecondRun) and (eventPlayer.isDoingHint or not eventPlayer.pauseInteraction)
 
     eventPlayer.isDoingHint = not eventPlayer.isDoingHint
     if eventPlayer.isDoingHint:
@@ -4371,6 +4374,7 @@ rule "NPC respawn hack":
             shadyCharacter.startForcingName("Shady character")
             shadyCharacter.startScalingSize(1.1, false)
             shadyCharacter.disableEnvironmentCollision(false)
+            printLog("shady character despawned {0}".format(timer))
 
         wait(2)
 
@@ -4379,6 +4383,7 @@ rule "NPC respawn hack":
             bartenderNpc = getLastCreatedEntity()
             bartenderNpc.startForcingName("Bartender")
             bartenderNpc.disableEnvironmentCollision(false)
+            printLog("bartender despawned {0}".format(timer))
 
         wait(2)
 
@@ -4387,6 +4392,7 @@ rule "NPC respawn hack":
             bruceNpc = getLastCreatedEntity()
             bruceNpc.startForcingName("Bruce")
             bruceNpc.disableEnvironmentCollision(false)
+            printLog("bruce despawned {0}".format(timer))
 
         wait(2)
 
@@ -4396,6 +4402,7 @@ rule "NPC respawn hack":
             barnNpc.setInvisibility(Invis.ALL)
             barnNpc.disablePlayerCollision()
             barnNpc.disableEnvironmentCollision(false)
+            printLog("zen despawned {0}".format(timer))
 
 
 globalvar debugPlayer
