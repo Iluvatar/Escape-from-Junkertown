@@ -1215,7 +1215,7 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.51, 14.01, -136.33), 5, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.34, 14.01, -135.55), 5, EffectReeval.VISIBILITY)
 
-    # # window 6
+    # window 6
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.36, 14.01, -151.78), 5, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-97.79, 14.01, -151.12), 5, EffectReeval.VISIBILITY)
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-98.23, 14.01, -150.45), 5, EffectReeval.VISIBILITY)
@@ -4356,12 +4356,14 @@ rule "Show answer":
 
 # DEBUG FUNCTIONS
 
-rule "Sombra respawn hack":
+rule "NPC respawn hack":
     @Event global
     @Condition isGameInProgress()
 
+    wait(10)
+
     while true:
-        wait(5)
+        wait(2)
 
         if "{0}".format(shadyCharacter) == "???":
             createDummy(Hero.SOMBRA, Team.2, -1, vect(-35.02, 1.48, -126.33), vect(0.7, 0.10, -0.71))
@@ -4369,6 +4371,32 @@ rule "Sombra respawn hack":
             shadyCharacter.startForcingName("Shady character")
             shadyCharacter.startScalingSize(1.1, false)
             shadyCharacter.disableEnvironmentCollision(false)
+
+        wait(2)
+
+        if "{0}".format(bartenderNpc) == "???":
+            createDummy(Hero.ASHE, Team.2, -1, vect(-54.65, 1.73, -131.02), vect(0.87, 0, -0.49))
+            bartenderNpc = getLastCreatedEntity()
+            bartenderNpc.startForcingName("Bartender")
+            bartenderNpc.disableEnvironmentCollision(false)
+
+        wait(2)
+
+        if "{0}".format(bruceNpc) == "???":
+            createDummy(Hero.TORBJORN, Team.2, -1, vect(-21.62, 6.48, -104.95), vect(0.92, 0, 0.39))
+            bruceNpc = getLastCreatedEntity()
+            bruceNpc.startForcingName("Bruce")
+            bruceNpc.disableEnvironmentCollision(false)
+
+        wait(2)
+
+        if "{0}".format(barnNpc) == "???":
+            createDummy(Hero.ZENYATTA, Team.2, -1, BARN_NPC_HIDE_LOCATION, vect(-0.98, 0, -0.07))
+            barnNpc = getLastCreatedEntity()
+            barnNpc.setInvisibility(Invis.ALL)
+            barnNpc.disablePlayerCollision()
+            barnNpc.disableEnvironmentCollision(false)
+
 
 globalvar debugPlayer
 globalvar pointHelperEffect
