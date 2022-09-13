@@ -214,7 +214,7 @@ enum Id:
     tutSafe1,
     tutSafe2,
     tutSafe3,
-    tutSafe4,
+    speedrunChest,
     tutSafe5,
     tutGold,
     tutBarrel1,
@@ -435,7 +435,8 @@ playervar money
 playervar achievements
 
 # Game state
-playervar timeStarted
+playervar runningTime
+playervar speedrunPlayer = []
 
 playervar tutorialFinished
 playervar wiresConnected
@@ -504,6 +505,7 @@ playervar itemIds
 
 playervar tutGate1
 playervar tutGate2
+playervar speedrunChest
 
 playervar innerWires
 playervar innerBarrel2
@@ -1062,7 +1064,7 @@ rule "Global setup":
     startForcingSpawn(Team.2, 2)
     getAllPlayers().disableNameplatesFor(getAllPlayers())
 
-    chase(timer, 10000000, rate=1, ChaseReeval.NONE)
+    chase(timer, INF, rate=1, ChaseReeval.NONE)
 
     # cutscene skip text
     hudSubtext(skipCutscenePlayers, "Hold {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
@@ -1094,8 +1096,8 @@ rule "Global setup":
     createInWorldText(getAllPlayers(), "Enter", vect(-66.45, 11.56, -80.28), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial text
-    hudSubtext(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 0, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudSubtext(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                  {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
@@ -1319,6 +1321,7 @@ def playerInitialState():
     stopChasingVariable(eventPlayer.tutorialGate1End)
     stopChasingVariable(eventPlayer.tutorialGate2End)
     stopChasingVariable(eventPlayer.skipAlpha)
+    stopChasingVariable(eventPlayer.runningTime)
 
     eventPlayer.stopFacing()
     eventPlayer.clearStatusEffect(Status.ROOTED)
@@ -1349,6 +1352,8 @@ def playerInitialState():
     eventPlayer.money = 0
 
     # Game state
+    eventPlayer.runningTime = 0
+
     eventPlayer.tutorialFinished = false
     eventPlayer.wiresConnected = false
     eventPlayer.generatorOn = false
@@ -1423,6 +1428,7 @@ def playerInitialState():
     # Interaction points
     eventPlayer.tutGate1 = [Id.tutGate1, 0, vect(-100.32, 11.44, -90.75), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], ["How does a key open a laser gate? You aren't one to think about it too hard"]]
     eventPlayer.tutGate2 = [Id.tutGate2, 0, vect(-92.97, 11.44, -92.29), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], null]
+    eventPlayer.speedrunChest = [Id.speedrunChest, 0, vect(-89.28, 12.44, -72.22), 1.2, ["Hold alt fire here to start speedrun mode (resets all progress)"], null, null]
 
     eventPlayer.innerWires = [Id.innerWires, 0, vect(-106.91, 12.44, -135.82), 0.4, ["The unconnected wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
     eventPlayer.innerBarrel2 = [Id.innerBarrel2, 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
@@ -1458,7 +1464,6 @@ def playerInitialState():
         [Id.tutSafe1, 0, vect(-104.92, 12.06, -84.28), 1.2, ["All that's inside are a few dusty cobwebs"], null, true],
         [Id.tutSafe2, 0, vect(-100.95, 11.28, -80.59), 0.7, ["There's an odd looking coin in here"], "Odd looking coin", true],
         [Id.tutSafe3, 0, vect(-103.16, 11.95, -76.61), 1, ["The box is buried under a mound of coins and can't be opened"], null, true],
-        [Id.tutSafe4, 0, vect(-89.28, 12.44, -72.22), 1.2, ["The door of the safe is too heavy to lift"], null, true],
         [Id.tutSafe5, 0, vect(-88.78, 11.51, -90.72), 0.7, ["The door squeaks open and you find a rusty key inside"], null, true],
         [Id.tutGold, 0, vect(-95.60, 11.38, -86.96), 1.5, ["Is this... how you were brought in here?"]],
 
@@ -1636,6 +1641,7 @@ def playerInitialState():
         # item apply points
         eventPlayer.tutGate1,
         eventPlayer.tutGate2,
+        eventPlayer.speedrunChest,
 
         eventPlayer.innerWires,
         eventPlayer.innerBarrel2,
@@ -1737,7 +1743,7 @@ def resetGame():
     popAllTextDeleteQueue()
     playerInitialState()
 
-    eventPlayer.timeStarted = timer
+    chase(eventPlayer.runningTime, INF, rate=1, ChaseReeval.NONE)
     eventPlayer.currentCutscene = Cutscene.WAKING
 
 rule "Show intro cutscenes":
@@ -1763,7 +1769,8 @@ rule "Initial player setup":
     eventPlayer.disableMessages()
     eventPlayer.disablePlayerCollision()
 
-    hudHeader(eventPlayer.inventoryPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.DEFAULT)
+    hudHeader(eventPlayer.inventoryPlayer, "Inventory: {0}".format(eventPlayer.inventory), HudPosition.LEFT, 10, Color.WHITE, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
+    hudSubtext(eventPlayer.speedrunPlayer, "{0}:{1}{2}".format(floor(eventPlayer.runningTime / 60), floor((eventPlayer.runningTime % 60) / 10), floor(eventPlayer.runningTime) % 10), HudPosition.TOP, 0, Color.RED, HudReeval.VISIBILITY_AND_STRING, SpecVisibility.NEVER)
 
 rule "Cleanup state on player leave":
     @Event playerLeft
@@ -1950,7 +1957,7 @@ rule "do waking animation cleanup":
     wait(3)
     if eventPlayer.isOnSecondRun:
         smallMessage(eventPlayer, "Achievement hints now available")
-    else:
+    elif eventPlayer.speedrunPlayer == []:
         graphicsQualityPlayers.append(eventPlayer)
 
 #!define RADIO_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
@@ -2449,7 +2456,8 @@ rule "do ending cutscene":
     eventPlayer.isCutsceneFinished = true
 
 def doCredits():
-    eventPlayer.timeStarted = timer - eventPlayer.timeStarted
+    stopChasingVariable(eventPlayer.runningTime)
+    eventPlayer.speedrunPlayer = []
 
     FADE_TO_BLACK()
     wait(1)
@@ -2482,7 +2490,7 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
     CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
-    CREATE_MOVABLE_TEXT("Finish time: {0}m {1}s".format(floor(eventPlayer.timeStarted / 60), eventPlayer.timeStarted % 60), 13, 1.5, Color.WHITE if eventPlayer.timeStarted >= 420 else Color.GREEN)
+    CREATE_MOVABLE_TEXT("Final time: {0}m {1}s".format(floor(eventPlayer.runningTime / 60), eventPlayer.runningTime % 60), 13, 1.5, Color.WHITE if eventPlayer.runningTime >= 420 else Color.GREEN)
     CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 16, 2, Color.PURPLE)
     CREATE_MOVABLE_TEXT(eventPlayer.tText, 17.5, 1.5, Color.PURPLE)
 
@@ -3706,6 +3714,23 @@ rule "Apply":
             eventPlayer.currentCutscene = Cutscene.MOLE_AGENT_INTERACTION
     else:
         pass
+
+rule "Begin speedrun":
+    @Event eachPlayer
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and SHOULD_INTERACT(eventPlayer.speedrunChest)
+
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    smallMessage(eventPlayer, "Speedrun starting in 3...")
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    smallMessage(eventPlayer, "2...")
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    smallMessage(eventPlayer, "1...")
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    smallMessage(eventPlayer, "Go!")
+
+    resetGame()
+    eventPlayer.achievements = []
+    eventPlayer.speedrunPlayer = [eventPlayer]
 
 
 
