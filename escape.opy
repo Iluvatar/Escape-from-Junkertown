@@ -2333,6 +2333,8 @@ rule "do ending cutscene":
     FADE_TO_BLACK()
     wait(3, Wait.ABORT_WHEN_FALSE)
 
+    eventPlayer.teleport(BARN_NPC_HIDE_LOCATION)
+
     # walk along path
     eventPlayer.bezier = [
         vect(-37.02, 33.22, -123.09),
