@@ -555,6 +555,8 @@ playervar isCutsceneFinished
 playervar bezier
 playervar bezierDuration
 
+playervar hintIndex
+
 
 
 # UTILITIES
@@ -4378,9 +4380,9 @@ def generateHintText():
         CREATE_BLACK_TEXT_REEVAL("{0} / {1}: scroll{2}".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2), HINT_SPACING_CONTROLS), -3 - HINT_LINE_OFFSET)
         CREATE_BLACK_TEXT_REEVAL("{0}: select{1}".format(buttonString(Button.JUMP), HINT_SPACING_CONTROLS), -2 - HINT_LINE_OFFSET)
 
-        eventPlayer.tIndex = 0
+        eventPlayer.hintIndex = 0
         eventPlayer.tPos = 0
-        CREATE_MOVABLE_TEXT(">" HINT_SPACING_TEXT "        ", eventPlayer.tIndex - HINT_LINE_OFFSET, 1, Color.RED)
+        CREATE_MOVABLE_TEXT(">" HINT_SPACING_TEXT "        ", eventPlayer.hintIndex - HINT_LINE_OFFSET, 1, Color.RED)
 
         for eventPlayer.I in range(1, len(eventPlayer.hintText), 2):
             CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[eventPlayer.I], HINT_SPACING_TEXT), (eventPlayer.I - 1) / 2 - HINT_LINE_OFFSET)
@@ -4449,7 +4451,7 @@ rule "Select hint option":
     @Condition eventPlayer.isHoldingButton(Button.JUMP)
     @Condition eventPlayer.tValue == HintState.OPTION
 
-    eventPlayer.hintText = eventPlayer.hintText[eventPlayer.tIndex * 2 + 2]
+    eventPlayer.hintText = eventPlayer.hintText[eventPlayer.hintIndex * 2 + 2]
     generateHintText()
 
 rule "Scroll hint option down":
@@ -4458,9 +4460,9 @@ rule "Scroll hint option down":
     @Condition eventPlayer.isHoldingButton(Button.ABILITY_2)
     @Condition eventPlayer.tValue == HintState.OPTION
 
-    eventPlayer.tIndex++
-    if eventPlayer.tIndex >= (len(eventPlayer.hintText) - 1) / 2:
-        eventPlayer.tIndex = 0
+    eventPlayer.hintIndex++
+    if eventPlayer.hintIndex >= (len(eventPlayer.hintText) - 1) / 2:
+        eventPlayer.hintIndex = 0
 
 rule "Scroll hint option up":
     @Event eachPlayer
@@ -4468,9 +4470,9 @@ rule "Scroll hint option up":
     @Condition eventPlayer.isHoldingButton(Button.ULTIMATE)
     @Condition eventPlayer.tValue == HintState.OPTION
 
-    eventPlayer.tIndex--
-    if eventPlayer.tIndex < 0:
-        eventPlayer.tIndex = (len(eventPlayer.hintText) - 1) / 2 - 1
+    eventPlayer.hintIndex--
+    if eventPlayer.hintIndex < 0:
+        eventPlayer.hintIndex = (len(eventPlayer.hintText) - 1) / 2 - 1
 
 rule "Show answer":
     @Event eachPlayer
