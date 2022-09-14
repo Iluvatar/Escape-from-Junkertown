@@ -1063,7 +1063,7 @@ rule "Spawn NPCs":
     @Condition isGameInProgress()
 
     # barn door opener
-    createDummy(Hero.ZENYATTA, Team.2, -1, BARN_NPC_HIDE_LOCATION, vect(-0.98, 0, -0.07))
+    createDummy(Hero.REAPER, Team.2, -1, BARN_NPC_HIDE_LOCATION, vect(-0.98, 0, -0.07))
     barnNpc = getLastCreatedEntity()
     barnNpc.setInvisibility(Invis.ALL)
     barnNpc.disablePlayerCollision()
@@ -4523,12 +4523,12 @@ rule "NPC respawn hack":
         wait(2)
 
         if "{0}".format(barnNpc) == "???":
-            createDummy(Hero.ZENYATTA, Team.2, -1, BARN_NPC_HIDE_LOCATION, vect(-0.98, 0, -0.07))
+            createDummy(Hero.REAPER, Team.2, -1, BARN_NPC_HIDE_LOCATION, vect(-0.98, 0, -0.07))
             barnNpc = getLastCreatedEntity()
             barnNpc.setInvisibility(Invis.ALL)
             barnNpc.disablePlayerCollision()
             barnNpc.disableEnvironmentCollision(false)
-            printLog("zen despawned {0}".format(timer))
+            printLog("barn npc despawned {0}".format(timer))
 
 
 globalvar debugPlayer
