@@ -1490,7 +1490,7 @@ def playerInitialState():
     # Interaction points
     eventPlayer.tutGate1 = [Id.tutGate1, 0, vect(-100.32, 11.44, -90.75), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], ["How does a key open a laser gate? You aren't one to think about it too hard"]]
     eventPlayer.tutGate2 = [Id.tutGate2, 0, vect(-92.97, 11.44, -92.29), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], null]
-    eventPlayer.speedrunChest = [Id.speedrunChest, 0, vect(-89.28, 12.44, -72.22), 1.2, ["Speedrun chest"]]
+    eventPlayer.speedrunChest = [Id.speedrunChest, 0, vect(-89.28, 12.44, -72.22), 1.2, ["Speedrun leaderboard"]]
 
     eventPlayer.innerWires = [Id.innerWires, 0, vect(-106.91, 12.44, -135.82), 0.4, ["The unconnected wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
     eventPlayer.innerBarrel2 = [Id.innerBarrel2, 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
