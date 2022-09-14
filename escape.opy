@@ -441,6 +441,7 @@ playervar insideSmugglerItem
 playervar outsideSmugglerItem
 playervar money
 playervar achievements
+playervar hasSkippedPuzzle
 
 # Game state
 playervar runningTime
@@ -631,6 +632,8 @@ createInWorldText(eventPlayer, text, location, 1, Clip.NONE, WorldTextReeval.NON
 pushTextDeleteQueue()
 
 #!define CREATE_TEXT(text, location) CREATE_COLORED_TEXT(text, location, Color.WHITE)
+
+#!define FORMAT_TIME(seconds) "{0}:{1}{2}".format(floor((seconds) / 60), "0" if (seconds) % 60 < 10 else "", (seconds) % 60)
 
 # Moves playervars X, Y, and Z along the bezier defined by bezier[0:4] for the duration in bezierDuration
 def doBezier():
@@ -972,30 +975,39 @@ enum SpeedrunEntry:
     TIME
 
 def updateSpeedrunLeaderboardText():
-    speedrunText = "Any %"
+    speedrunText = "Any%"
     if len(bestAnyPercent) > 0:
         for I in range(len(bestAnyPercent)):
-            speedrunText = "{0}\n{1}: {2}s".format(speedrunText, bestAnyPercent[I][SpeedrunEntry.NAME], bestAnyPercent[I][SpeedrunEntry.TIME])
+            speedrunText = "{0}\n{2} - {1}".format(speedrunText, bestAnyPercent[I][SpeedrunEntry.NAME], FORMAT_TIME(bestAnyPercent[I][SpeedrunEntry.TIME]))
     else:
         speedrunText = "{0}\nNone".format(speedrunText)
 
-    # speedrunText = "{0}\n\nAll puzzles".format(speedrunText)
-    # if len(bestAllPuzzles) > 0:
-    #     for I in range(len(bestAllPuzzles)):
-    #         speedrunText = "{0}\n{1}: {2}s".format(speedrunText, bestAllPuzzles[I][SpeedrunEntry.NAME], bestAllPuzzles[I][SpeedrunEntry.TIME])
-    # else:
-    #     speedrunText = "{0}\nNone".format(speedrunText)
+    speedrunText = "{0}\n\nAll puzzles".format(speedrunText)
+    if len(bestAllPuzzles) > 0:
+        for I in range(len(bestAllPuzzles)):
+            speedrunText = "{0}\n{2} - {1}".format(speedrunText, bestAllPuzzles[I][SpeedrunEntry.NAME], FORMAT_TIME(bestAllPuzzles[I][SpeedrunEntry.TIME]))
+    else:
+        speedrunText = "{0}\nNone".format(speedrunText)
 
 def addSpeedrunTime():
-    eventPlayer.tIndex = [e[SpeedrunEntry.NAME] for e in bestAnyPercent].index("{0}".format(eventPlayer))
-    printLog("index is {0}".format(eventPlayer.tIndex))
+    if eventPlayer.hasSkippedPuzzle:
+        eventPlayer.tIndex = [e[SpeedrunEntry.NAME] for e in bestAnyPercent].index("{0}".format(eventPlayer))
 
-    if eventPlayer.tIndex == -1:
-        bestAnyPercent[len(bestAnyPercent)] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
-    elif eventPlayer.runningTime <  bestAnyPercent[eventPlayer.tIndex][SpeedrunEntry.TIME]:
-        bestAnyPercent[eventPlayer.tIndex] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
+        if eventPlayer.tIndex == -1:
+            bestAnyPercent[len(bestAnyPercent)] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
+        elif eventPlayer.runningTime <  bestAnyPercent[eventPlayer.tIndex][SpeedrunEntry.TIME]:
+            bestAnyPercent[eventPlayer.tIndex] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
 
-    bestAnyPercent = sorted(bestAnyPercent, lambda x: x[SpeedrunEntry.TIME]).slice(0, 5)
+        bestAnyPercent = sorted(bestAnyPercent, lambda x: x[SpeedrunEntry.TIME]).slice(0, 5)
+    else:
+        eventPlayer.tIndex = [e[SpeedrunEntry.NAME] for e in bestAllPuzzles].index("{0}".format(eventPlayer))
+
+        if eventPlayer.tIndex == -1:
+            bestAllPuzzles[len(bestAllPuzzles)] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
+        elif eventPlayer.runningTime <  bestAllPuzzles[eventPlayer.tIndex][SpeedrunEntry.TIME]:
+            bestAllPuzzles[eventPlayer.tIndex] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
+
+        bestAllPuzzles = sorted(bestAllPuzzles, lambda x: x[SpeedrunEntry.TIME]).slice(0, 5)
 
     updateSpeedrunLeaderboardText()
 
@@ -1398,6 +1410,8 @@ def playerInitialState():
     eventPlayer.outsideSmugglerItem = null
 
     eventPlayer.money = 0
+
+    eventPlayer.hasSkippedPuzzle = false
 
     # Game state
     eventPlayer.runningTime = 0
@@ -2542,7 +2556,7 @@ def doCredits():
     CREATE_MOVABLE_TEXT("Junkertown", 5, 4, rgb(236, 190, 82))
     CREATE_MOVABLE_TEXT("Created by EruIluvatar", 8.75, 0.8, Color.WHITE)
     CREATE_MOVABLE_TEXT("Testing by Shiner237", 9.25, 0.8, Color.WHITE)
-    CREATE_MOVABLE_TEXT("Final time: {0}m {1}s".format(floor(eventPlayer.runningTime / 60), eventPlayer.runningTime % 60), 13, 1.5, Color.WHITE if eventPlayer.runningTime >= 420 else Color.GREEN)
+    CREATE_MOVABLE_TEXT("Final time: {0}".format(FORMAT_TIME(eventPlayer.runningTime)), 13, 1.5, Color.WHITE if eventPlayer.runningTime >= 420 else Color.GREEN)
     CREATE_MOVABLE_TEXT("You got {0} of {1} achievements".format(len(eventPlayer.achievements), Achievement.END_MARKER - 1), 16, 2, Color.PURPLE)
     CREATE_MOVABLE_TEXT(eventPlayer.tText, 17.5, 1.5, Color.PURPLE)
 
@@ -3065,6 +3079,7 @@ rule "Interact":
         elif eventPlayer.tValue[Item.ID] == Id.innerMinigameSkip and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.innerMinigameValue1 = 3 * PI / 2
             eventPlayer.innerMinigameValue2 = PI / 6
+            eventPlayer.hasSkippedPuzzle = true
         elif eventPlayer.tValue[Item.ID] == Id.innerSunglasses:
             if Equip.SUNGLASES not in eventPlayer.equipped:
                 INCREMENT_STATE(Id.innerSunglasses)
@@ -3242,6 +3257,7 @@ rule "Interact":
             elif eventPlayer.tValue[Item.ID] == Id.outerMinigameSkip:
                 eventPlayer.outerMinigameColorState = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
                 eventPlayer.outerMinigameMovesMade = INF
+                eventPlayer.hasSkippedPuzzle = true
             else:
                 eventPlayer.outerMinigameMovesMade--
         elif eventPlayer.tValue[Item.ID] == Id.outerMic:
@@ -3373,6 +3389,7 @@ rule "Interact":
             elif eventPlayer.tValue[Item.ID] == Id.barnMinigameSkip:
                 eventPlayer.barnMinigameColorState = [0, 2, 2, 2, 2, 1, 1, 1, 1]
                 eventPlayer.barnMinigamePosState = [5, 6, 7, 8, 1, 2, 3, 4]
+                eventPlayer.hasSkippedPuzzle = true
         elif eventPlayer.tValue[Item.ID] == Id.outsideFridge1:
             eventPlayer.outsideMapFound = true
             freeze()
