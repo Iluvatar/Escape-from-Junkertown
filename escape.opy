@@ -4072,16 +4072,21 @@ enum HintState:
     HINT,
     ANSWER
 
+enum HintType:
+    OPTION,
+    HINT
+
 def generateHints():
     if eventPlayer.isJunk:
         if not eventPlayer.lightsOn:
             # Lights out area
-            eventPlayer.hintText = ["Option"]
+            eventPlayer.hintText = [HintType.OPTION]
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 eventPlayer.hintText.append(
                     [
-                        "Power the generator", [
-                            "Hint",
+                        "Power the generator",
+                        [
+                            HintType.HINT,
                             ["How can you get fuel to the generator? And someone should fix those sparking wires."],
                             [
                                 "1. Find the empty petrol can in the chest near the bottom of the stairs",
@@ -4096,8 +4101,9 @@ def generateHints():
             else:
                 eventPlayer.hintText.append(
                     [
-                        "Turn on the lights", [
-                            "Hint",
+                        "Turn on the lights",
+                        [
+                            HintType.HINT,
                             ["The lights need to be green. But what color is the broken switch?"],
                             [
                                 "1. Look for the control panel with red lights next to the generator",
@@ -4109,12 +4115,13 @@ def generateHints():
                     ])
         elif not eventPlayer.canGoOutside:
             # Inside area
-            eventPlayer.hintText = ["Option"]
+            eventPlayer.hintText = [HintType.OPTION]
             if not eventPlayer.canBeTheOtherGuy:
                 eventPlayer.hintText.append(
                     [
-                        "Fix the radio", [
-                            "Hint",
+                        "Fix the radio",
+                        [
+                            HintType.HINT,
                             ["There are lots of random parts in the mech repair room, it might be useful to snoop around"],
                             [
                                 "1. Find the fiddly part in the small toolbox in the mech room",
@@ -4127,8 +4134,9 @@ def generateHints():
             if Equip.SUNSCREEN not in eventPlayer.equipped:
                 eventPlayer.hintText.append(
                     [
-                        "Find the vent key", [
-                            "Hint",
+                        "Find the vent key",
+                        [
+                            HintType.HINT,
                             ["Three whole valves to turn? You might even have to leave the room to do this one"],
                             [
                                 "1. Turn off the three valves: the first one is in the mech room, next to the left exit",
@@ -4143,8 +4151,9 @@ def generateHints():
             if Equip.SUNGLASES not in eventPlayer.equipped:
                 eventPlayer.hintText.append(
                     [
-                        "Find a way to protect your eyes", [
-                            "Hint",
+                        "Find a way to protect your eyes",
+                        [
+                            HintType.HINT,
                             ["You left a map back at your place, but there's no way to get it without going outside the walls"],
                             [
                                 "1. You must have already fixed the radio and escaped the barn as Hog",
@@ -4156,12 +4165,13 @@ def generateHints():
                     ])
         else:
             # Inner area
-            eventPlayer.hintText = ["Option"]
+            eventPlayer.hintText = [HintType.OPTION]
             if eventPlayer.money == 0 and not eventPlayer.canUtilizeSmuggler:
                 eventPlayer.hintText.append(
                     [
-                        "Make some money", [
-                            "Hint",
+                        "Make some money",
+                        [
+                            HintType.HINT,
                             ["Bars are always looking for entertainment"],
                             [
                                 "1. Find a hilarious costume in the toolbox in the tattoo parlor (attacker third spawn)",
@@ -4174,8 +4184,9 @@ def generateHints():
             if not eventPlayer.canUtilizeSmuggler:
                 eventPlayer.hintText.append(
                     [
-                        "Hire the smuggler", [
-                            "Hint",
+                        "Hire the smuggler",
+                        [
+                            HintType.HINT,
                             ["Did you try looking up?"],
                             [
                                 "1. Make sure you've already made some money",
@@ -4187,8 +4198,9 @@ def generateHints():
             if eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.hintText.append(
                     [
-                        "Contact Bruce", [
-                            "Hint",
+                        "Contact Bruce",
+                        [
+                            HintType.HINT,
                             ["Bruce doesn't like strangers, but maybe an old friend could vouch for you"],
                             [
                                 "1. Make sure you've already hired the smuggler and escaped the barn as Hog",
@@ -4202,8 +4214,9 @@ def generateHints():
             if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and eventPlayer.tValue[Item.STATE] % 2 == 1:
                 eventPlayer.hintText.append(
                     [
-                        "Find a black battery", [
-                            "Hint",
+                        "Find a black battery",
+                        [
+                            HintType.HINT,
                             ["Tattoo parlors can do some amazing things with inks these days"],
                             [
                                 "1. Find a red battery in a chest in the mech room by third point",
@@ -4215,8 +4228,9 @@ def generateHints():
             if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and (eventPlayer.tValue[Item.STATE] - 1) % 4 < 2:
                 eventPlayer.hintText.append(
                     [
-                        "Find water", [
-                            "Hint",
+                        "Find water",
+                        [
+                            HintType.HINT,
                             ["They say there's no clean water in Junkertown. Is it any better outside?"],
                             [
                                 "1. Make sure you've already hired the smuggler",
@@ -4231,8 +4245,9 @@ def generateHints():
             if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 4:
                 eventPlayer.hintText.append(
                     [
-                        "Find strong alcohol", [
-                            "Hint",
+                        "Find strong alcohol",
+                        [
+                            HintType.HINT,
                             ["What's the point of a bar again?"],
                             [
                                 "1. Make sure you've already made some money",
@@ -4243,8 +4258,9 @@ def generateHints():
             if Equip.WINGS in eventPlayer.equipped:
                 eventPlayer.hintText.append(
                     [
-                        "Find a way out", [
-                            "Hint",
+                        "Find a way out",
+                        [
+                            HintType.HINT,
                             ["They talk in riddles, but it seems you need to give the coin to the right door"],
                             [
                                 "1. Make sure you have the odd looking coin, which can be found in the green safe in",
@@ -4261,9 +4277,10 @@ def generateHints():
         if not eventPlayer.canLeaveBarn:
             # Barn
             eventPlayer.hintText = [
-                "Option",
-                "Leave the barn", [
-                    "Hint",
+                HintType.OPTION,
+                "Leave the barn",
+                [
+                    HintType.HINT,
                     ["You swear you wrote the code down somewhere, but you lost the papers"],
                     [
                         "1. You need find the code to unlock the secret area under the stairs",
@@ -4278,12 +4295,13 @@ def generateHints():
             ]
         else:
             # Outside area
-            eventPlayer.hintText = ["Option"]
+            eventPlayer.hintText = [HintType.OPTION]
             if Equip.SUNGLASES not in eventPlayer.junkEquipped:
                 eventPlayer.hintText.append(
                     [
-                        "Find a way to protect Junk's eyes", [
-                            "Hint",
+                        "Find a way to protect Junk's eyes",
+                        [
+                            HintType.HINT,
                             ["It's amazing what Junk will leave in his refrigerator"],
                             [
                                 "1. Find a map in the fridge inside Junk's house (the one with the big crown)",
@@ -4295,8 +4313,9 @@ def generateHints():
             if eventPlayer.canGoOutside and eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.hintText.append(
                     [
-                        "Contact Bruce", [
-                            "Hint",
+                        "Contact Bruce",
+                        [
+                            HintType.HINT,
                             ["Maybe you could get Bruce's spare remote, but you'd still have to mess with it in your shop"],
                             [
                                 "1. Make sure you've escaped the barn, and have the right handed remote (check hints as Junk)",
@@ -4309,8 +4328,9 @@ def generateHints():
             if Equip.WINGS in eventPlayer.junkEquipped:
                 eventPlayer.hintText.append(
                     [
-                        "Track down the mole", [
-                            "Hint",
+                        "Track down the mole",
+                        [
+                            HintType.HINT,
                             ["They keep running away, but maybe the ones inside know where they went?"],
                             [
                                 "1. Make sure you have the Anathema Device (check hints as Junk, \"Find a way out\")",
@@ -4328,8 +4348,9 @@ def generateHints():
     if eventPlayer.isOnSecondRun:
         eventPlayer.hintText.append(
             [
-                "Achievements", [
-                    "Hint",
+                "Achievements",
+                [
+                    HintType.HINT,
                     [
                         "Most wanted: find all the posters of you",
                         "Infrasight: find the sunglasses without using the map",
@@ -4351,7 +4372,7 @@ def generateHints():
 def generateHintText():
     popAllTextDeleteQueue()
 
-    if eventPlayer.hintText[0] == "Option":
+    if eventPlayer.hintText[0] == HintType.OPTION:
         eventPlayer.tValue = HintState.OPTION
 
         CREATE_BLACK_TEXT_REEVAL("{0} / {1}: scroll{2}".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2), HINT_SPACING_CONTROLS), -3 - HINT_LINE_OFFSET)
@@ -4363,7 +4384,7 @@ def generateHintText():
 
         for eventPlayer.I in range(1, len(eventPlayer.hintText), 2):
             CREATE_BLACK_TEXT("{0}{1}".format(eventPlayer.hintText[eventPlayer.I], HINT_SPACING_TEXT), (eventPlayer.I - 1) / 2 - HINT_LINE_OFFSET)
-    elif eventPlayer.hintText[0] == "Hint":
+    elif eventPlayer.hintText[0] == HintType.HINT:
         eventPlayer.tValue = HintState.HINT
 
         for eventPlayer.I in range(len(eventPlayer.hintText[1])):
