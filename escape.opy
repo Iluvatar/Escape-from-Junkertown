@@ -99,6 +99,8 @@ enum Item:
 #!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 1.8, -131.02)
 #!define SHADY_CHARACTER_TEXT_LOCATION vect(-35.02, 1.48 + 1.8, -126.33)
 
+#!define SPEEDRUN_TEXT_LOCATION vect(-89.28, 12.44 + 1.1, -72.22)
+
 #!define DOOR_21_TEXT_LOCATION vect(-50.47, 13.63 + 0.6, -84.74)
 #!define DOOR_22_TEXT_LOCATION vect(-54.41, 13.63 + 0.6, -84.09)
 #!define DOOR_23_TEXT_LOCATION vect(-59.72, 13.63 + 0.6, -85.31)
@@ -144,6 +146,12 @@ enum TutorialText:
     HINTS
 
 globalvar tutorialTextPlayers = [[], [], [], [], []]
+
+# speedruns
+globalvar speedrunText
+globalvar speedrunTextPlayers = []
+globalvar bestAnyPercent = []
+globalvar bestAllPuzzles = []
 
 # equippables
 enum Equip:
@@ -957,6 +965,42 @@ def toggleBarnSwitch():
 
 
 
+# SPEEDRUNS
+
+enum SpeedrunEntry:
+    NAME = 0,
+    TIME
+
+def updateSpeedrunLeaderboardText():
+    speedrunText = "Any %"
+    if len(bestAnyPercent) > 0:
+        for I in range(len(bestAnyPercent)):
+            speedrunText = "{0}\n{1}: {2}s".format(speedrunText, bestAnyPercent[I][SpeedrunEntry.NAME], bestAnyPercent[I][SpeedrunEntry.TIME])
+    else:
+        speedrunText = "{0}\nNone".format(speedrunText)
+
+    # speedrunText = "{0}\n\nAll puzzles".format(speedrunText)
+    # if len(bestAllPuzzles) > 0:
+    #     for I in range(len(bestAllPuzzles)):
+    #         speedrunText = "{0}\n{1}: {2}s".format(speedrunText, bestAllPuzzles[I][SpeedrunEntry.NAME], bestAllPuzzles[I][SpeedrunEntry.TIME])
+    # else:
+    #     speedrunText = "{0}\nNone".format(speedrunText)
+
+def addSpeedrunTime():
+    eventPlayer.tIndex = [e[SpeedrunEntry.NAME] for e in bestAnyPercent].index("{0}".format(eventPlayer))
+    printLog("index is {0}".format(eventPlayer.tIndex))
+
+    if eventPlayer.tIndex == -1:
+        bestAnyPercent[len(bestAnyPercent)] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
+    elif eventPlayer.runningTime <  bestAnyPercent[eventPlayer.tIndex][SpeedrunEntry.TIME]:
+        bestAnyPercent[eventPlayer.tIndex] = ["{0}".format(eventPlayer), eventPlayer.runningTime]
+
+    bestAnyPercent = sorted(bestAnyPercent, lambda x: x[SpeedrunEntry.TIME]).slice(0, 5)
+
+    updateSpeedrunLeaderboardText()
+
+
+
 # SETUP
 
 rule "Disable hero assemble":
@@ -1102,6 +1146,10 @@ rule "Global setup":
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                  {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to toggle the hint system".format(buttonString(Button.RELOAD)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+
+    # speedrun setup
+    updateSpeedrunLeaderboardText()
+    createInWorldText(speedrunTextPlayers, "Hold {0} to start speedrun mode (all progress is reset)\n\n======== Best times ========\n{1}".format(buttonString(Button.SECONDARY_FIRE), speedrunText), SPEEDRUN_TEXT_LOCATION, 1, Clip.NONE, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial gate
     createBeam(tutorialPlayers, Beam.TORBJORN_TURRET_SIGHT, vect(-99.01, 10.93, -91.03), localPlayer.tutorialGate1End, Color.RED, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
@@ -1428,7 +1476,7 @@ def playerInitialState():
     # Interaction points
     eventPlayer.tutGate1 = [Id.tutGate1, 0, vect(-100.32, 11.44, -90.75), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], ["How does a key open a laser gate? You aren't one to think about it too hard"]]
     eventPlayer.tutGate2 = [Id.tutGate2, 0, vect(-92.97, 11.44, -92.29), 1.5, ["The lasers would slice you up if you tried to go through"], null, null, null, 1, ["Rusty key"], null]
-    eventPlayer.speedrunChest = [Id.speedrunChest, 0, vect(-89.28, 12.44, -72.22), 1.2, ["Hold alt fire here to start speedrun mode (resets all progress)"], null, null]
+    eventPlayer.speedrunChest = [Id.speedrunChest, 0, vect(-89.28, 12.44, -72.22), 1.2, ["Speedrun chest"]]
 
     eventPlayer.innerWires = [Id.innerWires, 0, vect(-106.91, 12.44, -135.82), 0.4, ["The unconnected wires are sparking", "The wires are connected"], null, null, null, null, ["Extension cord"], ["You connect the wires"]]
     eventPlayer.innerBarrel2 = [Id.innerBarrel2, 0, vect(-103.58, 7.02, -120.15), 0.5, ["There's a little bit of petrol pooled in the bottom", "The barrel is now completely empty"], null, null, null, null, ["Empty petrol can"], ["You fill up the petrol can with with the last of the petrol"]]
@@ -1696,6 +1744,8 @@ def playerInitialState():
     tutorialPlayers.append(eventPlayer)
     graphicsQualityPlayers.remove(eventPlayer)
 
+    speedrunTextPlayers.remove(eventPlayer)
+
     playersInDark.remove(eventPlayer)
 
     innerWirePlayers.remove(eventPlayer)
@@ -1780,6 +1830,7 @@ rule "Cleanup state on player leave":
     introStage2Players.remove(eventPlayer)
     tutorialPlayers.remove(eventPlayer)
     graphicsQualityPlayers.remove(eventPlayer)
+    speedrunTextPlayers.remove(eventPlayer)
     playersInDark.remove(eventPlayer)
     innerWirePlayers.remove(eventPlayer)
     innerMinigamePlayers.remove(eventPlayer)
@@ -2458,6 +2509,7 @@ rule "do ending cutscene":
 def doCredits():
     stopChasingVariable(eventPlayer.runningTime)
     eventPlayer.speedrunPlayer = []
+    addSpeedrunTime()
 
     FADE_TO_BLACK()
     wait(1)
@@ -2576,6 +2628,12 @@ rule "Hide npc text":
     @Condition distance(eventPlayer, MOLE_PERSON_CLIFF_TEXT_LOCATION) > 16
 
     popTextDeleteQueue()
+
+rule "Hide speedrun text":
+    @Event eachPlayer
+    @Condition distance(eventPlayer, SPEEDRUN_TEXT_LOCATION) > 5
+
+    speedrunTextPlayers.remove(eventPlayer)
 
 
 
@@ -2957,6 +3015,9 @@ rule "Interact":
                 eventPlayer.inventory.append("Rusty key")
                 eventPlayer.tValue[Item.STATE]++
                 eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+        elif eventPlayer.tValue[Item.ID] == Id.speedrunChest:
+            if eventPlayer not in speedrunTextPlayers:
+                speedrunTextPlayers.append(eventPlayer)
         elif eventPlayer.tValue[Item.ID] == Id.innerPowerDistributor:
             if not eventPlayer.wiresConnected and not eventPlayer.generatorOn:
                 smallMessage(eventPlayer, "This power distribution unit sends power from the generator to the panel above")
@@ -3717,7 +3778,7 @@ rule "Apply":
 
 rule "Begin speedrun":
     @Event eachPlayer
-    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and SHOULD_INTERACT(eventPlayer.speedrunChest)
+    @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.isJunk and eventPlayer in speedrunTextPlayers
 
     wait(1, Wait.ABORT_WHEN_FALSE)
     smallMessage(eventPlayer, "Speedrun starting in 3...")
