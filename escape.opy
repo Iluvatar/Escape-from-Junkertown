@@ -3175,7 +3175,7 @@ rule "Interact":
                     eventPlayer.tText = "{0}\n- a bottle of strong alcohol".format(eventPlayer.tText)
                 CREATE_TEXT(eventPlayer.tText, BRUCE_TEXT_LOCATION)
             elif eventPlayer.tValue[Item.STATE] == 8:
-                CREATE_TEXT("Don't be impatient, it's only been {0} seconds".format(floor(eventPlayer.bruceTimer)), BRUCE_TEXT_LOCATION)
+                CREATE_TEXT("Don't be impatient, I said it'll take a minute and it's only been {0} seconds".format(floor(eventPlayer.bruceTimer)), BRUCE_TEXT_LOCATION)
                 eventPlayer.timesBruceClicked++
             elif eventPlayer.tValue[Item.STATE] == 9:
                 if Equip.WINGS not in eventPlayer.equipped:
