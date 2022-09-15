@@ -137,6 +137,7 @@ globalvar dvdLogoPlayers = []
 globalvar satControlPlayers = []
 globalvar insideMailTextPlayers = []
 globalvar outsideMailTextPlayers = []
+globalvar qrCodePlayers = []
 
 # tutorial text
 enum TutorialText:
@@ -680,6 +681,10 @@ def doBezierArray():
 #!define CREATE_BLACK_TEXT(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * (line), 0, 0), 1, Clip.NONE, WorldTextReeval.NONE, Color.WHITE, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
 
+# Create colored text while faded to black
+#!define CREATE_BLACK_TEXT_COLORED(text, line, color) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * (line), 0, 0), 1, Clip.NONE, WorldTextReeval.NONE, color, SpecVisibility.NEVER) \
+pushTextDeleteQueue()
+
 # Create text while faded to black that reevaluates
 #!define CREATE_BLACK_TEXT_REEVAL(text, line) createInWorldText(eventPlayer, text, BLACK_SCREEN_POS + 2 * BLACK_SCREEN_FACING - vect(LINE_SPACING * (line), 0, 0), 1, Clip.NONE, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER) \
 pushTextDeleteQueue()
@@ -1112,6 +1117,40 @@ rule "Spawn NPCs":
 
     getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, INF)
 
+def createQrCode():
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　　　▒　　▒　　　　▒▒▒▒▒▒▒　　　　　　　　", HudPosition.RIGHT, 100, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒▒▒　　▒　▒　　▒　　　　　▒　　　　　　　　", HudPosition.RIGHT, 101, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒　　　　　　▒　　▒　▒▒▒　▒　　　　　　　　", HudPosition.RIGHT, 102, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒　　　▒▒　　　▒　▒▒▒　▒　　　　　　　　", HudPosition.RIGHT, 103, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒▒▒　▒▒　▒　　▒　▒▒▒　▒　　　　　　　　", HudPosition.RIGHT, 104, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒　▒　▒▒　▒▒　▒　　　　　▒　　　　　　　　", HudPosition.RIGHT, 105, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒　▒　▒　▒　▒　▒▒▒▒▒▒▒　　　　　　　　", HudPosition.RIGHT, 106, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　　　　　　　　▒　▒▒▒　▒▒　　　　　　　　　　　　　　　　　", HudPosition.RIGHT, 107, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒　▒　　▒▒　　　▒　　▒　▒　▒▒▒　▒▒　　　　　　　　　", HudPosition.RIGHT, 108, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　　▒　▒　▒▒　▒　▒▒▒　　　　　▒　　　　　　　　", HudPosition.RIGHT, 109, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒　　▒▒　　　　　▒▒▒　　▒　　▒　　▒▒　　　　　　　　", HudPosition.RIGHT, 110, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　▒　　▒▒　　▒▒▒　　▒▒　　▒▒▒　　　　　　　　　　　　　", HudPosition.RIGHT, 111, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒　▒　　▒▒　　▒　　　　　▒▒▒▒　▒　▒▒　　　　　　　　", HudPosition.RIGHT, 112, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　▒▒▒　▒　▒　　　▒▒　▒　　　▒▒　▒▒　▒　　　　　　　　", HudPosition.RIGHT, 113, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒　▒　▒　　　▒▒▒▒▒　▒　▒▒▒　▒　▒　　　　　　　　", HudPosition.RIGHT, 114, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　▒　▒　　　　　　▒▒　▒　　▒　　　▒　　▒　　　　　　　　　", HudPosition.RIGHT, 115, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒　　▒▒▒　　▒　　　　　▒▒▒▒▒▒▒▒　　　　　　　　　　", HudPosition.RIGHT, 116, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　　　　　　　　▒▒▒　▒▒　▒▒　　　▒▒　　▒　　　　　　　　", HudPosition.RIGHT, 117, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒▒▒　　▒▒▒▒　▒　▒▒　▒▒　　　　　　　　", HudPosition.RIGHT, 118, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　　　　　▒　▒▒▒　　　▒▒▒▒　　　　　　　　　", HudPosition.RIGHT, 119, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒▒　　▒▒　▒▒▒▒▒▒　　　　　　　　　　　", HudPosition.RIGHT, 120, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒　▒▒▒　　　　　　▒▒▒▒　　　　　　　　　　", HudPosition.RIGHT, 121, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒▒　　　▒▒　▒　▒▒　▒　▒　　　　　　　　", HudPosition.RIGHT, 122, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒　　　▒▒　　▒▒　　　▒　　　　　　　　　　　", HudPosition.RIGHT, 123, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒▒　　　▒　▒▒　▒▒　　　▒▒　　　　　　　　", HudPosition.RIGHT, 124, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+
+    hudSubtext(qrCodePlayers, "　", HudPosition.RIGHT, 125, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, c"YOUTU.BE/ZUXVsku_PPU　　　　　　　　　　　　　　", HudPosition.RIGHT, 126, Color.WHITE, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　\n　", HudPosition.RIGHT, 127, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "If the QR code doesn't scan, try moving farther from the screen　　　　　", HudPosition.RIGHT, 129, Color.WHITE, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　\n　\n　", HudPosition.RIGHT, 130, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "{0}: Exit　　　　　　　　　　　　　　　　　　　".format(buttonString(Button.RELOAD)), HudPosition.RIGHT, 133, Color.WHITE, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+
 rule "Global setup":
     @Event global
 
@@ -1341,6 +1380,9 @@ rule "Global setup":
     # smuggler mail txt
     createInWorldText(insideMailTextPlayers, "You've got mail!", INSIDE_SMUGGLER_TEXT_LOCATION - vect(0, 0.1, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(outsideMailTextPlayers, "You've got mail!", OUTSIDE_SMUGGLER_TEXT_LOCATION - vect(0, 0.1, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+
+    # walkthrough qr code screen
+    createQrCode()
 
 def innerMinigameInitialState():
     eventPlayer.isDoingInnerMinigame = false
@@ -2190,6 +2232,7 @@ def doBruceContact():
 
     stopChasingVariable(eventPlayer.tStart)
     stopChasingVariable(eventPlayer.tEnd)
+    stopChasingVariable(eventPlayer.tPos)
 
     wait(2)
     smallMessage(eventPlayer, "You tell Bruce to expect an annoying little rat with a smug grin")
@@ -4079,10 +4122,16 @@ enum HintType:
     HINT
 
 def generateHints():
+    eventPlayer.hintText = [HintType.OPTION]
+    eventPlayer.hintText.append([
+        "Walkthrough",
+        []
+    ])
+
+
     if eventPlayer.isJunk:
         if not eventPlayer.lightsOn:
             # Lights out area
-            eventPlayer.hintText = [HintType.OPTION]
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 eventPlayer.hintText.append(
                     [
@@ -4117,7 +4166,6 @@ def generateHints():
                     ])
         elif not eventPlayer.canGoOutside:
             # Inside area
-            eventPlayer.hintText = [HintType.OPTION]
             if not eventPlayer.canBeTheOtherGuy:
                 eventPlayer.hintText.append(
                     [
@@ -4167,7 +4215,6 @@ def generateHints():
                     ])
         else:
             # Inner area
-            eventPlayer.hintText = [HintType.OPTION]
             if eventPlayer.money == 0 and not eventPlayer.canUtilizeSmuggler:
                 eventPlayer.hintText.append(
                     [
@@ -4278,26 +4325,25 @@ def generateHints():
     else:
         if not eventPlayer.canLeaveBarn:
             # Barn
-            eventPlayer.hintText = [
-                HintType.OPTION,
-                "Leave the barn",
+            eventPlayer.hintText.append(
                 [
-                    HintType.HINT,
-                    ["You swear you wrote the code down somewhere, but you lost the papers"],
+                    "Leave the barn",
                     [
-                        "1. You need find the code to unlock the secret area under the stairs",
-                        "2. Find the first two digits on the sparkling paper by the right exit",
-                        "3. Find the middle digit on the motorbike",
-                        "4. Find the last two digits on the sparkling paper by the upstairs exit",
-                        "5. Input the code in the panel by hitting the switches where 1 is the top switch",
-                        "and 5 is the bottom switch",
-                        "6. Find your little buddy in the open safe in the hidden area"
+                        HintType.HINT,
+                        ["You swear you wrote the code down somewhere, but you lost the papers"],
+                        [
+                            "1. You need find the code to unlock the secret area under the stairs",
+                            "2. Find the first two digits on the sparkling paper by the right exit",
+                            "3. Find the middle digit on the motorbike",
+                            "4. Find the last two digits on the sparkling paper by the upstairs exit",
+                            "5. Input the code in the panel by hitting the switches where 1 is the top switch",
+                            "and 5 is the bottom switch",
+                            "6. Find your little buddy in the open safe in the hidden area"
+                        ]
                     ]
-                ]
-            ]
+                ])
         else:
             # Outside area
-            eventPlayer.hintText = [HintType.OPTION]
             if Equip.SUNGLASES not in eventPlayer.junkEquipped:
                 eventPlayer.hintText.append(
                     [
@@ -4434,6 +4480,7 @@ rule "Toggle hints":
     else:
         showUi()
         popAllTextDeleteQueue()
+        qrCodePlayers.remove(eventPlayer)
         eventPlayer.stopCamera()
         unfreeze()
 
@@ -4451,8 +4498,13 @@ rule "Select hint option":
     @Condition eventPlayer.isHoldingButton(Button.JUMP)
     @Condition eventPlayer.tValue == HintState.OPTION
 
-    eventPlayer.hintText = eventPlayer.hintText[eventPlayer.hintIndex * 2 + 2]
-    generateHintText()
+    if eventPlayer.hintIndex == 0:
+        eventPlayer.startCamera(vect(-61.31, 53.59, -154.93), vect(-61.31, 53.59, -154.93) + vect(0.55, 0.46, -0.69), 0)
+        qrCodePlayers.append(eventPlayer)
+        eventPlayer.tValue = HintState.ANSWER
+    else:
+        eventPlayer.hintText = eventPlayer.hintText[eventPlayer.hintIndex * 2 + 2]
+        generateHintText()
 
 rule "Scroll hint option down":
     @Event eachPlayer
