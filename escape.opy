@@ -357,6 +357,7 @@ enum Id:
     outsideFridge2,
     outsideFridge3,
     outsideFridge4,
+    outsideWaterTower,
     outsideToolbox1,
     outsideToolbox2,
     outsideSmallToolbox,
@@ -1730,6 +1731,7 @@ def playerInitialState():
         [Id.outsideFridge2, 0, vect(-5.68, 13.51, -74.65), 1.2, ["Without electricity, this fridge isn't doing a very good job"], null, true],
         [Id.outsideFridge3, 0, vect(-31.79, 5.62, -28.84), 0.8, ["You can't open the door"], null, true, true],
         [Id.outsideFridge4, 0, vect(-31.72, 5.57, -30.10), 0.8, ["The door won't budge"], null, true, true],
+        [Id.outsideWaterTower, 0, vect(-32.56, 8.94, -29.17), 2, ["The water tower appears to have a functional hose"], null, null, null],
         [Id.outsideToolbox1, 0, vect(-6.67, 8.55, -77.17), 0.7, ["There's only some ancient pistons in here"], null, true],
         [Id.outsideToolbox2, 0, vect(-6.55, 7.60, -77.18), 0.7, ["You don't need any of the car parts inside since you have a motorcycle"], null, true],
         [Id.outsideSmallToolbox, 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the moldy remains of someone's lunch"], null, true],
@@ -4794,7 +4796,7 @@ rule "Item visualization":
     @Condition eventPlayer == debugPlayer
 
     # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-    #     if Id.innerFridge <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] and eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.innerPowerBox:
+    #     if Id.outsideJunkWorkbench <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] and eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outsidePoster2:
     #         createEffect(debugPlayer, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 globalvar isGoingFast = false
