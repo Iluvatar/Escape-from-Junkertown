@@ -1,6 +1,6 @@
 settings {
     "main": {
-        "description": "Escape from Junkertown!\nYour brilliant plan went wrong, and now you're trapped in Junkertown. Can you find the way out?\nCode: 4K66K\nv1.3 Made by EruIluvatar",
+        "description": "Escape from Junkertown!\nYour brilliant plan went wrong, and now you're trapped in Junkertown. Can you find the way out?\nCode: 4K66K\nv1.4 Made by EruIluvatar",
         "modeName": "Escape from Junkertown"
     },
     "lobby": {
