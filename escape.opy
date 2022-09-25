@@ -3678,6 +3678,8 @@ rule "Apply":
                 CREATE_TEXT("You already have a membership.", INSIDE_SMUGGLER_TEXT_LOCATION)
             elif eventPlayer.inventory[0] == "Odd looking coin":
                 CREATE_TEXT("This is far too odd looking for me to deliver.", INSIDE_SMUGGLER_TEXT_LOCATION)
+            elif eventPlayer.inventory[0] == "Fiddly part" or eventPlayer.inventory[0] == "Reverse polarity fiddly part":
+                CREATE_TEXT("This is far too fiddly for me to deliver.", INSIDE_SMUGGLER_TEXT_LOCATION)
             else:
                 CREATE_TEXT("You got it! We'll have the {0} outside the walls for you in a jiffy.".format(eventPlayer.inventory[0]), INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.outsideSmugglerItem = eventPlayer.inventory[0]
