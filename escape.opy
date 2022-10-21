@@ -15,7 +15,6 @@ settings {
             ],
             "enableHeroSwitching": false,
             "gamemodeStartTrigger": "immediately",
-            "roleLimit": "2OfEachRolePerTeam",
             "payloadSpeed%": 500,
             "respawnTime%": 0,
             "spawnHealthPacks": "disabled"
@@ -93,13 +92,13 @@ enum Item:
 #!define MOLE_PERSON_DEVICE_NAME "Anathema Device"
 
 #!define BARN_NPC_HIDE_LOCATION vect(51, 9.15, -57)
-#!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.6, -104.95)
-#!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 13.48 + 1.6, -88.07)
-#!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.52, 4.49 + 1.6, -49.63)
-#!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 1.8, -131.02)
-#!define SHADY_CHARACTER_TEXT_LOCATION vect(-35.02, 1.48 + 1.8, -126.33)
+#!define BRUCE_TEXT_LOCATION vect(-21.62, 6.48 + 1.9, -104.95)
+#!define INSIDE_SMUGGLER_TEXT_LOCATION vect(-19.06, 13.48 + 1.9, -88.07)
+#!define OUTSIDE_SMUGGLER_TEXT_LOCATION vect(-44.44, 4.49 + 1.9, -49.59)
+#!define BARTENDER_TEXT_LOCATION vect(-54.65, 1.73 + 2.1, -131.02)
+#!define SHADY_CHARACTER_TEXT_LOCATION vect(-35.02, 1.48 + 2.1, -126.33)
 
-#!define SPEEDRUN_TEXT_LOCATION vect(-89.28, 12.44 + 1.1, -72.22)
+#!define SPEEDRUN_TEXT_LOCATION vect(-89.28, 12.44 + 1.4, -72.22)
 
 #!define DOOR_21_TEXT_LOCATION vect(-50.47, 13.63 + 0.6, -84.74)
 #!define DOOR_22_TEXT_LOCATION vect(-54.41, 13.63 + 0.6, -84.09)
@@ -1117,38 +1116,34 @@ rule "Spawn NPCs":
     getPlayers(Team.2).setStatusEffect(null, Status.INVINCIBLE, INF)
 
 def createQrCode():
-    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　　　▒　　▒　　　　▒▒▒▒▒▒▒　　　　　　　　", HudPosition.RIGHT, 100, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒▒▒　　▒　▒　　▒　　　　　▒　　　　　　　　", HudPosition.RIGHT, 101, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒　　　　　　▒　　▒　▒▒▒　▒　　　　　　　　", HudPosition.RIGHT, 102, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒　　　▒▒　　　▒　▒▒▒　▒　　　　　　　　", HudPosition.RIGHT, 103, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒▒▒　▒▒　▒　　▒　▒▒▒　▒　　　　　　　　", HudPosition.RIGHT, 104, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒　▒　▒▒　▒▒　▒　　　　　▒　　　　　　　　", HudPosition.RIGHT, 105, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒　▒　▒　▒　▒　▒▒▒▒▒▒▒　　　　　　　　", HudPosition.RIGHT, 106, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "　　　　　　　　▒　▒▒▒　▒▒　　　　　　　　　　　　　　　　　", HudPosition.RIGHT, 107, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒▒　▒　　▒▒　　　▒　　▒　▒　▒▒▒　▒▒　　　　　　　　　", HudPosition.RIGHT, 108, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒▒▒　　▒　▒　▒▒　▒　▒▒▒　　　　　▒　　　　　　　　", HudPosition.RIGHT, 109, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒▒▒　　▒▒　　　　　▒▒▒　　▒　　▒　　▒▒　　　　　　　　", HudPosition.RIGHT, 110, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "　▒　　▒▒　　▒▒▒　　▒▒　　▒▒▒　　　　　　　　　　　　　", HudPosition.RIGHT, 111, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒▒　▒　　▒▒　　▒　　　　　▒▒▒▒　▒　▒▒　　　　　　　　", HudPosition.RIGHT, 112, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "　▒▒▒　▒　▒　　　▒▒　▒　　　▒▒　▒▒　▒　　　　　　　　", HudPosition.RIGHT, 113, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒　▒　▒　　　▒▒▒▒▒　▒　▒▒▒　▒　▒　　　　　　　　", HudPosition.RIGHT, 114, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "　▒　▒　　　　　　▒▒　▒　　▒　　　▒　　▒　　　　　　　　　", HudPosition.RIGHT, 115, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒▒　　▒▒▒　　▒　　　　　▒▒▒▒▒▒▒▒　　　　　　　　　　", HudPosition.RIGHT, 116, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "　　　　　　　　▒▒▒　▒▒　▒▒　　　▒▒　　▒　　　　　　　　", HudPosition.RIGHT, 117, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒▒▒　　▒▒▒▒　▒　▒▒　▒▒　　　　　　　　", HudPosition.RIGHT, 118, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　　　　　▒　　　　　▒　▒▒▒　　　▒▒▒▒　　　　　　　　　", HudPosition.RIGHT, 119, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒▒　　▒▒　▒▒▒▒▒▒　　　　　　　　　　　", HudPosition.RIGHT, 120, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒　▒▒▒　　　　　　▒▒▒▒　　　　　　　　　　", HudPosition.RIGHT, 121, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒▒　　　▒▒　▒　▒▒　▒　▒　　　　　　　　", HudPosition.RIGHT, 122, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒　　　▒▒　　▒▒　　　▒　　　　　　　　　　　", HudPosition.RIGHT, 123, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒▒　　　▒　▒▒　▒▒　　　▒▒　　　　　　　　", HudPosition.RIGHT, 124, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　　　▒　　▒　　　　▒▒▒▒▒▒▒　　　　", HudPosition.RIGHT, 100, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒▒▒　　▒　▒　　▒　　　　　▒　　　　", HudPosition.RIGHT, 101, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒　　　　　　▒　　▒　▒▒▒　▒　　　　", HudPosition.RIGHT, 102, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒　　　▒▒　　　▒　▒▒▒　▒　　　　", HudPosition.RIGHT, 103, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒▒▒　▒▒　▒　　▒　▒▒▒　▒　　　　", HudPosition.RIGHT, 104, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒　▒　▒▒　▒▒　▒　　　　　▒　　　　", HudPosition.RIGHT, 105, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒　▒　▒　▒　▒　▒▒▒▒▒▒▒　　　　", HudPosition.RIGHT, 106, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　　　　　　　　▒　▒▒▒　▒▒　　　　　　　　　　　　　", HudPosition.RIGHT, 107, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒　▒　　▒▒　　　▒　　▒　▒　▒▒▒　▒▒　　　　　", HudPosition.RIGHT, 108, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　　▒　▒　▒▒　▒　▒▒▒　　　　　▒　　　　", HudPosition.RIGHT, 109, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒　　▒▒　　　　　▒▒▒　　▒　　▒　　▒▒　　　　", HudPosition.RIGHT, 110, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　▒　　▒▒　　▒▒▒　　▒▒　　▒▒▒　　　　　　　　　", HudPosition.RIGHT, 111, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒　▒　　▒▒　　▒　　　　　▒▒▒▒　▒　▒▒　　　　", HudPosition.RIGHT, 112, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　▒▒▒　▒　▒　　　▒▒　▒　　　▒▒　▒▒　▒　　　　", HudPosition.RIGHT, 113, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒　▒　▒　　　▒▒▒▒▒　▒　▒▒▒　▒　▒　　　　", HudPosition.RIGHT, 114, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　▒　▒　　　　　　▒▒　▒　　▒　　　▒　　▒　　　　　", HudPosition.RIGHT, 115, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒　　▒▒▒　　▒　　　　　▒▒▒▒▒▒▒▒　　　　　　", HudPosition.RIGHT, 116, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "　　　　　　　　▒▒▒　▒▒　▒▒　　　▒▒　　▒　　　　", HudPosition.RIGHT, 117, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒▒▒　　▒▒▒▒　▒　▒▒　▒▒　　　　", HudPosition.RIGHT, 118, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　　　　　▒　▒▒▒　　　▒▒▒▒　　　　　", HudPosition.RIGHT, 119, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒▒　　▒▒　▒▒▒▒▒▒　　　　　　　", HudPosition.RIGHT, 120, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　▒　▒▒▒　　　　　　▒▒▒▒　　　　　　", HudPosition.RIGHT, 121, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　▒▒▒　▒　　▒▒　　　▒▒　▒　▒▒　▒　▒　　　　", HudPosition.RIGHT, 122, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒　　　　　▒　▒　　　▒▒　　▒▒　　　▒　　　　　　　", HudPosition.RIGHT, 123, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubtext(qrCodePlayers, "▒▒▒▒▒▒▒　▒▒　　　▒　▒▒　▒▒　　　▒▒　　　　", HudPosition.RIGHT, 124, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
 
-    hudSubtext(qrCodePlayers, "　", HudPosition.RIGHT, 125, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, c"YOUTU.BE/ZUXVsku_PPU　　　　　　　　　　　　　　", HudPosition.RIGHT, 126, Color.WHITE, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "　\n　", HudPosition.RIGHT, 127, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "If the QR code doesn't scan, try moving farther from the screen　　　　　", HudPosition.RIGHT, 129, Color.WHITE, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "　\n　\n　", HudPosition.RIGHT, 130, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
-    hudSubtext(qrCodePlayers, "{0}: Exit　　　　　　　　　　　　　　　　　　　".format(buttonString(Button.RELOAD)), HudPosition.RIGHT, 133, Color.WHITE, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubheader(qrCodePlayers, "　", HudPosition.RIGHT, 125, Color.BLACK, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubheader(qrCodePlayers, c"YOUTU.BE/ZUXVsku_PPU" "\n\nIF THE QR CODE DOESN'T SCAN, TRY MOVING FARTHER FROM THE SCREEN                                                                            \n\n\n{0}: EXIT".format(buttonString(Button.RELOAD)), HudPosition.RIGHT, 126, Color.WHITE, HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
 
 rule "Global setup":
     @Event global
@@ -1163,7 +1158,7 @@ rule "Global setup":
     chase(timer, INF, rate=1, ChaseReeval.NONE)
 
     # cutscene skip text
-    hudSubtext(skipCutscenePlayers, "Hold {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
+    hudSubheader(skipCutscenePlayers, "Hold {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
 
     # intro text
     createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
@@ -1188,15 +1183,18 @@ rule "Global setup":
     hudHeader(achievementPlayers[Achievement.MASTER_HACKER], "Master hacker {0}".format(abilityIconString(Hero.SOMBRA, Button.SECONDARY_FIRE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 7, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
-    createInWorldText(getAllPlayers(), "Enter", vect(-55.67, 9.57, -82.45), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(getAllPlayers(), "Enter", vect(-66.45, 11.56, -80.28), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(getAllPlayers(), "Enter", vect(-55.79, 9.57, -82.90), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(getAllPlayers(), "Enter", vect(-66.55, 11.56, -80.70), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+
+    createInWorldText(getAllPlayers(), "Exit", vect(-55.54, 9.57, -81.99), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(getAllPlayers(), "Exit", vect(-66.35, 11.56, -79.85), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial text
-    hudSubtext(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudSubtext(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.35, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.51, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                  {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.28, 13.26, -90.12), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    hudSubheader(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudSubheader(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.55, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.71, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                          {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.21, 13.46, -90.76), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to toggle the hint system".format(buttonString(Button.RELOAD)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # speedrun setup
@@ -2025,7 +2023,7 @@ rule "show intro cleanup":
 
     resetGame()
 
-#!define INTRO_SPACING "\n                                                                                                                     "
+#!define INTRO_SPACING "\n                                                                                                                                                     "
 
 rule "do waking animation":
     @Event eachPlayer
@@ -2069,7 +2067,7 @@ rule "do waking animation cleanup":
     elif eventPlayer.speedrunPlayer == []:
         graphicsQualityPlayers.append(eventPlayer)
 
-#!define RADIO_TEXT_POS vect(-90.05, 8.69 + 0.3, -103.28)
+#!define RADIO_TEXT_POS vect(-90.05, 8.69 + 0.35, -103.28)
 
 rule "do inner radio conversation":
     @Event eachPlayer
@@ -2103,11 +2101,11 @@ rule "do inner radio conversation":
     wait(5, Wait.ABORT_WHEN_FALSE)
     popTextDeleteQueue()
     wait(1, Wait.ABORT_WHEN_FALSE)
-    CREATE_TEXT("        \n.", RADIO_TEXT_POS)
+    CREATE_TEXT("                \n.", RADIO_TEXT_POS)
     wait(1, Wait.ABORT_WHEN_FALSE)
-    CREATE_TEXT("        \n. .", RADIO_TEXT_POS)
+    CREATE_TEXT("                \n. .", RADIO_TEXT_POS)
     wait(1, Wait.ABORT_WHEN_FALSE)
-    CREATE_TEXT("        \n. . .", RADIO_TEXT_POS)
+    CREATE_TEXT("                \n. . .", RADIO_TEXT_POS)
     wait(2, Wait.ABORT_WHEN_FALSE)
     popTextDeleteQueue()
 
@@ -3600,7 +3598,7 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.innerRadio):
         eventPlayer.hasFoundInnerRadio = true
         if eventPlayer.inventory[0] == "Fiddly part":
-            smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios.\n                        Maybe you can switch this one at a workbench")
+            smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios. Maybe you can switch this one at a workbench")
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
             eventPlayer.inventory.remove("Reverse polarity fiddly part")
             INCREMENT_STATE(Id.innerRadio)
@@ -3813,7 +3811,7 @@ rule "Apply":
             INCREMENT_STATE(Id.outerBruce)
             doBruceContact()
         elif eventPlayer.inventory[0] == "Right handed remote":
-            smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed\n                        Maybe you can switch this at your workbench")
+            smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed. Maybe you can switch this at your workbench")
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outsideMolePersonRoom):
@@ -4617,9 +4615,10 @@ def checkDebugEntry():
     for eventPlayer.tDebugIndex in range(len(eventPlayer.debugEntry)):
         eventPlayer.tDebugHash = (eventPlayer.tDebugHash * 13 + eventPlayer.debugEntry[eventPlayer.tDebugIndex] * 2718) % 1000000
 
-    eventPlayer.tDebugPos = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tDebugHash / 1000) / 10, 10, -200 + (eventPlayer.tDebugHash % 1000) / 10 * 2))
+    # eventPlayer.tDebugPos = nearestWalkablePosition(vect(-100 + floor(eventPlayer.tDebugHash / 1000) / 10, 10, -200 + (eventPlayer.tDebugHash % 1000) / 10 * 2))
 
-    if distance(eventPlayer.tDebugPos, vect(-90.13, 7.70, -198.13)) < 0.01:
+    # if distance(eventPlayer.tDebugPos, vect(-90.13, 7.70, -198.13)) < 0.01:
+    if eventPlayer.tDebugHash == 80019:
         if debugPlayer:
             debugPlayer = 0
             eventPlayer.disableScoreboard()
