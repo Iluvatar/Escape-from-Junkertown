@@ -580,6 +580,8 @@ eventPlayer.itemPoints[eventPlayer.tIndex] = item
 # it's an instantaneous check, so must be rerun every tick
 playervar isShowingWallMessage = false
 
+#!define SMALL_MESSAGE(player, message) smallMessage(player, "   {0}".format(message))
+
 def doWallMessageTimeout():
     eventPlayer.isShowingWallMessage = true
     wait(WALL_MESSAGE_TIMEOUT)
@@ -589,7 +591,7 @@ def doWallMessageTimeout():
     eventPlayer.setMoveSpeed(0) \
     eventPlayer.teleport(eventPlayer.getPosition() + normalize(vect(-((end) - (start)).z, 0, ((end) - (start)).x)) * (1 - DIST_TO_WALL(start, end, eventPlayer.getPosition()))) \
     if eventPlayer.isShowingWallMessage == false: \
-        smallMessage(eventPlayer, message) \
+        SMALL_MESSAGE(eventPlayer, message) \
         async(doWallMessageTimeout(), AsyncBehavior.NOOP) \
     eventPlayer.setMoveSpeed(100)
 
@@ -1961,7 +1963,7 @@ rule "show intro":
     stopChasingVariable(eventPlayer.tPos)
 
     # Stage 2, following cart path
-    smallMessage(eventPlayer, "But something went wrong")
+    SMALL_MESSAGE(eventPlayer, "But something went wrong")
 
     eventPlayer.bezier = [
         vect(7.60, 8.28, -68.38),
@@ -2063,7 +2065,7 @@ rule "do waking animation cleanup":
     popAllTextDeleteQueue()
     wait(3)
     if eventPlayer.isOnSecondRun:
-        smallMessage(eventPlayer, "Achievement hints now available")
+        SMALL_MESSAGE(eventPlayer, "Achievement hints now available")
     elif eventPlayer.speedrunPlayer == []:
         graphicsQualityPlayers.append(eventPlayer)
 
@@ -2077,7 +2079,7 @@ rule "do inner radio conversation":
     hideUi()
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), RADIO_TEXT_POS - vect(0, 0.2, 0)), 60, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    smallMessage(eventPlayer, "You attempt to contact the other guy")
+    SMALL_MESSAGE(eventPlayer, "You attempt to contact the other guy")
 
     wait(3, Wait.ABORT_WHEN_FALSE)
 
@@ -2130,7 +2132,7 @@ rule "do inner radio conversation":
     playEffect(eventPlayer, DynamicEffect.JUNKRAT_RIP_TIRE_EXPLOSION_SOUND, null, eventPlayer.innerRadio[Item.POINT], 100)
     radioSmokePlayers.append(eventPlayer)
     wait(2)
-    smallMessage(eventPlayer, "Oops")
+    SMALL_MESSAGE(eventPlayer, "Oops")
     wait(5, Wait.ABORT_WHEN_FALSE)
     eventPlayer.isCutsceneFinished = true
 
@@ -2141,7 +2143,7 @@ rule "do inner radio conversation cleanup":
     eventPlayer.currentCutscene = Cutscene.NONE
     eventPlayer.isCutsceneFinished = false
 
-    smallMessage(eventPlayer, "Press {0} to be the other guy".format(buttonString(Button.INTERACT)))
+    SMALL_MESSAGE(eventPlayer, "Press {0} to be the other guy".format(buttonString(Button.INTERACT)))
     eventPlayer.canBeTheOtherGuy = true
     if eventPlayer not in radioSmokePlayers:
         radioSmokePlayers.append(eventPlayer)
@@ -2156,13 +2158,13 @@ rule "do comedy routine":
     @Condition eventPlayer.currentCutscene == Cutscene.COMEDY and not eventPlayer.isCutsceneFinished
 
     freeze()
-    smallMessage(eventPlayer, "You walk up on stage and everyone starts laughing")
+    SMALL_MESSAGE(eventPlayer, "You walk up on stage and everyone starts laughing")
     wait(5, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "But you haven't even told any jokes yet!")
+    SMALL_MESSAGE(eventPlayer, "But you haven't even told any jokes yet!")
     wait(5, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "You rip the mask off in disgust")
+    SMALL_MESSAGE(eventPlayer, "You rip the mask off in disgust")
     wait(5, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "Your employer tells you that's enough and waves you over")
+    SMALL_MESSAGE(eventPlayer, "Your employer tells you that's enough and waves you over")
 
     eventPlayer.isCutsceneFinished = true
 
@@ -2233,7 +2235,7 @@ def doBruceContact():
     stopChasingVariable(eventPlayer.tPos)
 
     wait(2)
-    smallMessage(eventPlayer, "You tell Bruce to expect an annoying little rat with a smug grin")
+    SMALL_MESSAGE(eventPlayer, "You tell Bruce to expect an annoying little rat with a smug grin")
 
     eventPlayer.pauseInteraction = false
 
@@ -2739,7 +2741,7 @@ rule "Set inner power box state":
 
     SET_STATE(Id.innerPowerBox, 3)
     wait(3)
-    smallMessage(eventPlayer, "If you could just get the power panel all green, maybe the lights would turn on")
+    SMALL_MESSAGE(eventPlayer, "If you could just get the power panel all green, maybe the lights would turn on")
 
 rule "Add graphics warning text":
     @Event eachPlayer
@@ -2793,7 +2795,7 @@ rule "Inner workbench minigame success":
     SET_STATE(Id.innerWorkbench, 1)
     eventPlayer.inventory.remove("Fiddly part")
     eventPlayer.inventory = "Reverse polarity fiddly part".concat(eventPlayer.inventory)
-    smallMessage(eventPlayer, "You manage to reverse the polarity of the fiddly part")
+    SMALL_MESSAGE(eventPlayer, "You manage to reverse the polarity of the fiddly part")
 
 rule "Inner workbench minigame stop":
     @Event eachPlayer
@@ -2840,7 +2842,7 @@ rule "Outer workbench minigame success":
     SET_STATE(Id.outerWorkbench, 1)
     eventPlayer.inventory.remove("Red battery")
     eventPlayer.inventory = "Black painted battery".concat(eventPlayer.inventory)
-    smallMessage(eventPlayer, "You manage to change the color of the battery")
+    SMALL_MESSAGE(eventPlayer, "You manage to change the color of the battery")
 
     if eventPlayer.outerMinigameMovesMade <= 5:
         wait(3) # wait for small message to disappear
@@ -2887,7 +2889,7 @@ rule "Barn workbench minigame success":
     SET_STATE(Id.barnWorkbench, 1)
     eventPlayer.inventory.remove("Right handed remote")
     eventPlayer.inventory = "Left handed remote".concat(eventPlayer.inventory)
-    smallMessage(eventPlayer, "You pick up the remote with your left hand. Turns out remotes aren't handed.")
+    SMALL_MESSAGE(eventPlayer, "You pick up the remote with your left hand. Turns out remotes aren't handed.")
 
 rule "Barn workbench minigame stop":
     @Event eachPlayer
@@ -2914,7 +2916,7 @@ rule "Comedy performance check":
     eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerMic)
 
     if eventPlayer.tValue[Item.STATE] == 0:
-        smallMessage(eventPlayer, "You don't know why you would waste any time on this stage")
+        SMALL_MESSAGE(eventPlayer, "You don't know why you would waste any time on this stage")
     elif eventPlayer.tValue[Item.STATE] == 1:
         if Equip.DISGUISE in eventPlayer.equipped:
             eventPlayer.tValue[Item.STATE]++
@@ -2923,9 +2925,9 @@ rule "Comedy performance check":
 
             eventPlayer.currentCutscene = Cutscene.COMEDY
         else:
-            smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious costume")
+            SMALL_MESSAGE(eventPlayer, "You couldn't possible be silly without a hilarious costume")
     else:
-        smallMessage(eventPlayer, "You're done with comedy for today")
+        SMALL_MESSAGE(eventPlayer, "You're done with comedy for today")
 
 # Bruce wings fix
 rule "Bruce wings fix":
@@ -2956,7 +2958,7 @@ rule "Switch between heroes":
 
     if eventPlayer.isJunk:
         eventPlayer.isJunk = false
-        smallMessage(eventPlayer, "You are now the other guy")
+        SMALL_MESSAGE(eventPlayer, "You are now the other guy")
         wait(RACE_CONDITION_DELAY)
         eventPlayer.junkInventory = eventPlayer.inventory
         eventPlayer.inventory = eventPlayer.hogInventory
@@ -2969,7 +2971,7 @@ rule "Switch between heroes":
         eventPlayer.preloadHero(Hero.ROADHOG)
     else:
         eventPlayer.isHog = false
-        smallMessage(eventPlayer, "You stop being the other guy")
+        SMALL_MESSAGE(eventPlayer, "You stop being the other guy")
         wait(RACE_CONDITION_DELAY)
         eventPlayer.hogInventory = eventPlayer.inventory
         eventPlayer.inventory = eventPlayer.junkInventory
@@ -3032,7 +3034,7 @@ rule "Interact":
     if eventPlayer.tValue[Item.STATE] < len(eventPlayer.tValue[Item.MESSAGE]):
         eventPlayer.tText = eventPlayer.tValue[Item.MESSAGE][eventPlayer.tValue[Item.STATE]]
         if eventPlayer.tText:
-            smallMessage(eventPlayer, eventPlayer.tText)
+            SMALL_MESSAGE(eventPlayer, eventPlayer.tText)
 
         if eventPlayer.tValue[Item.ITEM_NAME]:
             if eventPlayer.tValue[Item.PLAY_GET_SOUND]:
@@ -3045,7 +3047,7 @@ rule "Interact":
                 playNoItem()
     elif eventPlayer.tValue[Item.PLAY_GET_SOUND]:
         playNoItem()
-        smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
+        SMALL_MESSAGE(eventPlayer, NOTHING_LEFT_MESSAGE)
 
     # special interactions
 
@@ -3098,25 +3100,25 @@ rule "Interact":
                 speedrunTextPlayers.append(eventPlayer)
         elif eventPlayer.tValue[Item.ID] == Id.innerPowerDistributor:
             if not eventPlayer.wiresConnected and not eventPlayer.generatorOn:
-                smallMessage(eventPlayer, "This power distribution unit sends power from the generator to the panel above")
+                SMALL_MESSAGE(eventPlayer, "This power distribution unit sends power from the generator to the panel above")
             elif not eventPlayer.wiresConnected:
-                smallMessage(eventPlayer, "The generator is on, but it's not connected to anything yet")
+                SMALL_MESSAGE(eventPlayer, "The generator is on, but it's not connected to anything yet")
             elif not eventPlayer.generatorOn:
-                smallMessage(eventPlayer, "The generator is connected, but it's not on")
+                SMALL_MESSAGE(eventPlayer, "The generator is connected, but it's not on")
             else:
                 if eventPlayer.lightsOn:
-                    smallMessage(eventPlayer, "The generator is sending power through here to keep the lights on")
+                    SMALL_MESSAGE(eventPlayer, "The generator is sending power through here to keep the lights on")
                 else:
-                    smallMessage(eventPlayer, "Power is being sent from the generator to the panel above, but not all the lights are green")
+                    SMALL_MESSAGE(eventPlayer, "Power is being sent from the generator to the panel above, but not all the lights are green")
         elif eventPlayer.tValue[Item.ID] == Id.innerPowerBox:
             if not eventPlayer.wiresConnected or not eventPlayer.generatorOn:
                 if eventPlayer.tValue[Item.STATE] < 2:
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
             elif not eventPlayer.powerSwitched:
-                smallMessage(eventPlayer, "There's power, so the switches next to these red lights should work")
+                SMALL_MESSAGE(eventPlayer, "There's power, so the switches next to these red lights should work")
             else:
-                smallMessage(eventPlayer, "The pretty green lights make you giddy")
+                SMALL_MESSAGE(eventPlayer, "The pretty green lights make you giddy")
         elif eventPlayer.tValue[Item.ID] == Id.innerGenerator:
             if eventPlayer.tValue[Item.STATE] == 0:
                 eventPlayer.tValue[Item.STATE]++
@@ -3125,9 +3127,9 @@ rule "Interact":
             eventPlayer.hasFoundInnerRadio = true
         elif eventPlayer.tValue[Item.ID] == Id.innerWorkbench and not eventPlayer.isDoingInnerMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
-                smallMessage(eventPlayer, "The workbench has a label that says \"polarity reversificator\" on it")
+                SMALL_MESSAGE(eventPlayer, "The workbench has a label that says \"polarity reversificator\" on it")
             else:
-                smallMessage(eventPlayer, "The workbench has outlived its usefulness")
+                SMALL_MESSAGE(eventPlayer, "The workbench has outlived its usefulness")
         elif eventPlayer.tValue[Item.ID] == Id.innerMinigameControl1 and eventPlayer.isDoingInnerMinigame and not eventPlayer.hasFinishedInnerMinigame:
             eventPlayer.isHoldingInnerMinigameControl1 = true
             chase(eventPlayer.innerMinigameValue1, INF, rate=1, ChaseReeval.NONE)
@@ -3163,22 +3165,22 @@ rule "Interact":
             eventPlayer.numVentsClosed++
             playEffect(eventPlayer, DynamicEffect.DOOMFIST_RISING_UPPERCUT_IMPACT_SOUND, null, eventPlayer.tValue[Item.POINT], 100)
             if eventPlayer.numVentsClosed == 1:
-                smallMessage(eventPlayer, "You twist the valve shut and hear the airflow decrease")
+                SMALL_MESSAGE(eventPlayer, "You twist the valve shut and hear the airflow decrease")
             elif eventPlayer.numVentsClosed == 2:
-                smallMessage(eventPlayer, "You twist the valve shut and hear the airflow slow to a trickle")
+                SMALL_MESSAGE(eventPlayer, "You twist the valve shut and hear the airflow slow to a trickle")
             else:
-                smallMessage(eventPlayer, "You twist the valve shut and hear the air stop entirely")
+                SMALL_MESSAGE(eventPlayer, "You twist the valve shut and hear the air stop entirely")
         elif eventPlayer.tValue[Item.ID] == Id.innerVent3:
             if eventPlayer.tValue[Item.STATE] == 0:
                 if eventPlayer.numVentsClosed == 3:
                     eventPlayer.tValue[Item.STATE]++
                     eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-                    smallMessage(eventPlayer, "You carefully reach your hand in and extract a dusty key")
+                    SMALL_MESSAGE(eventPlayer, "You carefully reach your hand in and extract a dusty key")
                     GIVE_ITEM("Vent key")
                 else:
-                    smallMessage(eventPlayer, "There's something in the back, but the blades are spinning too fast to grab it")
+                    SMALL_MESSAGE(eventPlayer, "There's something in the back, but the blades are spinning too fast to grab it")
             else:
-                smallMessage(eventPlayer, NOTHING_LEFT_MESSAGE)
+                SMALL_MESSAGE(eventPlayer, NOTHING_LEFT_MESSAGE)
         elif eventPlayer.tValue[Item.ID] == Id.outerBruce:
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("You want me to help you? I don't even know who you are.", BRUCE_TEXT_LOCATION)
@@ -3212,7 +3214,7 @@ rule "Interact":
                     insideMailTextPlayers.remove(eventPlayer)
                     CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.insideSmugglerItem
-                    smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                    SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                     GIVE_ITEM(eventPlayer.insideSmugglerItem)
                     eventPlayer.insideSmugglerItem = null
                 else:
@@ -3244,9 +3246,9 @@ rule "Interact":
                 manageEquips()
         elif eventPlayer.tValue[Item.ID] == Id.outerWorkbench and not eventPlayer.isDoingOuterMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
-                smallMessage(eventPlayer, "The workbench has a number of paints left on it")
+                SMALL_MESSAGE(eventPlayer, "The workbench has a number of paints left on it")
             else:
-                smallMessage(eventPlayer, "The workbench has outlived its usefulness")
+                SMALL_MESSAGE(eventPlayer, "The workbench has outlived its usefulness")
         elif Id.outerMinigameDot1 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerMinigameSkip and eventPlayer.isDoingOuterMinigame and not eventPlayer.hasFinishedOuterMinigame:
             eventPlayer.outerMinigameMovesMade++
             if eventPlayer.tValue[Item.ID] == Id.outerMinigameDot1:
@@ -3391,14 +3393,14 @@ rule "Interact":
             ENTER_BARN_DIGIT(5)
             checkBarnCode()
         elif eventPlayer.tValue[Item.ID] == Id.barnPaperClue1:
-            smallMessage(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
+            SMALL_MESSAGE(eventPlayer, "{0} {1} _ _ _".format(eventPlayer.barnCode[0], eventPlayer.barnCode[1]))
         elif eventPlayer.tValue[Item.ID] == Id.barnPaperClue2:
-            smallMessage(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
+            SMALL_MESSAGE(eventPlayer, "_ _ _ {0} {1}".format(eventPlayer.barnCode[3], eventPlayer.barnCode[4]))
         elif eventPlayer.tValue[Item.ID] == Id.barnBike:
-            smallMessage(eventPlayer, "There's some numbers scratched in the paint, but you can only make out the middle digit: {0}".format(eventPlayer.barnCode[2]))
+            SMALL_MESSAGE(eventPlayer, "There's some numbers scratched in the paint, but you can only make out the middle digit: {0}".format(eventPlayer.barnCode[2]))
         elif eventPlayer.tValue[Item.ID] == Id.barnSafe2:
             if Equip.LITTLE_BUDDY in eventPlayer.equipped:
-                smallMessage(eventPlayer, "You've already secured your little buddy")
+                SMALL_MESSAGE(eventPlayer, "You've already secured your little buddy")
             else:
                 eventPlayer.equipped.append(Equip.LITTLE_BUDDY)
                 manageEquips()
@@ -3407,9 +3409,9 @@ rule "Interact":
             eventPlayer.canLeaveBarn = true
         elif eventPlayer.tValue[Item.ID] == Id.barnWorkbench and not eventPlayer.isDoingBarnMinigame:
             if eventPlayer.tValue[Item.STATE] == 0:
-                smallMessage(eventPlayer, "The workbench features a prominently placed mirror")
+                SMALL_MESSAGE(eventPlayer, "The workbench features a prominently placed mirror")
             else:
-                smallMessage(eventPlayer, "The workbench has outlived its usefulness")
+                SMALL_MESSAGE(eventPlayer, "The workbench has outlived its usefulness")
         elif Id.barnMinigameDot0 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.barnMinigameSkip and eventPlayer.isDoingBarnMinigame and not eventPlayer.hasFinishedBarnMinigame:
             if eventPlayer.tValue[Item.ID] == Id.barnMinigameDot0:
                 eventPlayer.tPos = 0
@@ -3477,7 +3479,7 @@ rule "Interact":
                     outsideMailTextPlayers.remove(eventPlayer)
                     CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.outsideSmugglerItem
-                    smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                    SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                     GIVE_ITEM(eventPlayer.outsideSmugglerItem)
                     eventPlayer.outsideSmugglerItem = null
                 else:
@@ -3520,12 +3522,12 @@ rule "Restart game":
 
 # have to save to a variable due to race conditions when immediately changing the state after showing the message
 #!define APPLY_ITEM_SUCCESS(item) eventPlayer.tText = item[Item.SUCCESS_MESSAGE][item[Item.STATE]] \
-smallMessage(eventPlayer, eventPlayer.tText)
+SMALL_MESSAGE(eventPlayer, eventPlayer.tText)
 def APPLY_ITEM_FAIL():
     if len(eventPlayer.inventory) == 0:
-        smallMessage(eventPlayer, NO_ITEM_MESSAGE)
+        SMALL_MESSAGE(eventPlayer, NO_ITEM_MESSAGE)
     else:
-        smallMessage(eventPlayer, CANT_APPLY_MESSAGE)
+        SMALL_MESSAGE(eventPlayer, CANT_APPLY_MESSAGE)
 
 rule "Apply":
     @Event eachPlayer
@@ -3607,7 +3609,7 @@ rule "Apply":
     elif SHOULD_INTERACT(eventPlayer.innerRadio):
         eventPlayer.hasFoundInnerRadio = true
         if eventPlayer.inventory[0] == "Fiddly part":
-            smallMessage(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios. Maybe you can switch this one at a workbench")
+            SMALL_MESSAGE(eventPlayer, "You need a reverse polarity fiddly part to work with Australian radios. Maybe you can switch this one at a workbench")
         elif eventPlayer.inventory[0] == "Reverse polarity fiddly part":
             eventPlayer.inventory.remove("Reverse polarity fiddly part")
             INCREMENT_STATE(Id.innerRadio)
@@ -3674,7 +3676,7 @@ rule "Apply":
                 insideMailTextPlayers.remove(eventPlayer)
                 CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.tText = eventPlayer.insideSmugglerItem
-                smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                 GIVE_ITEM(eventPlayer.insideSmugglerItem)
                 eventPlayer.insideSmugglerItem = null
             elif eventPlayer.outsideSmugglerItem:
@@ -3700,7 +3702,7 @@ rule "Apply":
                 outsideMailTextPlayers.remove(eventPlayer)
                 CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.tText = eventPlayer.outsideSmugglerItem
-                smallMessage(eventPlayer, "Received {0}".format(eventPlayer.tText))
+                SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                 GIVE_ITEM(eventPlayer.outsideSmugglerItem)
                 eventPlayer.outsideSmugglerItem = null
             elif eventPlayer.insideSmugglerItem:
@@ -3820,24 +3822,24 @@ rule "Apply":
             INCREMENT_STATE(Id.outerBruce)
             doBruceContact()
         elif eventPlayer.inventory[0] == "Right handed remote":
-            smallMessage(eventPlayer, "You can't use the right handed remote because you are left handed. Maybe you can switch this at your workbench")
+            SMALL_MESSAGE(eventPlayer, "You can't use the right handed remote because you are left handed. Maybe you can switch this at your workbench")
         else:
             APPLY_ITEM_FAIL()
     elif SHOULD_INTERACT(eventPlayer.outsideMolePersonRoom):
         if eventPlayer.molePersonInteractStage == 0 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
             eventPlayer.molePersonInteractStage++
             popTextDeleteQueue()
-            smallMessage(eventPlayer, "They've already run away")
+            SMALL_MESSAGE(eventPlayer, "They've already run away")
     elif SHOULD_INTERACT(eventPlayer.outsideMolePersonOuthouse):
         if eventPlayer.molePersonInteractStage == 1 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
             eventPlayer.molePersonInteractStage++
             popTextDeleteQueue()
-            smallMessage(eventPlayer, "They've already run away")
+            SMALL_MESSAGE(eventPlayer, "They've already run away")
     elif SHOULD_INTERACT(eventPlayer.outsideMolePersonCar):
         if eventPlayer.molePersonInteractStage == 2 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
             eventPlayer.molePersonInteractStage++
             popTextDeleteQueue()
-            smallMessage(eventPlayer, "They've already run away")
+            SMALL_MESSAGE(eventPlayer, "They've already run away")
     elif SHOULD_INTERACT(eventPlayer.outsideMolePersonCliff):
         if eventPlayer.molePersonInteractStage == 3 and eventPlayer.inventory[0] == MOLE_PERSON_DEVICE_NAME:
             eventPlayer.molePersonInteractStage++
@@ -3852,13 +3854,13 @@ rule "Begin speedrun":
     @Condition eventPlayer.isHoldingButton(Button.SECONDARY_FIRE) and eventPlayer.isJunk and eventPlayer in speedrunTextPlayers
 
     wait(1, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "Speedrun starting in 3...")
+    SMALL_MESSAGE(eventPlayer, "Speedrun starting in 3...")
     wait(1, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "2...")
+    SMALL_MESSAGE(eventPlayer, "2...")
     wait(1, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "1...")
+    SMALL_MESSAGE(eventPlayer, "1...")
     wait(1, Wait.ABORT_WHEN_FALSE)
-    smallMessage(eventPlayer, "Go!")
+    SMALL_MESSAGE(eventPlayer, "Go!")
 
     resetGame()
     eventPlayer.achievements = []
@@ -3955,7 +3957,7 @@ rule "Inner radio help message":
     @Event eachPlayer
     @Condition not eventPlayer.hasFoundInnerRadio and distance(vect(-90, 6.5, -107), eventPlayer.getPosition()) < 10
 
-    smallMessage(eventPlayer, "A radio mic next to the throne! Maybe you can call for help")
+    SMALL_MESSAGE(eventPlayer, "A radio mic next to the throne! Maybe you can call for help")
 
 # Junkertown exit wall
 
@@ -4612,7 +4614,7 @@ rule "Set debug stage 1":
 
     wait(5, Wait.ABORT_WHEN_FALSE)
 
-    smallMessage(eventPlayer, "set")
+    SMALL_MESSAGE(eventPlayer, "set")
     eventPlayer.debugStage1 = true
 
 def pruneDebugEntry():
@@ -4639,7 +4641,7 @@ def checkDebugEntry():
             while len(controlHudArray) > 0:
                 destroyHudText(controlHudArray[0])
                 del controlHudArray[0]
-            smallMessage(eventPlayer, "Debug player unset")
+                SMALL_MESSAGE(eventPlayer, "Debug player unset")
         else:
             debugPlayer = eventPlayer
             eventPlayer.enableScoreboard()
@@ -4664,7 +4666,7 @@ def checkDebugEntry():
             hudSubtext(eventPlayer, "Restart: Ctrl + R", HudPosition.LEFT, 58, Color.WHITE, HudReeval.NONE, SpecVisibility.NEVER)
             controlHudArray.append(getLastCreatedText())
 
-            smallMessage(eventPlayer, "Debug player set")
+            SMALL_MESSAGE(eventPlayer, "Debug player set")
 
 rule "":
     @Event eachPlayer
@@ -4744,26 +4746,26 @@ rule "Kick player":
         return
 
     if eventPlayer == kickPlayer:
-        smallMessage(eventPlayer, "Can't kick yourself")
+        SMALL_MESSAGE(eventPlayer, "Can't kick yourself")
         return
 
     eventPlayer.tValue = "{0}".format(kickPlayer)
-    smallMessage(eventPlayer, "Kicking {0}".format(eventPlayer.tValue))
+    SMALL_MESSAGE(eventPlayer, "Kicking {0}".format(eventPlayer.tValue))
 
     wait(3, Wait.ABORT_WHEN_FALSE)
 
-    smallMessage(eventPlayer, "{0} kicked".format(eventPlayer.tValue))
+    SMALL_MESSAGE(eventPlayer, "{0} kicked".format(eventPlayer.tValue))
     removeFromGame(kickPlayer)
     kickIndex = -1
     kickPlayer = null
 
     wait(3, Wait.ABORT_WHEN_FALSE)
 
-    smallMessage(eventPlayer, "Banning {0}".format(eventPlayer.tValue))
+    SMALL_MESSAGE(eventPlayer, "Banning {0}".format(eventPlayer.tValue))
 
     wait(3, Wait.ABORT_WHEN_FALSE)
 
-    smallMessage(eventPlayer, "{0} banned".format(eventPlayer.tValue))
+    SMALL_MESSAGE(eventPlayer, "{0} banned".format(eventPlayer.tValue))
     banList.append("{0}".format(eventPlayer.tValue))
 
 rule "Prevent kicked rejoin":
