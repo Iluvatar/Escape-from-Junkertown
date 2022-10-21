@@ -1607,7 +1607,7 @@ def playerInitialState():
         [Id.innerThrone, 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
         [Id.innerChest2, 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
-        [Id.innerToolbox1, 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw key in vent by inner gate. Long as the three valves are open, no one can grab it.\""], null, true],
+        [Id.innerToolbox1, 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw the key in the vent by the inner gate. As long as the three valves are open, no one will be able to grab it.\""], null, true],
         [Id.innerSmallToolbox1, 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         [Id.innerTireRack, 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
 
