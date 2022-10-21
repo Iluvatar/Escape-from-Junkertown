@@ -119,6 +119,7 @@ enum Item:
 
 globalvar skipCutscenePlayers = []
 globalvar introStage1Players = []
+globalvar introStage15Players = []
 globalvar introStage2Players = []
 globalvar tutorialPlayers = []
 globalvar graphicsQualityPlayers = []
@@ -1163,8 +1164,10 @@ rule "Global setup":
     hudSubheader(skipCutscenePlayers, "Hold {0} to skip".format(buttonString(Button.JUMP)), HudPosition.TOP, 10, rgba(127, 127, 127, localPlayer.skipAlpha), HudReeval.VISIBILITY_STRING_AND_COLOR, SpecVisibility.NEVER)
 
     # intro text
-    createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.47, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(introStage1Players, "And now you're stuck", vect(-36.85, 6.07, -72.38) + vect(0.55, 0.12, 0.83), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(introStage1Players, "You had a plan", vect(45.98, 11.57, -71.48) + vect(-1, -0.01, 0.10), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    hudSubheader(introStage15Players, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", HudPosition.TOP, 1, Color.WHITE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(introStage15Players, "But something went wrong", HudPosition.TOP, 2, Color.WHITE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    createInWorldText(introStage1Players, "And now you're stuck", vect(-36.85, 6.17, -72.38) + vect(0.55, 0.12, 0.83), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(introStage2Players, "Escape", vect(-35.24, 13.01, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(introStage2Players, "from", vect(-35.24, 12.51, -55.88), 50, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
@@ -1782,6 +1785,7 @@ def playerInitialState():
 
     # Other state setup
     introStage1Players.remove(eventPlayer)
+    introStage15Players.remove(eventPlayer)
     introStage2Players.remove(eventPlayer)
 
     # tutorial gate setup
@@ -1885,6 +1889,7 @@ rule "Cleanup state on player leave":
 
     skipCutscenePlayers.remove(eventPlayer)
     introStage1Players.remove(eventPlayer)
+    introStage15Players.remove(eventPlayer)
     introStage2Players.remove(eventPlayer)
     tutorialPlayers.remove(eventPlayer)
     graphicsQualityPlayers.remove(eventPlayer)
@@ -1946,12 +1951,13 @@ rule "show intro":
     wait(1, Wait.ABORT_WHEN_FALSE)
     hideUi()
     eventPlayer.setInvisibility(Invis.ALL)
-    introStage1Players.append(eventPlayer)
 
-    FADE_TO_BLACK()
+    eventPlayer.startCamera(BLACK_SCREEN_POS, BLACK_SCREEN_POS + vect(-0.01, -1, 0), 0)
 
     wait(3.5, Wait.ABORT_WHEN_FALSE)
     wait(1, Wait.ABORT_WHEN_FALSE)
+
+    introStage1Players.append(eventPlayer)
 
     # Stage 1, view of plan
     eventPlayer.tPos = vect(45.98, 11.12, -71.48) + vect(-1, -0.01, 0.10) * 0.3
@@ -1963,7 +1969,7 @@ rule "show intro":
     stopChasingVariable(eventPlayer.tPos)
 
     # Stage 2, following cart path
-    SMALL_MESSAGE(eventPlayer, "But something went wrong")
+    introStage15Players.append(eventPlayer)
 
     eventPlayer.bezier = [
         vect(7.60, 8.28, -68.38),
@@ -1979,6 +1985,8 @@ rule "show intro":
     doBezierArray()
 
     # Stage 3, view of posters
+    introStage15Players.remove(eventPlayer)
+
     eventPlayer.tPos = vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83) * 0.3
     eventPlayer.startCamera(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) + vect(0.55, 0.12, 0.83), 0)
     chase(eventPlayer.tPos, vect(-36.85, 5.72, -72.38) - vect(0.55, 0.12, 0.83) * 0.2, duration=3.3, ChaseReeval.DESTINATION_AND_DURATION)
