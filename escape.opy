@@ -1640,7 +1640,7 @@ def playerInitialState():
         [Id.outerToolbox2, 0, vect(-9.54, 8.40, -104.89), 0.75, ["You don't know what half these tools do. Okay, all of them"], null, true],
         [Id.outerToolbox3, 0, vect(-10.33, 7.33, -102.96), 0.75, ["You find an old remote inside"], "Right handed remote", true],
         [Id.outerRadio, 0, vect(-10.46, 8.35, -105.80), 0.3, ["This allows incoming connections from outside as long as they're broadcasting on the right frequency"]],
-        [Id.outerMic, 0, vect(-30.95, 3.80, -135.05), 0.5, null],
+        [Id.outerMic, 0, vect(0, 0, 0), 0.5, null],
         [Id.outerWaterBarrel, 0, vect(-17.72, 7.95, -90.27), 3, ["You've never been able to figure out how to get water out of here"]],
 
         [Id.outerCart, 0, vect(-41.66, 6.20, -66.89), 3, ["The cart is stopped in the middle of the road"]],
@@ -2906,6 +2906,27 @@ rule "Can go outside check":
 
     eventPlayer.canGoOutside = true
 
+# Comedy performance
+rule "Comedy performance check":
+    @Event eachPlayer
+    @Condition distance(eventPlayer.getPosition(), vect(-28.33, 2.31, -136.48)) < 3
+
+    eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerMic)
+
+    if eventPlayer.tValue[Item.STATE] == 0:
+        smallMessage(eventPlayer, "You don't know why you would waste any time on this stage")
+    elif eventPlayer.tValue[Item.STATE] == 1:
+        if Equip.DISGUISE in eventPlayer.equipped:
+            eventPlayer.tValue[Item.STATE]++
+            eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
+            SET_STATE(Id.outerShadyCharacter, 1)
+
+            eventPlayer.currentCutscene = Cutscene.COMEDY
+        else:
+            smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious costume")
+    else:
+        smallMessage(eventPlayer, "You're done with comedy for today")
+
 # Bruce wings fix
 rule "Bruce wings fix":
     @Event eachPlayer
@@ -3303,20 +3324,6 @@ rule "Interact":
                 eventPlayer.hasSkippedPuzzle = true
             else:
                 eventPlayer.outerMinigameMovesMade--
-        elif eventPlayer.tValue[Item.ID] == Id.outerMic:
-            if eventPlayer.tValue[Item.STATE] == 0:
-                smallMessage(eventPlayer, "You don't know why you would waste any time on this")
-            elif eventPlayer.tValue[Item.STATE] == 1:
-                if Equip.DISGUISE in eventPlayer.equipped:
-                    eventPlayer.tValue[Item.STATE]++
-                    eventPlayer.itemPoints[eventPlayer.tIndex] = eventPlayer.tValue
-                    SET_STATE(Id.outerShadyCharacter, 1)
-
-                    eventPlayer.currentCutscene = Cutscene.COMEDY
-                else:
-                    smallMessage(eventPlayer, "You couldn't possible be silly without a hilarious costume")
-            else:
-                smallMessage(eventPlayer, "You're done with comedy for today")
         elif Id.outerDoor21 <= eventPlayer.tValue[Item.ID] and eventPlayer.tValue[Item.ID] <= Id.outerDoor25:
             if Equip.WINGS not in eventPlayer.equipped:
                 CREATE_TEXT("You don't look like you're ready yet.\nCome back when you can soar.", eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
