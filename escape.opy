@@ -2911,6 +2911,7 @@ rule "Can go outside check":
 # Comedy performance
 rule "Comedy performance check":
     @Event eachPlayer
+    @Condition eventPlayer.canGoOutside
     @Condition distance(eventPlayer.getPosition(), vect(-28.33, 2.31, -136.48)) < 3
 
     eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerMic)
