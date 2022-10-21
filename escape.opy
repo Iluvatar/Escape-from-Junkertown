@@ -3325,7 +3325,12 @@ rule "Interact":
                     CREATE_TEXT(moleLeaderRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
                     eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleLeaderRiddle)
                 elif eventPlayer.molePersonInteractStage == 0:
-                    doMoleLeaderInteractionStage1()
+                    eventPlayer.tPos = GET_ITEM_ENTRY(Id.tutSafe2)
+                    if eventPlayer.tPos[Item.STATE] == 0:
+                        CREATE_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
+                        eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
+                    else:
+                        doMoleLeaderInteractionStage1()
                 elif eventPlayer.molePersonInteractStage == 1:
                     doMoleLeaderInteractionStage2()
                 elif eventPlayer.molePersonInteractStage == 2:
@@ -3334,9 +3339,6 @@ rule "Interact":
                     doMoleLeaderInteractionStage4()
                 elif eventPlayer.molePersonInteractStage == 4:
                     eventPlayer.currentCutscene = Cutscene.ENDING
-                else:
-                    CREATE_TEXT(moleCoinRiddle[eventPlayer.molePersonRiddleLine], eventPlayer.tValue[Item.POINT] + vect(0, 0.6, 0))
-                    eventPlayer.molePersonRiddleLine = (eventPlayer.molePersonRiddleLine + 1) % len(moleCoinRiddle)
         elif eventPlayer.tValue[Item.ID] == Id.outerBinoculars:
             freeze()
             hideUi()
