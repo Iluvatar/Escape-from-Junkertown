@@ -2934,7 +2934,7 @@ rule "Comedy performance check":
 
             eventPlayer.currentCutscene = Cutscene.COMEDY
         else:
-            SMALL_MESSAGE(eventPlayer, "You couldn't possible be silly without a hilarious costume")
+            SMALL_MESSAGE(eventPlayer, "You couldn't possibly be silly without a hilarious costume")
     else:
         SMALL_MESSAGE(eventPlayer, "You're done with comedy for today")
 
@@ -3237,7 +3237,7 @@ rule "Interact":
                 CREATE_TEXT("So you're looking for the mole people, huh. I've heard they can be found in the\nrooms above the Chinese place. They all tend to talk in riddles though.", BARTENDER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == Id.outerShadyCharacter:
             if eventPlayer.tValue[Item.STATE] == 0:
-                CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up to the mic and do something silly, I'll pay you in cash.", SHADY_CHARACTER_TEXT_LOCATION)
+                CREATE_TEXT("Hey, I'm looking for someone to embarrass themselves on stage,\nand you look like someone who doesn't know what that word means.\n\nGo up there and do something silly, I'll pay you in cash.", SHADY_CHARACTER_TEXT_LOCATION)
                 SET_STATE(Id.outerMic, 1)
             elif eventPlayer.tValue[Item.STATE] == 1:
                 CREATE_TEXT("You certainly have a face made for radio.\n\nAlright, you've earned your pay.", SHADY_CHARACTER_TEXT_LOCATION)
