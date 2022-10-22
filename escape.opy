@@ -1798,7 +1798,6 @@ def playerInitialState():
     manageAchievements()
 
     tutorialTextPlayers[TutorialText.INTERACT].remove(eventPlayer)
-    tutorialTextPlayers[TutorialText.INTERACT].append(eventPlayer)
     tutorialTextPlayers[TutorialText.INV_CYCLE].remove(eventPlayer)
     tutorialTextPlayers[TutorialText.APPLY_ITEM].remove(eventPlayer)
     tutorialTextPlayers[TutorialText.HINTS].remove(eventPlayer)
@@ -2067,6 +2066,7 @@ rule "do waking animation cleanup":
     eventPlayer.isCutsceneFinished = false
 
     eventPlayer.inventoryPlayer.append(eventPlayer)
+    tutorialTextPlayers[TutorialText.INTERACT].append(eventPlayer)
     unfreeze()
     showUi()
     eventPlayer.stopCamera()
