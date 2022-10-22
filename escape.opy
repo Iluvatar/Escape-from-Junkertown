@@ -285,6 +285,9 @@ enum Id:
     outerMic,
     outerWaterBarrel,
     outerCart,
+    outerChest1,
+    outerChest2,
+    outerChest3,
     outerPoster1,
     outerPoster2,
     outerPoster3,
@@ -361,7 +364,6 @@ enum Id:
     outsideToolbox1,
     outsideToolbox2,
     outsideSmallToolbox,
-    outsideChest1,
     outsideChest2,
     outsideChest3,
     outsideChest4,
@@ -1650,6 +1652,10 @@ def playerInitialState():
 
         [Id.outerCart, 0, vect(-41.66, 6.20, -66.89), 3, ["The cart is stopped in the middle of the road"]],
 
+        [Id.outerChest1, 0, vect(-55.97, 8.17, -95.20), 1.2, ["You swear this didn't used to be here"], null, true],
+        [Id.outerChest2, 0, vect(-58.03, 8.17, -95.36), 1.2, ["Who would leave a random chest on the side of the road like this"], null, true],
+        [Id.outerChest3, 0, vect(-57.17, 10.20, -95.17), 1.2, ["Anything in here has been looted a long time ago"], null, true],
+
         [Id.outerPoster1, 0, vect(-64.74, 8.68, -102.96), 0.8, ["A grossly unfair characterization"], null, null, true],
         [Id.outerPoster2, 0, vect(-60.39, 14.28, -88.06), 0.5, ["You don't want to be here anyway"], null, null, true],
         [Id.outerPoster3, 0, vect(-48.70, 8.39, -95.52), 0.8, ["It was all just a big misunderstanding"], null, null, true],
@@ -1738,7 +1744,6 @@ def playerInitialState():
         [Id.outsideToolbox1, 0, vect(-6.67, 8.55, -77.17), 0.7, ["There's only some ancient pistons in here"], null, true],
         [Id.outsideToolbox2, 0, vect(-6.55, 7.60, -77.18), 0.7, ["You don't need any of the car parts inside since you have a motorcycle"], null, true],
         [Id.outsideSmallToolbox, 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the moldy remains of someone's lunch"], null, true],
-        [Id.outsideChest1, 0, vect(19.26, 8.73, -55.36), 1.2, ["Anything in here has been looted a long time ago"], null, true],
         [Id.outsideChest2, 0, vect(-7.98, 8.35, -47.93), 1.2, ["It might be useful for standing on, but not much else"], null, true],
         [Id.outsideChest3, 0, vect(-7.98, 6.58, -47.93), 1.2, ["This chest is trapped under the other one"], null, true],
         [Id.outsideChest4, 0, vect(-35.12, 5.22, -43.65), 1.2, ["The only things inside are some half dead brambles"], null, true],
@@ -4817,7 +4822,7 @@ rule "Item visualization":
     @Condition eventPlayer == debugPlayer
 
     # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-    #     if Id.outsideJunkWorkbench <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] and eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outsidePoster2:
+    #     if Id.outerChest1 <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] and eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerChest3:
     #         createEffect(debugPlayer, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 globalvar isGoingFast = false
