@@ -1344,7 +1344,7 @@ rule "Global setup":
     createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 2 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 2 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createBeam(innerMinigamePlayers, Beam.TORBJORN_TURRET_SIGHT, INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6 + 4 * PI / 3) * 0.2, 0.451 + cos(PI / 6 + 4 * PI / 3) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), INNER_MINIGAME_2D_TO_3D(vect(0.801 + sin(3 * PI / 2) * 0.422 + sin(PI / 6) * 0.2, 0.451 + cos(PI / 6) * 0.2 + sin(3 * PI / 2 * 2) * 0.15, 0)), null, EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
     createEffect(innerMinigamePlayers, Effect.SPHERE, Color.BLACK, INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73, 0)), 0.05, EffectReeval.VISIBILITY)
-    createInWorldText(innerMinigamePlayers, "skip", INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(innerMinigamePlayers, "skip", INNER_MINIGAME_2D_TO_3D(vect(1.48, 0.73 + 0.09, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(innerMinigamePlayers, "Use the gray dots to make the arrow point the other way", vect(-103.48, 9.64, -184.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # radio smoke effect
@@ -1355,7 +1355,7 @@ rule "Global setup":
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.52, 0.08 + 0.17 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.72, 0.08 + 0.17 * 7 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.BLACK, OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59, 0)), 0.05, EffectReeval.VISIBILITY)
-    createInWorldText(outerMinigamePlayers, "skip", OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(outerMinigamePlayers, "skip", OUTER_MINIGAME_2D_TO_3D(vect(1.15, 0.59 + 0.08, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(outerMinigamePlayers, "Turn all the red dots black. Click the gray dots to rotate the surrounding ones.", vect(-56.46, 12.81, -60.53), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # map marker
@@ -1372,7 +1372,7 @@ rule "Global setup":
                 createBeam(barnMinigamePlayers, Beam.GRAPPLE, BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[I]), BARN_MINIGAME_2D_TO_3D(barnMinigamePoints[barnMinigameConnections[I][J]]), null, EffectReeval.VISIBILITY)
 
     createEffect(barnMinigamePlayers, Effect.SPHERE, Color.BLACK, BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8, 0)), 0.05, EffectReeval.VISIBILITY)
-    createInWorldText(barnMinigamePlayers, "skip", BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8 + 0.04, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(barnMinigamePlayers, "skip", BARN_MINIGAME_2D_TO_3D(vect(1.4, 0.8 + 0.07, 0)), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(barnMinigamePlayers, "Swap the positions of the black and white dots", vect(48.86, 11.14, -81.48), 1, Clip.NONE, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # sat control
