@@ -4189,8 +4189,7 @@ def generateHints():
                             ]
                         ]
                     ])
-        elif not eventPlayer.canGoOutside:
-            # Inside area
+        else:
             if not eventPlayer.canBeTheOtherGuy:
                 eventPlayer.hintText.append(
                     [
@@ -4206,147 +4205,149 @@ def generateHints():
                             ]
                         ]
                     ])
-            if Equip.SUNSCREEN not in eventPlayer.equipped:
-                eventPlayer.hintText.append(
-                    [
-                        "Find the vent key",
+            if not eventPlayer.canGoOutside:
+                # Inside area
+                if Equip.SUNSCREEN not in eventPlayer.equipped:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["Three whole valves to turn? You might even have to leave the room to do this one"],
+                            "Find the vent key",
                             [
-                                "1. Turn off the three valves: the first one is in the mech room, next to the left exit",
-                                "2. Follow the left wall out of the mech room until you see a second valve, just before",
-                                "exiting into the payload area",
-                                "3. Find the last valve in the room left of second checkpoint, with the stalled car outside",
-                                "4. Look in the vent on the other side of the wall from the third valve and find the vent key",
-                                "5. Use the vent key on the lower large toolbox in the mech room, next to the workbench"
+                                HintType.HINT,
+                                ["Three whole valves to turn? You might even have to leave the room to do this one"],
+                                [
+                                    "1. Turn off the three valves: the first one is in the mech room, next to the left exit",
+                                    "2. Follow the left wall out of the mech room until you see a second valve, just before",
+                                    "exiting into the payload area",
+                                    "3. Find the last valve in the room left of second checkpoint, with the stalled car outside",
+                                    "4. Look in the vent on the other side of the wall from the third valve and find the vent key",
+                                    "5. Use the vent key on the lower large toolbox in the mech room, next to the workbench"
+                                ]
                             ]
-                        ]
-                    ])
-            if Equip.SUNGLASES not in eventPlayer.equipped:
-                eventPlayer.hintText.append(
-                    [
-                        "Find a way to protect your eyes",
+                        ])
+                if Equip.SUNGLASES not in eventPlayer.equipped:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["You left a map back at your place, but there's no way to get it without going outside the walls"],
+                            "Find a way to protect your eyes",
                             [
-                                "1. You must have already fixed the radio and escaped the barn as Hog",
-                                "2. Switch to Hog",
-                                "3. Find a map in the fridge inside Junk's house (the one with the big crown)",
-                                "4. Switch to Junk and find the sunglasses where the flashing red dot was"
+                                HintType.HINT,
+                                ["You left a map back at your place, but there's no way to get it without going outside the walls"],
+                                [
+                                    "1. You must have already fixed the radio and escaped the barn as Hog",
+                                    "2. Switch to Hog",
+                                    "3. Find a map in the fridge inside Junk's house (the one with the big crown)",
+                                    "4. Switch to Junk and find the sunglasses where the flashing red dot was"
+                                ]
                             ]
-                        ]
-                    ])
-        else:
-            # Inner area
-            if eventPlayer.money == 0 and not eventPlayer.canUtilizeSmuggler:
-                eventPlayer.hintText.append(
-                    [
-                        "Make some money",
+                        ])
+            else:
+                # Inner area
+                if eventPlayer.money == 0 and not eventPlayer.canUtilizeSmuggler:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["Bars are always looking for entertainment"],
+                            "Make some money",
                             [
-                                "1. Find a hilarious costume in the toolbox in the tattoo parlor (attacker third spawn)",
-                                "2. Talk to the shady character in the bar (defender first spawn)",
-                                "3. Interact with the radio on the stage",
-                                "4. Talk to the shady character"
+                                HintType.HINT,
+                                ["Bars are always looking for entertainment"],
+                                [
+                                    "1. Find a hilarious costume in the toolbox in the tattoo parlor (attacker third spawn)",
+                                    "2. Talk to the shady character in the bar (defender first spawn)",
+                                    "3. Interact with the radio on the stage",
+                                    "4. Talk to the shady character"
+                                ]
                             ]
-                        ]
-                    ])
-            if not eventPlayer.canUtilizeSmuggler:
-                eventPlayer.hintText.append(
-                    [
-                        "Hire the smuggler",
+                        ])
+                if not eventPlayer.canUtilizeSmuggler:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["Did you try looking up?"],
+                            "Hire the smuggler",
                             [
-                                "1. Make sure you've already made some money",
-                                "2. Apply money to the smuggler above Bruce's place"
+                                HintType.HINT,
+                                ["Did you try looking up?"],
+                                [
+                                    "1. Make sure you've already made some money",
+                                    "2. Apply money to the smuggler above Bruce's place"
+                                ]
                             ]
-                        ]
-                    ])
-            eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerBruce)
-            if eventPlayer.tValue[Item.STATE] == 0:
-                eventPlayer.hintText.append(
-                    [
-                        "Contact Bruce",
+                        ])
+                eventPlayer.tValue = GET_ITEM_ENTRY(Id.outerBruce)
+                if eventPlayer.tValue[Item.STATE] == 0:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["Bruce doesn't like strangers, but maybe an old friend could vouch for you"],
+                            "Contact Bruce",
                             [
-                                "1. Make sure you've already hired the smuggler and escaped the barn as Hog",
-                                "2. Find the right handed remote in one of the toolboxes in Bruce's place",
-                                "3. Give the remote to the smuggler",
-                                "4. Switch to Hog and retrieve the remote",
-                                "5. Check the hints as Hog for the rest of the solution"
+                                HintType.HINT,
+                                ["Bruce doesn't like strangers, but maybe an old friend could vouch for you"],
+                                [
+                                    "1. Make sure you've already fixed the radio, hired the smuggler, and escaped the barn as Hog",
+                                    "2. Find the right handed remote in one of the toolboxes in Bruce's place",
+                                    "3. Give the remote to the smuggler",
+                                    "4. Switch to Hog and retrieve the remote",
+                                    "5. Check the hints as Hog for the rest of the solution"
+                                ]
                             ]
-                        ]
-                    ])
-            if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and eventPlayer.tValue[Item.STATE] % 2 == 1:
-                eventPlayer.hintText.append(
-                    [
-                        "Find a black battery",
+                        ])
+                if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and eventPlayer.tValue[Item.STATE] % 2 == 1:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["Tattoo parlors can do some amazing things with inks these days"],
+                            "Find a black battery",
                             [
-                                "1. Find a red battery in a chest in the mech room by third point",
-                                "2. Apply the red battery to the workbench in the tattoo parlor (attacker third spawn)",
-                                "and solve the puzzle",
+                                HintType.HINT,
+                                ["Tattoo parlors can do some amazing things with inks these days"],
+                                [
+                                    "1. Find a red battery in a chest in the mech room by third point",
+                                    "2. Apply the red battery to the workbench in the tattoo parlor (attacker third spawn)",
+                                    "and solve the puzzle",
+                                ]
                             ]
-                        ]
-                    ])
-            if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and (eventPlayer.tValue[Item.STATE] - 1) % 4 < 2:
-                eventPlayer.hintText.append(
-                    [
-                        "Find water",
+                        ])
+                if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 8 and (eventPlayer.tValue[Item.STATE] - 1) % 4 < 2:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["They say there's no clean water in Junkertown. Is it any better outside?"],
+                            "Find water",
                             [
-                                "1. Make sure you've already hired the smuggler",
-                                "2. Give the empty petrol can to the smuggler",
-                                "3. Switch to Hog and retrieve the empty petrol can",
-                                "4. Apply the empty petrol can to the hose leading down from the nearby water tower",
-                                "5. Give the resulting water filled petrol can back to the smuggler",
-                                "6. Switch to Junk and retrieve the empty petrol can"
+                                HintType.HINT,
+                                ["They say there's no clean water in Junkertown. Is it any better outside?"],
+                                [
+                                    "1. Make sure you've already hired the smuggler",
+                                    "2. Give the empty petrol can to the smuggler",
+                                    "3. Switch to Hog and retrieve the empty petrol can",
+                                    "4. Apply the empty petrol can to the hose leading down from the nearby water tower",
+                                    "5. Give the resulting water filled petrol can back to the smuggler",
+                                    "6. Switch to Junk and retrieve the empty petrol can"
+                                ]
                             ]
-                        ]
-                    ])
-            if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 4:
-                eventPlayer.hintText.append(
-                    [
-                        "Find strong alcohol",
+                        ])
+                if eventPlayer.tValue[Item.STATE] > 0 and eventPlayer.tValue[Item.STATE] <= 4:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["What's the point of a bar again?"],
+                            "Find strong alcohol",
                             [
-                                "1. Make sure you've already made some money",
-                                "2. Apply money to the bartender behind the bar (defender first spawn)"
+                                HintType.HINT,
+                                ["What's the point of a bar again?"],
+                                [
+                                    "1. Make sure you've already made some money",
+                                    "2. Apply money to the bartender behind the bar (defender first spawn)"
+                                ]
                             ]
-                        ]
-                    ])
-            if Equip.WINGS in eventPlayer.equipped:
-                eventPlayer.hintText.append(
-                    [
-                        "Find a way out",
+                        ])
+                if Equip.WINGS in eventPlayer.equipped:
+                    eventPlayer.hintText.append(
                         [
-                            HintType.HINT,
-                            ["They talk in riddles, but it seems you need to give the coin to the right door"],
+                            "Find a way out",
                             [
-                                "1. Make sure you have the odd looking coin, which can be found in the green safe in",
-                                "the starting room",
-                                "2. Find the doors on the second floor above the Chinese place and tattoo parlor",
-                                "3. Apply the odd looking coin to door 24",
-                                "4. Give the Anathema Device to the smuggler",
-                                "5. Check the hints as Hog for the rest of the solution",
-                                "6. When you've completed Hog's tasks, interact with door 24 again"
+                                HintType.HINT,
+                                ["They talk in riddles, but it seems you need to give the coin to the right door"],
+                                [
+                                    "1. Make sure you have the odd looking coin, which can be found in the green safe in",
+                                    "the starting room",
+                                    "2. Find the doors on the second floor above the Chinese place and tattoo parlor",
+                                    "3. Apply the odd looking coin to door 24",
+                                    "4. Give the Anathema Device to the smuggler",
+                                    "5. Check the hints as Hog for the rest of the solution",
+                                    "6. When you've completed Hog's tasks, interact with door 24 again"
+                                ]
                             ]
-                        ]
-                    ])
+                        ])
     else:
         if not eventPlayer.canLeaveBarn:
             # Barn
@@ -4438,7 +4439,7 @@ def generateHints():
                 ]
             ])
 
-#!define HINT_SPACING_TEXT "\n                                                                                                                                                                                                "
+#!define HINT_SPACING_TEXT "\n                                                                                                                                                                                                                                "
 #!define HINT_SPACING_CONTROLS "\n                                                                                                                                                                                                                                                                "
 #!define HINT_LINE_OFFSET 5
 
