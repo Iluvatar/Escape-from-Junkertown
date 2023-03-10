@@ -1061,6 +1061,11 @@ rule "Stop payload after first point":
     cartNpc.startScalingSize(1.2, false)
     cartNpc.disableEnvironmentCollision(false)
 
+    # set spawn hacks
+    startForcingSpawn(Team.2, 1)
+    wait(0.1)
+    startForcingSpawn(Team.2, 2)
+
 rule "Keep match time high to prevent time based voice lines":
     @Event global
     @Condition isGameInProgress()
@@ -1157,7 +1162,6 @@ rule "Global setup":
     disableAnnouncer()
     disableGamemodeCompletion()
     setObjectiveDescription(getAllPlayers(), "Escape", HudReeval.VISIBILITY_AND_STRING)
-    startForcingSpawn(Team.2, 2)
     getAllPlayers().disableNameplatesFor(getAllPlayers())
 
     chase(timer, INF, rate=1, ChaseReeval.NONE)
@@ -1190,11 +1194,8 @@ rule "Global setup":
     hudHeader(achievementPlayers[Achievement.MASTER_HACKER], "Master hacker {0}".format(abilityIconString(Hero.SOMBRA, Button.SECONDARY_FIRE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 7, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
-    createInWorldText(getAllPlayers(), "Enter", vect(-55.79, 9.57, -82.90), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(getAllPlayers(), "Enter", vect(-66.55, 11.56, -80.70), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-
-    createInWorldText(getAllPlayers(), "Exit", vect(-55.54, 9.57, -81.99), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(getAllPlayers(), "Exit", vect(-66.35, 11.56, -79.85), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(getAllPlayers(), "Enter", vect(-55.67, 9.87, -82.45), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(getAllPlayers(), "Enter", vect(-66.45, 11.86, -80.28), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial text
     hudSubheader(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
@@ -2453,7 +2454,7 @@ rule "do ending cutscene":
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("      A device, stolen\n Our people, liberated\nAnd you, the way out", DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("      A device, stolen\n Our people, liberated\n And you, the way out", DOOR_24_TEXT_LOCATION)
     wait(0.5, Wait.ABORT_WHEN_FALSE)
 
     stopChasingVariable(eventPlayer.tPos)
@@ -3171,7 +3172,6 @@ rule "Interact":
                     bigMessage(eventPlayer, "Achievement get! Infrasight: find the sunglasses without using the map")
                     playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, eventPlayer.getPosition(), 200)
                     eventPlayer.achievements.append(Achievement.INFRASIGHT)
-                    # wait(15)
                     manageAchievements()
         elif eventPlayer.tValue[Item.STATE] == 0 and (eventPlayer.tValue[Item.ID] == Id.innerValve1 or eventPlayer.tValue[Item.ID] == Id.innerValve2 or eventPlayer.tValue[Item.ID] == Id.innerValve3):
             eventPlayer.tValue[Item.STATE]++
