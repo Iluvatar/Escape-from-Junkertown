@@ -602,7 +602,7 @@ def doWallMessageTimeout():
     eventPlayer.applyImpulse(vect(-((end) - (start)).z, 3, ((end) - (start)).x), 6, Relativity.TO_WORLD, Impulse.CANCEL_CONTRARY_MOTION) \
     wait(0.1) \
     eventPlayer.setStatusEffect(null, Status.INVINCIBLE, INF) \
-    eventPlayer.setHealth(200) \
+    eventPlayer.setHealth(250) \
     eventPlayer.setMoveSpeed(100)
 
 # Push and pop effects using the effect deletion queue
@@ -1195,11 +1195,11 @@ rule "Global setup":
     createInWorldText(getAllPlayers(), "Enter", vect(-66.45, 11.86, -80.28), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
     # tutorial text
-    hudSubheader(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudSubheader(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 1, Color.RED, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudSubheader(graphicsQualityPlayers, "Change the setting under Options > Video > Graphics Quality", HudPosition.TOP, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.55, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.71, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
-    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                          {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.21, 13.46, -90.76), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                          {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.21, 13.46, -89.81), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.HINTS], "Use {0} to toggle the hint system".format(buttonString(Button.RELOAD)), vect(-112.74, 11.88, -100.54), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
 
     # speedrun setup
@@ -1694,7 +1694,7 @@ def playerInitialState():
 
         # barn area
         [Id.barnRadio, 0, vect(69.46, 15.15, -86.83), 0.7, ["That idiot managed to blow up the only working radio"]],
-        [Id.barnTvPanel, 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to change the TV channel right now"]],
+        [Id.barnTvPanel, 0, vect(70.40, 15.44, -82.28), 0.4, ["You don't need to unlock your TV right now"]],
         [Id.barnPachimari, 0, vect(69.81, 10.58, -80.19), 1.2, ["Despite your love for them, you were never any good at these things"]],
         [Id.barnFuelMachine, 0, vect(69.01, 10.34, -84.15), 1.2, ["This machine helps you survive the irradiated outdoors"], null, true],
         [Id.barnFridge, 0, vect(66.91, 10.37, -67.64), 1, ["The fridge is full of half eaten Chinese food"], null, true],
