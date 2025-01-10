@@ -355,11 +355,8 @@ enum Id:
     # larger outside area
     outsideJunkWorkbench,
     outsideSafe,
-    outsideIceBox,
     outsideFridge1,
     outsideFridge2,
-    outsideFridge3,
-    outsideFridge4,
     outsideWaterTower,
     outsideToolbox1,
     outsideToolbox2,
@@ -1382,6 +1379,10 @@ rule "Global setup":
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(0.1, 0.9, 0)), 0.05, EffectReeval.VISIBILITY)
     createEffect(satControlPlayers, Effect.SPHERE, Color.BLUE, OUTSIDE_SAT_TO_WORLD(vect(1.7, 0.9, 0)), 0.05, EffectReeval.VISIBILITY)
 
+    # water tower hose
+    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(-24.48, 14.86, -52.08), vect(-24.82, 13.92, -51.87), null, EffectReeval.VISIBILITY)
+    createBeam(getAllPlayers(), Beam.GRAPPLE, vect(-24.82, 13.92, -51.87), vect(-24.82, 7.75, -51.87), null, EffectReeval.VISIBILITY)
+
     # smuggler mail txt
     createInWorldText(insideMailTextPlayers, "You've got mail!", INSIDE_SMUGGLER_TEXT_LOCATION - vect(0, 0.1, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(outsideMailTextPlayers, "You've got mail!", OUTSIDE_SMUGGLER_TEXT_LOCATION - vect(0, 0.1, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
@@ -1562,7 +1563,7 @@ def playerInitialState():
 
     eventPlayer.barnWorkbench = [Id.barnWorkbench, 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
-    eventPlayer.outsideHose = [Id.outsideHose, 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with water"]]
+    eventPlayer.outsideHose = [Id.outsideHose, 0, vect(-24.82, 7.75, -51.87), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with water"]]
     eventPlayer.outsideSatControl = [Id.outsideSatControl, 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the remote control at his place", "You've already talked to Bruce"], null, null, null, null, ["Ambidextrous remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = [Id.outsideSmuggler, 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outsideMolePersonRoom = [Id.outsideMolePersonRoom, 0, vect(-50.68, 5.97, -4.12), 2, null]
@@ -1612,7 +1613,7 @@ def playerInitialState():
 
         [Id.innerThrone, 0, vect(-88.94, 8.40, -102.99), 0.75, ["The queen's throne... oh how you want to sit on it"]],
 
-        [Id.innerChest2, 0, vect(-101.16, 8.12, -198.06), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
+        [Id.innerChest2, 0, vect(-100, 8.12, -197.72), 1.2, ["You pick up a battery covered in peeling red paint"], "Red battery", true],
         [Id.innerToolbox1, 0, vect(-103.25, 9.22, -182.63), 0.75, ["There's a note: \"Threw the key in the vent by the inner gate. As long as the three valves are open, no one will be able to grab it.\""], null, true],
         [Id.innerSmallToolbox1, 0, vect(-102.65, 9.06, -181.25), 0.5, ["Someone just left a fiddly part in the toolbox? It must be your lucky day"], "Fiddly part", true],
         [Id.innerTireRack, 0, vect(-87.96, 8.63, -201.60), 1.8, ["Why are there rubber tires when all the cars hover?"]],
@@ -1736,18 +1737,15 @@ def playerInitialState():
 
         [Id.outsideJunkWorkbench, 0, vect(31.57, 10.71, -95.93), 1.2, ["That idiot was always working on some dumb scheme"]],
         [Id.outsideSafe, 0, vect(21.24, 10.90, -88.37), 0.7, ["You don't what to know what kind of stuff he keeps in there"], null, true],
-        [Id.outsideIceBox, 0, vect(-32.99, 5.36, -29.36), 1, ["It smells like something's rotted in there"], null, true, true],
         [Id.outsideFridge1, 0, vect(20.48, 11.05, -95.08), 1, ["There's a map with a the word \"sunglasses\" pointing to a red dot"]],
         [Id.outsideFridge2, 0, vect(-5.68, 13.51, -74.65), 1.2, ["Without electricity, this fridge isn't doing a very good job"], null, true],
-        [Id.outsideFridge3, 0, vect(-31.79, 5.62, -28.84), 0.8, ["You can't open the door"], null, true, true],
-        [Id.outsideFridge4, 0, vect(-31.72, 5.57, -30.10), 0.8, ["The door won't budge"], null, true, true],
-        [Id.outsideWaterTower, 0, vect(-32.56, 8.94, -29.17), 2, ["The water tower appears to have a functional hose"], null, null, null],
+        [Id.outsideWaterTower, 0, vect(-23.10, 7, -52.57), 2.5, ["The water tower appears to have a functional hose"], null, null, null],
         [Id.outsideToolbox1, 0, vect(-6.67, 8.55, -77.17), 0.7, ["There's only some ancient pistons in here"], null, true],
         [Id.outsideToolbox2, 0, vect(-6.55, 7.60, -77.18), 0.7, ["You don't need any of the car parts inside since you have a motorcycle"], null, true],
         [Id.outsideSmallToolbox, 0, vect(24.28, 9.26, -64.30), 0.5, ["It seems to hold the moldy remains of someone's lunch"], null, true],
         [Id.outsideChest2, 0, vect(-7.98, 8.35, -47.93), 1.2, ["It might be useful for standing on, but not much else"], null, true],
         [Id.outsideChest3, 0, vect(-7.98, 6.58, -47.93), 1.2, ["This chest is trapped under the other one"], null, true],
-        [Id.outsideChest4, 0, vect(-35.12, 5.22, -43.65), 1.2, ["The only things inside are some half dead brambles"], null, true],
+        [Id.outsideChest4, 0, vect(-27.95, 6.70, -36.22), 1.5, ["These won't budge at all"], null, true],
         [Id.outsideChest5, 0, vect(-50.83, 4.92, -16.62), 1.2, ["Nothing up your sleeve, or in the chest"], null, true],
 
         [Id.outsidePoster1, 0, vect(-30.90, 6.14, -60.22), 0.8, ["That idiot is always getting you in trouble"], null, null, true],
@@ -4823,7 +4821,7 @@ rule "Item visualization":
     @Condition eventPlayer == debugPlayer
 
     # for eventPlayer.tText in range(len(eventPlayer.itemPoints)):
-    #     if Id.outerChest1 <= eventPlayer.itemPoints[eventPlayer.tText][Item.ID] and eventPlayer.itemPoints[eventPlayer.tText][Item.ID] <= Id.outerChest3:
+    #     if eventPlayer.itemPoints[eventPlayer.tText][Item.ID] == Id.innerChest2 or eventPlayer.itemPoints[eventPlayer.tText][Item.ID] < 20 or eventPlayer.itemPoints[eventPlayer.tText][Item.ID] > Id.barnRadio:
     #         createEffect(debugPlayer, Effect.SPHERE, Color.PURPLE, eventPlayer.itemPoints[eventPlayer.tText][Item.POINT], eventPlayer.itemPoints[eventPlayer.tText][Item.RADIUS], EffectReeval.VISIBILITY)
 
 globalvar isGoingFast = false
