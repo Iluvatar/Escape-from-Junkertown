@@ -2452,7 +2452,7 @@ rule "do ending cutscene":
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("      A device, stolen\n Our people, liberated\n  And you, the way out", DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("       A device, stolen\n Our people, liberated\n  And you, the way out", DOOR_24_TEXT_LOCATION)
     wait(0.5, Wait.ABORT_WHEN_FALSE)
 
     stopChasingVariable(eventPlayer.tPos)
@@ -2489,6 +2489,9 @@ rule "do ending cutscene":
     wait(4, Wait.ABORT_WHEN_FALSE)
     stopChasingVariable(eventPlayer.tEnd)
 
+    createEffect(eventPlayer, Effect.JUNKRAT_TRAP_CHAIN_SOUND, null, BEZIER_POSITION, 100, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+
     # climb ladder looking right
     eventPlayer.bezier = [
         vect(-49.22, 33.22, -113.27),
@@ -2517,6 +2520,8 @@ rule "do ending cutscene":
     eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 3)
     doBezierArray()
 
+    popEffectDeleteQueue()
+
     wait(0.5, Wait.ABORT_WHEN_FALSE)
 
     # look to right
@@ -2542,7 +2547,16 @@ rule "do ending cutscene":
     wait(4, Wait.ABORT_WHEN_FALSE)
 
     chase(eventPlayer.tEnd, vect(-48.03, 65.26, -116.94) + vect(4.80, -30.51, 46.04), duration=2, ChaseReeval.NONE)
-    wait(5, Wait.ABORT_WHEN_FALSE)
+    wait(4, Wait.ABORT_WHEN_FALSE)
+
+    eventPlayer.tValue = 0
+    createEffect(eventPlayer, Effect.TORBJORN_OVERLOADING_SOUND, null, BEZIER_POSITION, eventPlayer.tValue, EffectReeval.POSITION_AND_RADIUS)
+    createEffect(eventPlayer, Effect.TORBJORN_OVERLOADING_SOUND, null, BEZIER_POSITION, eventPlayer.tValue, EffectReeval.POSITION_AND_RADIUS)
+    pushEffectDeleteQueue()
+    wait(1, Wait.ABORT_WHEN_FALSE)
+    eventPlayer.tValue = 200
+    chase(eventPlayer.tValue, 50, duration=14, ChaseReeval.NONE)
+
 
     # fly over walls
     eventPlayer.bezier = [
@@ -2573,7 +2587,7 @@ rule "do ending cutscene":
     eventPlayer.startCamera(BEZIER_POSITION, BEZIER_FACING, 0)
     doBezierArray()
 
-    wait(2, Wait.ABORT_WHEN_FALSE)
+    popAllEffectDeleteQueue()
 
     eventPlayer.isCutsceneFinished = true
 
@@ -2583,7 +2597,7 @@ def doCredits():
     addSpeedrunTime()
 
     FADE_TO_BLACK()
-    wait(1)
+    wait(3)
 
     bigMessage(eventPlayer, "Achievement get! Escape artist: get out of Junkertown")
     playEffect(eventPlayer, DynamicEffect.SOMBRA_LOGO_SOUND, null, BLACK_SCREEN_POS, 200)
@@ -3247,6 +3261,7 @@ rule "Interact":
                 GIVE_ITEM("{0} dollars".format(ALCOHOL_COST + SMUGGLER_COST))
                 eventPlayer.money = ALCOHOL_COST + SMUGGLER_COST
                 eventPlayer.tValue[Item.STATE]++
+                playEffect(eventPlayer, DynamicEffect.BRIGITTE_REPAIR_PACK_IMPACT_SOUND, null, eventPlayer, 100)
                 SAVE_STATE(eventPlayer.tValue)
             else:
                 CREATE_TEXT("Did you know there's legends of a hidden race in Junkertown?\nSome say they go around stealing small objects, hiding things in vents.\nEh- but it's probably nothing right?", SHADY_CHARACTER_TEXT_LOCATION)
@@ -4888,6 +4903,7 @@ rule "End game state":
     eventPlayer.molePersonInteractStage = 3
     eventPlayer.equipped.append(Equip.WINGS)
     eventPlayer.inventory.append(MOLE_PERSON_DEVICE_NAME)
+    eventPlayer.inventory.append("{0} dollars".format(ALCOHOL_COST + SMUGGLER_COST))
     manageEquips()
     eventPlayer.achievements = [2, 3]
     manageAchievements()
