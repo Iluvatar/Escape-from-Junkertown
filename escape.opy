@@ -1180,16 +1180,16 @@ rule "Global setup":
     # equipped hud text
     hudHeader(equipPlayers[Equip.HAS_ANY], "Equipped", HudPosition.LEFT, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.LITTLE_BUDDY], "{0} Little buddy".format(abilityIconString(Hero.ROADHOG, Button.ULTIMATE)), HudPosition.LEFT, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.ABILITY_2)), HudPosition.LEFT, 3, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(equipPlayers[Equip.SUNSCREEN], "{0} Sunscreen".format(abilityIconString(Hero.ROADHOG, Button.SECONDARY_FIRE)), HudPosition.LEFT, 3, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.SUNGLASES], "{0} Sunglasses".format(abilityIconString(Hero.WINSTON, Button.ULTIMATE)), HudPosition.LEFT, 4, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.DISGUISE], "{0} Hilarious Costume".format(abilityIconString(Hero.LUCIO, Button.ULTIMATE)), HudPosition.LEFT, 5, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(equipPlayers[Equip.WINGS], "{0} Mechanical wings".format(abilityIconString(Hero.MERCY, Button.ULTIMATE)), HudPosition.LEFT, 6, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
     # achievement hud text
     hudHeader(achievementPlayers[Achievement.HAS_ANY], "Achievements", HudPosition.RIGHT, 1, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.MOST_WANTED], "Most wanted {0}".format(abilityIconString(Hero.MCCREE, Button.ULTIMATE)), HudPosition.RIGHT, 2, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.MOST_WANTED], "Most wanted {0}".format(abilityIconString(Hero.CASSIDY, Button.ULTIMATE)), HudPosition.RIGHT, 2, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.INFRASIGHT], "Infrasight {0}".format(abilityIconString(Hero.WIDOWMAKER, Button.ULTIMATE)), HudPosition.RIGHT, 3, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "Puzzle master {0}".format(abilityIconString(Hero.LUCIO, Button.JUMP)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudHeader(achievementPlayers[Achievement.PUZZLE_MASTER], "Puzzle master {0}".format(abilityIconString(Hero.KIRIKO, Button.ULTIMATE)), HudPosition.RIGHT, 4, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.IN_A_HURRY], "In a hurry {0}".format(abilityIconString(Hero.SOLDIER, Button.ABILITY_1)), HudPosition.RIGHT, 5, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.MASTER_HACKER], "Master hacker {0}".format(abilityIconString(Hero.SOMBRA, Button.SECONDARY_FIRE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 7, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
@@ -1199,7 +1199,7 @@ rule "Global setup":
 
     # tutorial text
     hudSubheader(graphicsQualityPlayers, "Certain details are only visible with graphics quality medium or higher", HudPosition.TOP, 1, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
-    hudSubheader(graphicsQualityPlayers, "Change the setting under Settings > Video > Graphics Quality", HudPosition.TOP, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
+    hudSubheader(graphicsQualityPlayers, "Change the setting under Options > Video > Graphics Quality", HudPosition.TOP, 2, Color.ORANGE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INTERACT], "Use {0} to interact with things".format(buttonString(Button.PRIMARY_FIRE)), vect(-101.13, 12.55, -80.42), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.INV_CYCLE], "Use {0} / {1} to cycle inventory items".format(buttonString(Button.ULTIMATE), buttonString(Button.ABILITY_2)), vect(-88.78, 12.71, -90.72), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(tutorialTextPlayers[TutorialText.APPLY_ITEM], "Use {0} to use inventory items on things\n\n                                          {1}".format(buttonString(Button.SECONDARY_FIRE), iconString(Icon.ARROW_DOWN)), vect(-100.21, 13.46, -90.76), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
@@ -1563,7 +1563,7 @@ def playerInitialState():
     eventPlayer.barnWorkbench = [Id.barnWorkbench, 0, vect(48.86, 10.21, -81.42), 1, null, null, null, null, null, ["Right handed remote"], ["This should help you make the remote left handed"]]
 
     eventPlayer.outsideHose = [Id.outsideHose, 0, vect(-31.21, 6.36, -27.83), 0.7, ["The hose leads down from the water tower", "You don't need any more water"], null, null, null, null, ["Empty petrol can"], ["You fill up the can with water"]]
-    eventPlayer.outsideSatControl = [Id.outsideSatControl, 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the remote control at his place", "You've already talked to Bruce"], null, null, null, null, ["Left handed remote"], ["You use the remote on the controller"]]
+    eventPlayer.outsideSatControl = [Id.outsideSatControl, 0, vect(-3.30, 14.20, -83.94), 1, ["This controls the satellite connection to your friend Bruce, but you left the remote control at his place", "You've already talked to Bruce"], null, null, null, null, ["Ambidextrous remote"], ["You use the remote on the controller"]]
     eventPlayer.outsideSmuggler = [Id.outsideSmuggler, 0, vect(-44.52, 5.49, -49.63), 1, null]
     eventPlayer.outsideMolePersonRoom = [Id.outsideMolePersonRoom, 0, vect(-50.68, 5.97, -4.12), 2, null]
     eventPlayer.outsideMolePersonOuthouse = [Id.outsideMolePersonOuthouse, 0, MOLE_PERSON_OUTHOUSE_TEXT_LOCATION, 2, null]
@@ -2288,7 +2288,7 @@ def doMoleLeaderInteractionStage3():
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("Beneath the two stacked cars you next should comb,\nalthough it can be hardly called a home.", DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("Beneath the four stacked cars you next should comb,\nalthough it can be hardly called a home.", DOOR_24_TEXT_LOCATION)
     wait(0.5)
 
     stopChasingVariable(eventPlayer.tPos)
@@ -2454,7 +2454,7 @@ rule "do ending cutscene":
     chase(eventPlayer.tPos, DOOR_24_TEXT_LOCATION, duration=0.5, ChaseReeval.DESTINATION_AND_DURATION)
     eventPlayer.startFacing(directionTowards(eventPlayer.getEyePosition(), eventPlayer.tPos), 9999, Relativity.TO_WORLD, FacingReeval.DIRECTION_AND_TURN_RATE)
 
-    CREATE_TEXT("      A device, stolen\n Our people, liberated\n And you, the way out", DOOR_24_TEXT_LOCATION)
+    CREATE_TEXT("      A device, stolen\n Our people, liberated\n  And you, the way out", DOOR_24_TEXT_LOCATION)
     wait(0.5, Wait.ABORT_WHEN_FALSE)
 
     stopChasingVariable(eventPlayer.tPos)
@@ -2595,11 +2595,11 @@ def doCredits():
 
     eventPlayer.tText = " "
     if Achievement.MOST_WANTED in eventPlayer.achievements:
-        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.MCCREE, Button.ULTIMATE))
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.CASSIDY, Button.ULTIMATE))
     if Achievement.INFRASIGHT in eventPlayer.achievements:
         eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.WIDOWMAKER, Button.ULTIMATE))
     if Achievement.PUZZLE_MASTER in eventPlayer.achievements:
-        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.LUCIO, Button.JUMP))
+        eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.KIRIKO, Button.ULTIMATE))
     if Achievement.IN_A_HURRY in eventPlayer.achievements:
         eventPlayer.tText = "{0}{1} ".format(eventPlayer.tText, abilityIconString(Hero.SOLDIER, Button.ABILITY_1))
     if Achievement.MASTER_HACKER in eventPlayer.achievements:
@@ -2902,7 +2902,7 @@ rule "Barn workbench minigame success":
     eventPlayer.hasFinishedBarnMinigame = true
     SET_STATE(Id.barnWorkbench, 1)
     eventPlayer.inventory.remove("Right handed remote")
-    eventPlayer.inventory = "Left handed remote".concat(eventPlayer.inventory)
+    eventPlayer.inventory = "Ambidextrous remote".concat(eventPlayer.inventory)
     SMALL_MESSAGE(eventPlayer, "You pick up the remote with your left hand. Turns out remotes aren't handed.")
 
 rule "Barn workbench minigame stop":
@@ -3226,13 +3226,13 @@ rule "Interact":
             else:
                 if eventPlayer.insideSmugglerItem:
                     insideMailTextPlayers.remove(eventPlayer)
-                    CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Looks like we got something for ya!", INSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.insideSmugglerItem
                     SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                     GIVE_ITEM(eventPlayer.insideSmugglerItem)
                     eventPlayer.insideSmugglerItem = null
                 else:
-                    CREATE_TEXT("Sorry, nothing for you", INSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Sorry, nothing for ya", INSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == Id.outerBartender:
             if eventPlayer.tValue[Item.STATE] == 0:
                 CREATE_TEXT("Drinks round here cost {0} bucks. But just for you,\nI'll make an exception and only charge ya {1}.".format(ALCOHOL_COST / 2, ALCOHOL_COST), BARTENDER_TEXT_LOCATION)
@@ -3491,13 +3491,13 @@ rule "Interact":
             else:
                 if eventPlayer.outsideSmugglerItem:
                     outsideMailTextPlayers.remove(eventPlayer)
-                    CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Looks like we got something for ya!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                     eventPlayer.tText = eventPlayer.outsideSmugglerItem
                     SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                     GIVE_ITEM(eventPlayer.outsideSmugglerItem)
                     eventPlayer.outsideSmugglerItem = null
                 else:
-                    CREATE_TEXT("Sorry, nothing for you", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                    CREATE_TEXT("Sorry, nothing for ya", OUTSIDE_SMUGGLER_TEXT_LOCATION)
         elif eventPlayer.tValue[Item.ID] == Id.outsideMolePersonRoom:
             if eventPlayer.molePersonInteractStage == 0:
                 CREATE_TEXT("No one here but us mole peo- er, coconuts.", MOLE_PERSON_ROOM_TEXT_LOCATION)
@@ -3688,7 +3688,7 @@ rule "Apply":
         else:
             if eventPlayer.insideSmugglerItem:
                 insideMailTextPlayers.remove(eventPlayer)
-                CREATE_TEXT("Looks like we have something for you!", INSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Looks like we got something for ya!", INSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.tText = eventPlayer.insideSmugglerItem
                 SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                 GIVE_ITEM(eventPlayer.insideSmugglerItem)
@@ -3714,7 +3714,7 @@ rule "Apply":
         else:
             if eventPlayer.outsideSmugglerItem:
                 outsideMailTextPlayers.remove(eventPlayer)
-                CREATE_TEXT("Looks like we have something for you!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("Looks like we got something for ya!", OUTSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.tText = eventPlayer.outsideSmugglerItem
                 SMALL_MESSAGE(eventPlayer, "Received {0}".format(eventPlayer.tText))
                 GIVE_ITEM(eventPlayer.outsideSmugglerItem)
@@ -3724,7 +3724,7 @@ rule "Apply":
             elif len(eventPlayer.inventory) == 0:
                 CREATE_TEXT("You want me to deliver the abstract notion of nothingness?", OUTSIDE_SMUGGLER_TEXT_LOCATION)
             else:
-                CREATE_TEXT("You got it! We'll have the {0} inside the walls for you in a jiffy.".format(eventPlayer.inventory[0]), OUTSIDE_SMUGGLER_TEXT_LOCATION)
+                CREATE_TEXT("You got it! We'll have the {0} inside the walls for ya in a jiffy.".format(eventPlayer.inventory[0]), OUTSIDE_SMUGGLER_TEXT_LOCATION)
                 eventPlayer.insideSmugglerItem = eventPlayer.inventory[0]
                 del eventPlayer.inventory[0]
                 insideMailTextPlayers.append(eventPlayer)
@@ -3945,8 +3945,8 @@ rule "Create sparks for generator wires":
 # Sunlight barrier
 
 #!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_BOTH "The sun is too bright for your delicate eyes and sensitive complexion"
-#!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_GLASSES "The sun is too bright for your delicate eyes"
-#!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_SUNSCREEN "The sun is too bright for your sensitive complexion"
+#!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_GLASSES "The sun is too bright for your delicate eyes, maybe something will help tone it down"
+#!define SCRAPYARD_OUTSIDE_MESSAGE_NEED_SUNSCREEN "The sun is too bright for your sensitive complexion, maybe something will help protect you"
 #!define SCRAPYARD_OUTSIDE_MESSAGE (SCRAPYARD_OUTSIDE_MESSAGE_NEED_BOTH if not eventPlayer.hasSunglasses and not eventPlayer.hasSunscreen else SCRAPYARD_OUTSIDE_MESSAGE_NEED_GLASSES if not eventPlayer.hasSunglasses else SCRAPYARD_OUTSIDE_MESSAGE_NEED_SUNSCREEN)
 
 rule "Create sunlight barriers":
@@ -4395,7 +4395,7 @@ def generateHints():
                                 "1. Make sure you've escaped the barn, and have the right handed remote (check hints as Junk)",
                                 "2. Apply the right handed remote to the workbench in the barn and solve the puzzle",
                                 "3. Find the TV with the bouncing logo in the room above the car garage",
-                                "4. Apply the left handed remote to the TV"
+                                "4. Apply the ambidextrous remote to the TV"
                             ]
                         ]
                     ])
