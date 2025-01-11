@@ -1330,10 +1330,10 @@ rule "Global setup":
     createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-99.98, 14.01, -147.77), 5, EffectReeval.VISIBILITY)
 
     # window 7
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 11, -169.23), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 11.5, -169.23), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 12, -169.23), 3, EffectReeval.VISIBILITY)
-    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.30, 12.5, -169.23), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.89, 11, -166.82), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.89, 11.5, -166.82), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.89, 12, -166.82), 3, EffectReeval.VISIBILITY)
+    createEffect(playersInDark, Effect.BAD_AURA, Color.BLACK, vect(-92.89, 12.5, -166.82), 3, EffectReeval.VISIBILITY)
 
     # inner workbench puzzle
     createEffect(innerMinigamePlayers, Effect.SPHERE, Color.GRAY, vect(-103.45, 8.89, -184.36), 0.04, EffectReeval.VISIBILITY)
@@ -3939,7 +3939,7 @@ rule "Create lights out barriers":
     MAKE_WALL(vect(-104.47, 5.37, -128.85), vect(-99.85, 12.44, -107.17), DARK_AND_SCARY_MESSAGE)
     MAKE_WALL(vect(-103.34, 6.04, -140.02), vect(-102.20, 16.33, -134.55), DARK_AND_SCARY_MESSAGE)
     MAKE_WALL(vect(-99.65, 12.44, -153.76), vect(-102.71, 16, -149.09), DARK_AND_SCARY_MESSAGE)
-    MAKE_WALL(vect(-97.29, 12.44, -169.53), vect(-96.75, 16, -166.99), DARK_AND_SCARY_MESSAGE)
+    MAKE_WALL(vect(-96.77, 12.44, -167.13), vect(-96.21, 16, -164.51), DARK_AND_SCARY_MESSAGE)
 
     wait(WALL_CHECK_TIME, Wait.ABORT_WHEN_FALSE)
     goto RULE_START
