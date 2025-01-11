@@ -129,6 +129,7 @@ globalvar powerPanelPlayers = [[], [], [], [], []]
 globalvar graphicsWarningPlayers = []
 globalvar innerMinigamePlayers = []
 globalvar radioSmokePlayers = []
+globalvar ventSoundPlayers = []
 globalvar outerMinigamePlayers = []
 globalvar barnHintPlayers = []
 globalvar mapMarkerPlayers = []
@@ -1191,6 +1192,7 @@ rule "Global setup":
     hudHeader(achievementPlayers[Achievement.MASTER_HACKER], "Master hacker {0}".format(abilityIconString(Hero.SOMBRA, Button.SECONDARY_FIRE)), HudPosition.RIGHT, 6, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
     hudHeader(achievementPlayers[Achievement.ESCAPE_ARTIST], "Escape artist {0}".format(abilityIconString(Hero.BAPTISTE, Button.ULTIMATE)), HudPosition.RIGHT, 7, Color.PURPLE, HudReeval.VISIBILITY, SpecVisibility.NEVER)
 
+    # attacker second spawn text hack
     createInWorldText(getAllPlayers(), "Enter", vect(-55.67, 9.87, -82.45), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
     createInWorldText(getAllPlayers(), "Enter", vect(-66.45, 11.86, -80.28), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY, Color.WHITE, SpecVisibility.NEVER)
 
@@ -1347,6 +1349,9 @@ rule "Global setup":
 
     # radio smoke effect
     createEffect(radioSmokePlayers, Effect.CLOUD, Color.BLACK, vect(-90.05, 8.69, -103.28), 0.1, EffectReeval.VISIBILITY)
+
+    # vent sound
+    createEffect(ventSoundPlayers, Effect.ECHO_FOCUSING_BEAM_SOUND, null, localPlayer.getPosition(), min((10 - distance(vect(-54.90, 10.74, -125.39), localPlayer.getPosition())) * 15, 100), EffectReeval.VISIBILITY_POSITION_AND_RADIUS)
 
     # outer workbench puzzle
     createEffect(outerMinigamePlayers, Effect.SPHERE, Color.GRAY, OUTER_MINIGAME_2D_TO_3D(vect(0.92, 0.08 + 0.17 / 3, 0)), 0.03, EffectReeval.VISIBILITY)
@@ -1828,6 +1833,9 @@ def playerInitialState():
 
     innerMinigamePlayers.remove(eventPlayer)
     radioSmokePlayers.remove(eventPlayer)
+
+    ventSoundPlayers.remove(eventPlayer)
+    ventSoundPlayers.append(eventPlayer)
 
     outerMinigamePlayers.remove(eventPlayer)
 
@@ -3196,6 +3204,7 @@ rule "Interact":
                 SMALL_MESSAGE(eventPlayer, "You twist the valve shut and hear the airflow slow to a trickle")
             else:
                 SMALL_MESSAGE(eventPlayer, "You twist the valve shut and hear the air stop entirely")
+                ventSoundPlayers.remove(eventPlayer)
         elif eventPlayer.tValue[Item.ID] == Id.innerVent3:
             if eventPlayer.tValue[Item.STATE] == 0:
                 if eventPlayer.numVentsClosed == 3:
@@ -4921,4 +4930,4 @@ rule "Show other player inventory":
     @Event eachPlayer
     @Team 1
 
-    createInWorldText(debugPlayer, eventPlayer.inventory, eventPlayer.getEyePosition() + vect(0, 0.5, 0), 1, Clip.SURFACES, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
+    createInWorldText(debugPlayer, eventPlayer.inventory, eventPlayer.getEyePosition() + vect(0, 0.5, 0), 1, Clip.NONE, WorldTextReeval.VISIBILITY_POSITION_AND_STRING, Color.WHITE, SpecVisibility.NEVER)
